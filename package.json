@@ -1,0 +1,26 @@
+{
+  "name": "peasy.js",
+  "version": "1.0.0",
+  "description": "An easy to use javascript middle tier framework",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peasy/Peasy.js.git"
+  },
+  "keywords": [
+    "middle",
+    "tier",
+    "framework",
+    "business",
+    "layer"
+  ],
+  "author": "Aaron Hanusa <aaron.hanusa@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/peasy/Peasy.js/issues"
+  },
+  "homepage": "https://github.com/peasy/Peasy.js#readme"
+}
