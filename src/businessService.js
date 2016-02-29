@@ -17,76 +17,101 @@ BusinessService.prototype = {
 
   getAllCommand: function() {
     var service = this;
+    var context = {};
     return new Command
     (
       function() {
-        return service.dataProxy.getAll(data); 
+        return service.__getAll(context);
       }, 
-      service.getRulesForGetAll()
+      service.__getRulesForGetAll(context)
     );
   },
 
-  getRulesForGetAll: function() {
+  __getAll: function(context) {
+    return this.dataProxy.getAll(data); 
+  },
+
+  __getRulesForGetAll: function(context) {
     return [];
   },
 
   getByIdCommand: function(id) {
     var service = this;
+    var context = {};
     return new Command
     (
       function() {
-        return service.dataProxy.getById(id); 
+        return service.__getById(id, context);
       },
-      service.getRulesForGetById(id)
+      service.__getRulesForGetById(id, context)
     );
   },
 
-  getRulesForGetById: function(id) {
+  __getById: function(id, context) {
+    return this.dataProxy.getById(id); 
+  },
+
+  __getRulesForGetById: function(id, context) {
     return [];
   },
 
   insertCommand: function(data) {
     var service = this;
+    var context = {};
     return new Command
     (
       function() {
-        return service.dataProxy.insert(data); 
+        return service.__insert(data, context);
       }, 
-      service.getRulesForInsert(data)
+      service.__getRulesForInsert(data, context)
     );
   },
 
-  getRulesForInsert: function(data) {
+  __insert: function(data, context) {
+    return this.dataProxy.insert(data); 
+  },
+
+  __getRulesForInsert: function(data, context) {
     return [];
   },
 
   updateCommand: function(data) {
     var service = this;
+    var context = {};
     return new Command
     (
       function() {
-        return service.dataProxy.update(data); 
+        return service.__update(data, context);
       }, 
-      service.getRulesForUpdate(data)
+      service.__getRulesForUpdate(data)
     );
   },
 
-  getRulesForUpdate: function(data) {
+  __update(data, context) {
+    return this.dataProxy.update(data); 
+  },
+
+  __getRulesForUpdate: function(data, context) {
     return [];
   },
 
-  deleteCommand: function(data) {
+  deleteCommand: function(id) {
     var service = this;
+    var context = {};
     return new Command
     (
       function() {
-        return service.dataProxy.delete(data); 
+        return service.__delete(id, context); 
       }, 
-      service.getRulesForDelete(data)
+      service.__getRulesForDelete(data)
     );
   },
 
-  getRulesForDelete: function(data) {
+  __delete(id, context) {
+    return this.dataProxy.delete(id); 
+  },
+
+  __getRulesForDelete: function(id, context) {
     return [];
   }
 };

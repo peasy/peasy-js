@@ -30,7 +30,6 @@ AgeRule.prototype.validate = function() {
   return this;
 };
 
-
 var PersonService = function(dataProxy) {
 //  BusinessServiceBase.call(this, dataProxy);
   if (this instanceof PersonService) {
@@ -41,14 +40,17 @@ var PersonService = function(dataProxy) {
 };
 
 PersonService.prototype = new BusinessService();
-//PersonService.prototype.getRulesForInsert = function(person) {
-  //return [new AgeRule(person.age)];
-//}
+PersonService.prototype.__getRulesForInsert = function(person, context) {
+  return [new AgeRule(person.age)];
+}
 
 var service = new PersonService(new PersonDataProxy());
 var command = service.insertCommand({name: "aaron", age: new Date('2/3/1925')});
 //debugger;
 //var result = command.execute();
 //console.log(result);
+//
+
+console.log('HELLLO');
 
 module.exports = service;
