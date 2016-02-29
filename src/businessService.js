@@ -17,9 +17,13 @@ BusinessService.prototype = {
 
   getAllCommand: function() {
     var service = this;
-    return new Command(function() {
-      return service.dataProxy.getAll(data); 
-    }, service.getRulesForGetAll())
+    return new Command
+    (
+      function() {
+        return service.dataProxy.getAll(data); 
+      }, 
+      service.getRulesForGetAll()
+    );
   },
 
   getRulesForGetAll: function() {
@@ -28,9 +32,13 @@ BusinessService.prototype = {
 
   getByIdCommand: function(id) {
     var service = this;
-    return new Command(function() {
-      return service.dataProxy.getById(id); 
-    }, service.getRulesForGetById(id))
+    return new Command
+    (
+      function() {
+        return service.dataProxy.getById(id); 
+      },
+      service.getRulesForGetById(id)
+    );
   },
 
   getRulesForGetById: function(id) {
@@ -39,9 +47,13 @@ BusinessService.prototype = {
 
   insertCommand: function(data) {
     var service = this;
-    return new Command(function() {
-      return service.dataProxy.insert(data); 
-    }, service.getRulesForInsert(data))
+    return new Command
+    (
+      function() {
+        return service.dataProxy.insert(data); 
+      }, 
+      service.getRulesForInsert(data)
+    );
   },
 
   getRulesForInsert: function(data) {
@@ -50,9 +62,13 @@ BusinessService.prototype = {
 
   updateCommand: function(data) {
     var service = this;
-    return new Command(function() {
-      return service.dataProxy.update(data); 
-    }, service.getRulesForUpdate(data))
+    return new Command
+    (
+      function() {
+        return service.dataProxy.update(data); 
+      }, 
+      service.getRulesForUpdate(data)
+    );
   },
 
   getRulesForUpdate: function(data) {
@@ -61,9 +77,13 @@ BusinessService.prototype = {
 
   deleteCommand: function(data) {
     var service = this;
-    return new Command(function() {
-      return service.dataProxy.delete(data); 
-    }, service.getRulesForDelete(data))
+    return new Command
+    (
+      function() {
+        return service.dataProxy.delete(data); 
+      }, 
+      service.getRulesForDelete(data)
+    );
   },
 
   getRulesForDelete: function(data) {
