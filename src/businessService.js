@@ -18,13 +18,81 @@ BusinessService.prototype = {
   getAllCommand: function() {
     var service = this;
     var context = {};
-    return new Command
-    (
-      function() {
-        return service.__getAll(context);
+    return new Command({
+      onInitializationMethod: function() {
+        service.__onGetAllCommandInitialization(context);
+      },
+      getRulesMethod: function() {
+        return service.__getRulesForGetAll(context);
       }, 
-      service.__getRulesForGetAll(context)
-    );
+      executionMethod: function() {
+        return service.__getAll(context);
+      }
+    });
+  },
+
+  getByIdCommand: function(id) {
+    var service = this;
+    var context = {};
+    return new Command({
+      onInitializationMethod: function() {
+        service.__onGetByIdCommandInitialization(id, context);
+      },
+      getRulesMethod: function() {
+        return service.__getRulesForGetById(id, context);
+      }, 
+      executionMethod: function() {
+        return service.__getById(id, context);
+      }
+    });
+  },
+
+  insertCommand: function(data) {
+    var service = this;
+    var context = {};
+    return new Command({
+      onInitializationMethod: function() {
+        service.__onInsertCommandInitialization(data, context);
+      },
+      getRulesMethod: function() {
+        return service.__getRulesForInsert(data, context);
+      }, 
+      executionMethod: function() {
+        return service.__insert(data, context);
+      }
+    });
+  },
+
+  updateCommand: function(data) {
+    var service = this;
+    var context = {};
+    return new Command({
+      onInitializationMethod: function() {
+        service.__onUpdateCommandInitialization(data, context);
+      },
+      getRulesMethod: function() {
+        return service.__getRulesForUpdate(data, context);
+      }, 
+      executionMethod: function() {
+        return service.__update(data, context);
+      }
+    });
+  },
+
+  deleteCommand: function(id) {
+    var service = this;
+    var context = {};
+    return new Command({
+      onInitializationMethod: function() {
+        service.__onDeleteCommandInitialization(id, context);
+      },
+      getRulesMethod: function() {
+        return service.__getRulesForDelete(id, context);
+      }, 
+      executionMethod: function() {
+        return service.__delete(id, context); 
+      }
+    });
   },
 
   __getAll: function(context) {
@@ -35,16 +103,7 @@ BusinessService.prototype = {
     return [];
   },
 
-  getByIdCommand: function(id) {
-    var service = this;
-    var context = {};
-    return new Command
-    (
-      function() {
-        return service.__getById(id, context);
-      },
-      service.__getRulesForGetById(id, context)
-    );
+  __onGetAllCommandInitialization: function(context) {
   },
 
   __getById: function(id, context) {
@@ -55,16 +114,7 @@ BusinessService.prototype = {
     return [];
   },
 
-  insertCommand: function(data) {
-    var service = this;
-    var context = {};
-    return new Command
-    (
-      function() {
-        return service.__insert(data, context);
-      }, 
-      service.__getRulesForInsert(data, context)
-    );
+  __onGetByIdCommandInitialization: function(id, context) {
   },
 
   __insert: function(data, context) {
@@ -75,16 +125,7 @@ BusinessService.prototype = {
     return [];
   },
 
-  updateCommand: function(data) {
-    var service = this;
-    var context = {};
-    return new Command
-    (
-      function() {
-        return service.__update(data, context);
-      }, 
-      service.__getRulesForUpdate(data)
-    );
+  __onInsertCommandInitialization: function(data, context) {
   },
 
   __update(data, context) {
@@ -95,16 +136,7 @@ BusinessService.prototype = {
     return [];
   },
 
-  deleteCommand: function(id) {
-    var service = this;
-    var context = {};
-    return new Command
-    (
-      function() {
-        return service.__delete(id, context); 
-      }, 
-      service.__getRulesForDelete(data)
-    );
+  __onUpdateCommandInitialization: function(data, context) {
   },
 
   __delete(id, context) {
@@ -113,6 +145,9 @@ BusinessService.prototype = {
 
   __getRulesForDelete: function(id, context) {
     return [];
+  },
+
+  __onDeleteCommandInitialization: function(id, context) {
   }
 };
 

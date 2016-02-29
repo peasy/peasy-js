@@ -2,27 +2,31 @@
 
 var ExecutionResult = require('./executionResult');
 
-var Command = function(method, rules) {
+var Command = function(callbacks) {
   if (this instanceof Command) {
-    this.method = method;
-    this.rules = rules;
+    this.onInitializationMethod = callbacks.onInitializationMethod;
+    this.getRulesMethod = callbacks.getRulesMethod;
+    this.executionMethod = callbacks.executionMethod;
   } else {
-    return new Command(method, rules);
+    return new Command(callbacks.onInitializationMethod, callbacks.getRulesMethod, callbacks.executionMethod);
   }
 };
 
 Command.prototype = {
   constructor: Command,
   execute() {
-    if (this.rules) {
-      var errors = this.rules.filter(function(rule) {
+    if (this.onInitializationMethod) {
+      onInitializationMethod();
+    }
+    if (this.getRulesMethod) {
+      var errors = this.getRulesMethod().filter(function(rule) {
         return !rule.validate().valid; 
       });
       if (errors.length > 0) {
         return new ExecutionResult(false, null, errors);
       }
     }
-    var result = this.method();
+    var result = this.executionMethod();
     return new ExecutionResult(true, result);
   }
 }
