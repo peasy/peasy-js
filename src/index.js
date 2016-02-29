@@ -41,9 +41,9 @@ var PersonService = function(dataProxy) {
 };
 
 PersonService.prototype = new BusinessService();
-PersonService.prototype.getRulesForInsert = function(person) {
-  return [new AgeRule(person.age)];
-}
+//PersonService.prototype.getRulesForInsert = function(person) {
+  //return [new AgeRule(person.age)];
+//}
 
 var service = new PersonService(new PersonDataProxy());
 var command = service.insertCommand({name: "aaron", age: new Date('2/3/1925')});
