@@ -59,6 +59,9 @@ Rule.prototype = {
   },
 
   ifValidThenValidate: function(rules) {
+    if (!Array.isArray(rules)) {
+      rules = [rules]
+    }
     this.successors.push(rules);
     return this;
   },
