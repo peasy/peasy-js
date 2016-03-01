@@ -22,10 +22,13 @@ Command.prototype = {
       this.onInitializationMethod();
     }
     if (this.getRulesMethod) {
-      var errors = this.getRulesMethod().filter(function(rule) {
+      var brokenRules = this.getRulesMethod().filter(function(rule) {
         return !rule.validate().valid; 
       });
-      if (errors.length > 0) {
+      if (brokenRules.length > 0) {
+        var errors = brokenRules.map(function(rule) {
+          return { association: rule.association, error: rule.error };
+        });
         return new ExecutionResult(false, null, errors);
       }
     }
