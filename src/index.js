@@ -31,16 +31,30 @@ AgeRule.prototype.__onValidate = function() {
   return this;
 };
 
+var FieldRequiredRule = function(field, data) {
+  this.field = field;
+  this.data = data;
+};
+
+FieldRequiredRule.prototype = new Rule();
+FieldRequiredRule.prototype.__onValidate = function() {
+  console.log("data", this.data);
+  console.log("field", this.field);
+  if (!this.data[this.field]) {
+    this.__invalidate(this.field + " is required");
+  }
+};
+
 var NameRule = function(name) {
   this.name = name;
-}
+};
 
 NameRule.prototype = new Rule();
 NameRule.prototype.__onValidate = function() {
   if (this.name === "Aaron") {
     this.__invalidate("Name cannot be Aaron");
   }
-}
+};
 
 
 var PersonService = function(dataProxy) {
@@ -57,12 +71,13 @@ PersonService.prototype.__getRulesForInsert = function(person, context) {
   return [new AgeRule(person.age)
                 .ifValidThenExecute(() => console.log("YAY"))
                 .ifInvalidThenExecute(() => console.log("BOO"))
-                .ifValidThenValidate(new NameRule(person.name))]
+                .ifValidThenValidate(new NameRule(person.name)
+                                          .ifValidThenValidate(new FieldRequiredRule("address", person)))]
 }
 
 var service = new PersonService(new PersonDataProxy());
 
-var command = service.insertCommand({name: "Aaron", age: new Date('2/3/1925')});
+var command = service.insertCommand({name: "Foo", age: new Date('2/3/1925')});
 var result = command.execute();
 console.log(result);
 console.log('---------------');
