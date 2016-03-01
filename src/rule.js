@@ -37,6 +37,7 @@ Rule.prototype = {
             rule.validate();
             if (!rule.valid) {
               this.__invalidate(rule.error);
+              this.association = rule.association;
               if (this.ifInvalidThenFunction) { 
                 this.ifInvalidThenFunction();
               }

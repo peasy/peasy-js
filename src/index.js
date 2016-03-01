@@ -56,8 +56,8 @@ PersonService.prototype = new BusinessService();
 PersonService.prototype.__getRulesForInsert = function(person, context) {
   return [new AgeRule(person.age)
                 .ifValidThenExecute(() => console.log("YAY"))
-                .ifInvalidThenExecute(() => console.log("BOO"))]
-          //new NameRule(person.name)];
+                .ifInvalidThenExecute(() => console.log("BOO"))
+                .ifValidThenValidate([new NameRule(person.name)])]
 }
 
 var service = new PersonService(new PersonDataProxy());
