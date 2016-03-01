@@ -45,12 +45,14 @@ PersonService.prototype.__getRulesForInsert = function(person, context) {
 }
 
 var service = new PersonService(new PersonDataProxy());
-var command = service.insertCommand({name: "aaron", age: new Date('2/3/1925')});
-//debugger;
-//var result = command.execute();
-//console.log(result);
-//
 
-console.log('HELLLO');
+var command = service.insertCommand({name: "aaron", age: new Date('2/3/1925')});
+var result = command.execute();
+console.log(result);
+
+var command = service.insertCommand({name: "aaron", age: new Date('2/3/1975')});
+var result = command.execute();
+console.log(result);
+
 
 module.exports = service;

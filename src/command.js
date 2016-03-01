@@ -8,7 +8,10 @@ var Command = function(callbacks) {
     this.getRulesMethod = callbacks.getRulesMethod;
     this.executionMethod = callbacks.executionMethod;
   } else {
-    return new Command(callbacks.onInitializationMethod, callbacks.getRulesMethod, callbacks.executionMethod);
+    return new Command(
+      callbacks.onInitializationMethod, 
+      callbacks.getRulesMethod, 
+      callbacks.executionMethod);
   }
 };
 
@@ -16,7 +19,7 @@ Command.prototype = {
   constructor: Command,
   execute() {
     if (this.onInitializationMethod) {
-      onInitializationMethod();
+      this.onInitializationMethod();
     }
     if (this.getRulesMethod) {
       var errors = this.getRulesMethod().filter(function(rule) {
