@@ -24,11 +24,11 @@ var AgeRule = function(birthdate) {
 
 AgeRule.prototype = new Rule();
 AgeRule.prototype.association = "Age";
-AgeRule.prototype.__onValidate = function() {
+AgeRule.prototype.__onValidate = function(done) {
   if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
     this.__invalidate("You are too young");
   }
-  return this;
+  done(this);
 };
 
 var FieldRequiredRule = function(field, data) {
@@ -50,10 +50,11 @@ var NameRule = function(name) {
 };
 
 NameRule.prototype = new Rule();
-NameRule.prototype.__onValidate = function() {
+NameRule.prototype.__onValidate = function(done) {
   if (this.name === "Aaron") {
     this.__invalidate("Name cannot be Aaron");
   }
+  done();
 };
 
 
@@ -68,23 +69,27 @@ var PersonService = function(dataProxy) {
 
 PersonService.prototype = new BusinessService();
 PersonService.prototype.__getRulesForInsert = function(person, context) {
-  return [new AgeRule(person.age)
-                .ifValidThenExecute(() => console.log("YAY"))
-                .ifInvalidThenExecute(() => console.log("BOO"))
-                .ifValidThenValidate(new NameRule(person.name)
-                                          .ifValidThenValidate(new FieldRequiredRule("address", person)))]
+  //return [new AgeRule(person.age)
+                //.ifValidThenExecute(() => console.log("YAY"))
+                //.ifInvalidThenExecute(() => console.log("BOO"))
+                //.ifValidThenValidate(new NameRule(person.name)
+                                          //.ifValidThenValidate(new FieldRequiredRule("address", person)))]
+  return [new AgeRule(person.age)];
 }
 
 var service = new PersonService(new PersonDataProxy());
 
 var command = service.insertCommand({name: "Foo", age: new Date('2/3/1925')});
-var result = command.execute();
-console.log(result);
-console.log('---------------');
+var result = command.execute((result) => {
+  console.log(result);
+  console.log('---------------');
+});
 
 var command = service.insertCommand({name: "Aaron", age: new Date('2/3/1975')});
-var result = command.execute();
-console.log(result);
+var result = command.execute((result) => {
+  console.log(result);
+  console.log('---------------');
+});
 
 
 module.exports = service;

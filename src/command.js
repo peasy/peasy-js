@@ -16,25 +16,48 @@ var Command = function(callbacks) {
 };
 
 Command.prototype = {
+
   constructor: Command,
-  execute() {
+
+  execute(done) {
+
+    var self = this;
+
     if (this.onInitializationMethod) {
       this.onInitializationMethod();
     }
+
     if (this.getRulesMethod) {
-      var brokenRules = this.getRulesMethod().filter(function(rule) {
-        return !rule.validate().valid; 
+      var rules = this.getRulesMethod();
+      var counter = rules.length;
+
+      rules.forEach(function(rule) {
+        rule.validate(onRuleValidated);
       });
-      if (brokenRules.length > 0) {
-        var errors = brokenRules.map(function(rule) {
-          return { association: rule.association, error: rule.error };
-        });
-        return new ExecutionResult(false, null, errors);
+
+      function onRuleValidated(rule) {
+        counter--;
+        if (counter === 0) {
+          onValidationsComplete();
+        }
       }
+
+      function onValidationsComplete() {
+        if (rules.some(function(rule) { return !rule.valid })) {
+          var errors = rules.map(function(rule) {
+            return { association: rule.association, error: rule.error };
+          });
+          return done(new ExecutionResult(false, null, errors));
+        }
+        var result = self.executionMethod();
+        return done(new ExecutionResult(true, result));
+      }
+    } else {
+      var result = self.executionMethod();
+      return done(new ExecutionResult(true, result));
     }
-    var result = this.executionMethod();
-    return new ExecutionResult(true, result);
   }
+
 }
 
 module.exports = Command;

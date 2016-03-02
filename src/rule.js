@@ -22,39 +22,43 @@ Rule.prototype = {
     this.error = error;
   },
 
-  __onValidate: function() {
+  __onValidate: function(done) {
   },
 
-  validate: function() {
+  validate: function(done) {
     this.valid = true;
-    this.__onValidate();
-    if (this.valid) {
-      if (this.successors) {
-        for (var i = 0, length = this.successors.length; i < length; i++) {
-          var rules = this.successors[i];
-          for (var j = 0, rulesLength = rules.length; j < rulesLength; j++) {
-            var rule = rules[j];
-            rule.validate();
-            if (!rule.valid) {
-              this.__invalidate(rule.error);
-              this.association = rule.association;
-              if (this.ifInvalidThenFunction) { 
-                this.ifInvalidThenFunction();
+    var self = this;
+    this.__onValidate(function(r) {
+      console.log("VALID", self.valid);
+      if (self.valid) {
+        if (self.successors) {
+          for (var i = 0, length = self.successors.length; i < length; i++) {
+            var rules = self.successors[i];
+            for (var j = 0, rulesLength = rules.length; j < rulesLength; j++) {
+              var rule = rules[j];
+              rule.validate();
+              if (!rule.valid) {
+                self.__invalidate(rule.error);
+                self.association = rule.association;
+                if (self.ifInvalidThenFunction) { 
+                  self.ifInvalidThenFunction();
+                }
+                break; // early exit, don't bother further rule execution
               }
-              break; // early exit, don't bother further rule execution
             }
+            if (!self.valid) break;
           }
-          if (!this.valid) break;
+        }
+        if (self.ifValidThenFunction) {
+          self.ifValidThenFunction();
+        }
+      } else {
+        if (self.ifInvalidThenFunction) {
+          self.ifInvalidThenFunction();
         }
       }
-      if (this.ifValidThenFunction) {
-        this.ifValidThenFunction();
-      }
-    } else {
-      if (this.ifInvalidThenFunction) {
-        this.ifInvalidThenFunction();
-      }
-    }
+      done();
+    });
     return this;
   },
 
