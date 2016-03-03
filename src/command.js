@@ -27,15 +27,16 @@ Command.prototype = {
       this.onInitializationMethod();
     }
 
-    if (this.getRulesMethod) {
-      var rules = this.getRulesMethod();
+    var rules = this.getRulesMethod();
+    
+    if (rules.length > 0) {
       var counter = rules.length;
 
       rules.forEach(function(rule) {
         rule.validate(onRuleValidated);
       });
 
-      function onRuleValidated(rule) {
+      function onRuleValidated() {
         counter--;
         if (counter === 0) {
           onValidationsComplete();
@@ -43,18 +44,25 @@ Command.prototype = {
       }
 
       function onValidationsComplete() {
-        if (rules.some(function(rule) { return !rule.valid })) {
-          var errors = rules.map(function(rule) {
-            return { association: rule.association, error: rule.error };
-          });
+
+        var errors = rules.filter(function(rule) {
+                       return !rule.valid;
+                     })
+                     .map(function(rule) {
+                       return { association: rule.association, error: rule.error };
+                     });
+
+        if (errors.length === 0) {
+          var result = self.executionMethod();
+          return done(new ExecutionResult(true, result, null));
+        } else {
           return done(new ExecutionResult(false, null, errors));
         }
-        var result = self.executionMethod();
-        return done(new ExecutionResult(true, result));
       }
+
     } else {
       var result = self.executionMethod();
-      return done(new ExecutionResult(true, result));
+      return done(new ExecutionResult(true, result, null));
     }
   }
 

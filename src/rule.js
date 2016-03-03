@@ -6,7 +6,7 @@ var Rule = function() {
     this.error = "";
     this.ifInvalidThenFunction = null;
     this.ifValidThenFunction = null;
-    this.successors = [[]];
+    this.successors = [];
     this.valid = true;
   } else {
     return new Rule(); 
@@ -26,31 +26,32 @@ Rule.prototype = {
   },
 
   validate: function(done) {
-    this.valid = true;
+    debugger;
+    //this.valid = true;
     var self = this;
-    this.__onValidate(function(r) {
-      console.log("VALID", self.valid);
+
+    this.__onValidate(function() {
       if (self.valid) {
-        if (self.successors) {
+        if (self.ifValidThenFunction) {
+          self.ifValidThenFunction();
+        }
+        if (self.successors.length > 0) {
           for (var i = 0, length = self.successors.length; i < length; i++) {
             var rules = self.successors[i];
+            var cont = true;
             for (var j = 0, rulesLength = rules.length; j < rulesLength; j++) {
               var rule = rules[j];
-              rule.validate();
-              if (!rule.valid) {
-                self.__invalidate(rule.error);
-                self.association = rule.association;
-                if (self.ifInvalidThenFunction) { 
-                  self.ifInvalidThenFunction();
+              if (!cont) break; // early exit, don't bother further rule execution
+              rule.validate(function() {
+                if (!rule.valid) {
+                  self.__invalidate(rule.error);
+                  self.association = rule.association;
+                  cont = false;
                 }
-                break; // early exit, don't bother further rule execution
-              }
+              });
             }
             if (!self.valid) break;
           }
-        }
-        if (self.ifValidThenFunction) {
-          self.ifValidThenFunction();
         }
       } else {
         if (self.ifInvalidThenFunction) {
@@ -59,6 +60,7 @@ Rule.prototype = {
       }
       done();
     });
+
     return this;
   },
 
