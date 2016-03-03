@@ -36,7 +36,6 @@ Rule.prototype = {
   },
 
   validate: function(done) {
-    debugger;
     var self = this;
 
     this.__onValidate(function() {
@@ -46,20 +45,17 @@ Rule.prototype = {
         }
         if (self.successors.length > 0) {
           for (var i = 0, length = self.successors.length; i < length; i++) {
-            var rules = self.successors[i];
-            var cont = true;
-            for (var j = 0, rulesLength = rules.length; j < rulesLength; j++) {
-              var rule = rules[j];
-              if (!cont) break; // early exit, don't bother further rule execution
-              rule.validate(function() {
-                if (!rule.valid) {
-                  self.__invalidate(rule.errors);
-                  cont = false;
-                }
-              });
-            }
-            if (!self.valid) break;
+            var rule = self.successors[i];
+            rule.validate(function() {
+              if (!rule.valid) {
+                self.__invalidate(rule.errors);
+              }
+              if (i === self.successors.length - 1) {
+                done();
+              }
+            });
           }
+          return;
         }
       } else {
         if (self.ifInvalidThenFunction) {
@@ -68,15 +64,13 @@ Rule.prototype = {
       }
       done();
     });
-
-    //return this; pretty sure this doesn't do anything with async
   },
 
   ifValidThenValidate: function(rules) {
     if (!Array.isArray(rules)) {
       rules = [rules]
     }
-    this.successors.push(rules);
+    this.successors = rules;
     return this;
   },
 

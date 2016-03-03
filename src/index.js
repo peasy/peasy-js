@@ -80,10 +80,21 @@ PersonService.prototype.__getRulesForInsert = function(person, context) {
                                                                     //.ifValidThenExecute(() => console.log("Address succeeeded"))
                                                                     //.ifInvalidThenExecute(() => console.log("Address failed"))
                                                               //))]
-  return [
-    new AgeRule(person.age).ifValidThenValidate([new NameRule(person.name), new FieldRequiredRule("address", person)]) 
+  //return [
+    //new AgeRule(person.age).ifValidThenValidate([new NameRule(person.name), new FieldRequiredRule("address", person)]) 
+  //];
+  return [new AgeRule(person.age)
+                .ifValidThenExecute(() => console.log("Age succeeded"))
+                .ifInvalidThenExecute(() => console.log("Age failed"))
+                .ifValidThenValidate([new NameRule(person.name)
+                                          .ifValidThenExecute(() => console.log("Name succeeeded"))
+                                          .ifInvalidThenExecute(() => console.log("Name failed")),
+                                      new FieldRequiredRule("address", person)
+                                          .ifValidThenExecute(() => console.log("Address succeeeded"))
+                                          .ifInvalidThenExecute(() => console.log("Address failed"))])
   ];
 }
+
 
 var service = new PersonService(new PersonDataProxy());
 
@@ -93,7 +104,7 @@ var service = new PersonService(new PersonDataProxy());
   //console.log('---------------');
 //});
 
-var command = service.insertCommand({name: "evo", age: new Date('2/3/1925')});
+var command = service.insertCommand({name: "Aaron", age: new Date('2/3/1925')});
 var result = command.execute((result) => {
   console.log(result);
   console.log('---------------');
