@@ -44,13 +44,14 @@ Command.prototype = {
       }
 
       function onValidationsComplete() {
-
         var errors = rules.filter(function(rule) {
                        return !rule.valid;
                      })
                      .map(function(rule) {
-                       return { association: rule.association, error: rule.error };
+                       return rule.errors;
                      });
+
+        errors = [].concat.apply([], errors); // flatten array
 
         if (errors.length === 0) {
           var result = self.executionMethod();

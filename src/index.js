@@ -93,7 +93,7 @@ var service = new PersonService(new PersonDataProxy());
   //console.log('---------------');
 //});
 
-var command = service.insertCommand({name: "foo", age: new Date('2/3/1925'), address: 'adfad'});
+var command = service.insertCommand({name: "evo", age: new Date('2/3/1925')});
 var result = command.execute((result) => {
   console.log(result);
   console.log('---------------');

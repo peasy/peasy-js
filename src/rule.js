@@ -3,7 +3,7 @@
 var Rule = function() {
   if (this instanceof Rule) {
     this.association = null;
-    this.error = "";
+    this.errors = [];
     this.ifInvalidThenFunction = null;
     this.ifValidThenFunction = null;
     this.successors = [];
@@ -17,9 +17,19 @@ Rule.prototype = {
 
   constructor: Rule,
 
-  __invalidate: function(error) {
+  __invalidate: function(errors) {
+    var self = this;
     this.valid = false;
-    this.error = error;
+    if (!Array.isArray(errors)) {
+      errors = [errors];
+    }
+    errors.forEach(function(err) {
+      if (typeof err === "string") {
+        self.errors.push({ association: self.association, error: err });
+      } else {
+        self.errors.push(err);
+      }
+    });
   },
 
   __onValidate: function(done) {
@@ -27,7 +37,6 @@ Rule.prototype = {
 
   validate: function(done) {
     debugger;
-    //this.valid = true;
     var self = this;
 
     this.__onValidate(function() {
@@ -44,8 +53,7 @@ Rule.prototype = {
               if (!cont) break; // early exit, don't bother further rule execution
               rule.validate(function() {
                 if (!rule.valid) {
-                  self.__invalidate(rule.error);
-                  self.association = rule.association;
+                  self.__invalidate(rule.errors);
                   cont = false;
                 }
               });
@@ -61,7 +69,7 @@ Rule.prototype = {
       done();
     });
 
-    return this;
+    //return this; pretty sure this doesn't do anything with async
   },
 
   ifValidThenValidate: function(rules) {
