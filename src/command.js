@@ -4,9 +4,9 @@ var ExecutionResult = require('./executionResult');
 
 var Command = function(callbacks) {
   if (this instanceof Command) {
-    this.onInitializationMethod = callbacks.onInitializationMethod;
-    this.getRulesMethod = callbacks.getRulesMethod;
-    this.executionMethod = callbacks.executionMethod;
+    this.onInitializationMethod = callbacks.onInitializationMethod || function() {};
+    this.getRulesMethod = callbacks.getRulesMethod || function() {};
+    this.executionMethod = callbacks.executionMethod || function() {};
   } else {
     return new Command(
       callbacks.onInitializationMethod, 
@@ -20,14 +20,11 @@ Command.prototype = {
   constructor: Command,
 
   execute(done) {
-
+    debugger;
     var self = this;
-
-    if (this.onInitializationMethod) {
-      this.onInitializationMethod();
-    }
-
     var rules = this.getRulesMethod();
+
+    this.onInitializationMethod();
     
     if (rules.length > 0) {
       var counter = rules.length;
@@ -54,16 +51,18 @@ Command.prototype = {
         errors = [].concat.apply([], errors); // flatten array
 
         if (errors.length === 0) {
-          var result = self.executionMethod();
-          return done(new ExecutionResult(true, result, null));
+          self.executionMethod(function(result) {
+            done(new ExecutionResult(true, result, null));
+          });
         } else {
           return done(new ExecutionResult(false, null, errors));
         }
       }
 
     } else {
-      var result = self.executionMethod();
-      return done(new ExecutionResult(true, result, null));
+      self.executionMethod(function(result) {
+        done(new ExecutionResult(true, result, null));
+      });
     }
   }
 

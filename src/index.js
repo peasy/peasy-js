@@ -8,9 +8,9 @@ var PersonDataProxy = function() {
 
 PersonDataProxy.prototype = {
   constructor: PersonDataProxy,
-  insert: function(data) {
+  insert: function(data, done) {
     data.id = 5;
-    return data;
+    done(data);
   }
 };
 
@@ -28,7 +28,8 @@ AgeRule.prototype.__onValidate = function(done) {
   if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
     this.__invalidate("You are too young");
   }
-  done(this);
+  setTimeout(() => done(this), 5000);
+  //done(this);
 };
 
 var FieldRequiredRule = function(field, data) {
@@ -93,6 +94,7 @@ PersonService.prototype.__getRulesForInsert = function(person, context) {
                                           .ifValidThenExecute(() => console.log("Address succeeeded"))
                                           .ifInvalidThenExecute(() => console.log("Address failed"))])
   ];
+  //return [new AgeRule(person.age)];
 }
 
 
@@ -109,6 +111,11 @@ var result = command.execute((result) => {
   console.log(result);
   console.log('---------------');
 });
+
+for (let i = 0; i < 10; i++) {
+  let time = Math.floor((Math.random() * 10000) + 1);
+  setTimeout(() => console.log(i), time); 
+}
 
 
 module.exports = service;

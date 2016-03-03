@@ -57,8 +57,8 @@ BusinessService.prototype = {
       getRulesMethod: function() {
         return service.__getRulesForInsert(data, context);
       }, 
-      executionMethod: function() {
-        return service.__insert(data, context);
+      executionMethod: function(done) {
+        return service.__insert(data, context, done);
       }
     });
   },
@@ -117,8 +117,8 @@ BusinessService.prototype = {
   __onGetByIdCommandInitialization: function(id, context) {
   },
 
-  __insert: function(data, context) {
-    return this.dataProxy.insert(data); 
+  __insert: function(data, context, done) {
+    return this.dataProxy.insert(data, done); 
   },
 
   __getRulesForInsert: function(data, context) {
