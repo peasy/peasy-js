@@ -44,7 +44,9 @@ FieldRequiredRule.prototype.__onValidate = function(done) {
     this.association = this.field;
     this.__invalidate(this.field + " is required");
   }
-  done(this);
+  var time = Math.floor((Math.random() * 5000) + 1);
+  setTimeout(() => done(this), time);
+  //done(this);
 };
 
 var NameRule = function(name) {
@@ -57,7 +59,9 @@ NameRule.prototype.__onValidate = function(done) {
   if (this.name === "Aaron") {
     this.__invalidate("Name cannot be Aaron");
   }
-  done(this);
+  var time = Math.floor((Math.random() * 5000) + 1);
+  setTimeout(() => done(this), time);
+  //done(this);
 };
 
 

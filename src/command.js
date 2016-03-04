@@ -27,14 +27,17 @@ Command.prototype = {
       var rules = self.getRules();
 
       if (rules.length > 0) {
+        var counter = rules.length;
 
-        for (var j = 0, length = rules.length; j < length; j++) {
-          var rule = rules[j];
-          rule.validate(function() {
-            if (j === length - 1) {
-              onValidationsComplete();
-            }
-          });
+        rules.forEach(function(rule) {
+          rule.validate(onRuleValidated);
+        });
+
+        function onRuleValidated() {
+          counter--;
+          if (counter === 0) {
+            onValidationsComplete();
+          }
         }
 
         function onValidationsComplete() {
