@@ -19,13 +19,13 @@ BusinessService.prototype = {
     var service = this;
     var context = {};
     return new Command({
-      onInitializationMethod: function() {
+      onInitialization: function() {
         service.__onGetAllCommandInitialization(context);
       },
-      getRulesMethod: function() {
+      getRules: function() {
         return service.__getRulesForGetAll(context);
       }, 
-      executionMethod: function(done) {
+      onValidationSuccess: function(done) {
         return service.__getAll(context, done);
       }
     });
@@ -35,13 +35,13 @@ BusinessService.prototype = {
     var service = this;
     var context = {};
     return new Command({
-      onInitializationMethod: function() {
+      onInitialization: function() {
         service.__onGetByIdCommandInitialization(id, context);
       },
-      getRulesMethod: function() {
+      getRules: function() {
         return service.__getRulesForGetById(id, context);
       }, 
-      executionMethod: function(done) {
+      onValidationSuccess: function(done) {
         return service.__getById(id, context, done);
       }
     });
@@ -51,13 +51,13 @@ BusinessService.prototype = {
     var service = this;
     var context = {};
     return new Command({
-      onInitializationMethod: function() {
+      onInitialization: function() {
         service.__onInsertCommandInitialization(data, context);
       },
-      getRulesMethod: function() {
+      getRules: function() {
         return service.__getRulesForInsert(data, context);
       }, 
-      executionMethod: function(done) {
+      onValidationSuccess: function(done) {
         return service.__insert(data, context, done);
       }
     });
@@ -67,13 +67,13 @@ BusinessService.prototype = {
     var service = this;
     var context = {};
     return new Command({
-      onInitializationMethod: function() {
+      onInitialization: function() {
         service.__onUpdateCommandInitialization(data, context);
       },
-      getRulesMethod: function() {
+      getRules: function() {
         return service.__getRulesForUpdate(data, context);
       }, 
-      executionMethod: function(done) {
+      onValidationSuccess: function(done) {
         return service.__update(data, context, done);
       }
     });
@@ -83,13 +83,13 @@ BusinessService.prototype = {
     var service = this;
     var context = {};
     return new Command({
-      onInitializationMethod: function() {
+      onInitialization: function() {
         service.__onDeleteCommandInitialization(id, context);
       },
-      getRulesMethod: function() {
+      getRules: function() {
         return service.__getRulesForDelete(id, context);
       }, 
-      executionMethod: function(done) {
+      onValidationSuccess: function(done) {
         return service.__delete(id, context, done); 
       }
     });

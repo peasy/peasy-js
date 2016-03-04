@@ -4,15 +4,15 @@ var ExecutionResult = require('./executionResult');
 
 var Command = function(callbacks) {
   if (this instanceof Command) {
-    this.onInitializationMethod = callbacks.onInitializationMethod || function() {};
-    this.getRulesMethod = callbacks.getRulesMethod || function() { return [] };
-    this.executionMethod = callbacks.executionMethod;
-    //if (!this.executionMethod) throw exception("callbacks.executionMethod must be supplied");
+    this.onInitialization = callbacks.onInitialization || function() {};
+    this.getRules = callbacks.getRules || function() { return [] };
+    this.onValidationSuccess = callbacks.onValidationSuccess;
+    //if (!this.onValidationSuccess) throw exception("callbacks.onValidationSuccess must be supplied");
   } else {
     return new Command(
-      callbacks.onInitializationMethod, 
-      callbacks.getRulesMethod, 
-      callbacks.executionMethod);
+      callbacks.onInitialization, 
+      callbacks.getRules, 
+      callbacks.onValidationSuccess);
   }
 };
 
@@ -22,8 +22,8 @@ Command.prototype = {
 
   execute(done) {
     var self = this;
-    this.onInitializationMethod();
-    var rules = this.getRulesMethod();
+    this.onInitialization();
+    var rules = this.getRules();
 
     if (rules.length > 0) {
 
@@ -45,13 +45,13 @@ Command.prototype = {
         if (errors.length > 0) 
           return done(new ExecutionResult(false, null, errors));
 
-        self.executionMethod(function(result) {
+        self.onValidationSuccess(function(result) {
           done(new ExecutionResult(true, result, null));
         });
       }
 
     } else {
-      self.executionMethod(function(result) {
+      self.onValidationSuccess(function(result) {
         done(new ExecutionResult(true, result, null));
       });
     }
