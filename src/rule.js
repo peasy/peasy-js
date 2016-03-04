@@ -44,16 +44,24 @@ Rule.prototype = {
           self.ifValidThenFunction();
         }
         if (self.successors.length > 0) {
-          for (var i = 0, length = self.successors.length; i < length; i++) {
-            var rule = self.successors[i];
-            rule.validate(function() {
+          var counter = self.successors.length;
+
+          self.successors.forEach(function(rule) {
+            rule.validate(onRuleValidated);
+
+            function onRuleValidated() {
               if (!rule.valid) {
                 self.__invalidate(rule.errors);
               }
-              if (i === self.successors.length - 1) {
-                done();
+              counter--;
+              if (counter === 0) {
+                onValidationsComplete();
               }
-            });
+            }
+          });
+
+          function onValidationsComplete() {
+            done();
           }
           return;
         }
