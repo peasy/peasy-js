@@ -21,7 +21,6 @@ Command.prototype = {
   constructor: Command,
 
   execute(done) {
-    debugger;
     var self = this;
     this.onInitialization(function() {
       var rules = self.getRules();
