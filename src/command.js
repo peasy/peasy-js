@@ -4,7 +4,7 @@ var ExecutionResult = require('./executionResult');
 
 var Command = function(callbacks) {
   if (this instanceof Command) {
-    this.onInitialization = callbacks.onInitialization || function() {};
+    this.onInitialization = callbacks.onInitialization || function(done) { done() };
     this.getRules = callbacks.getRules || function() { return [] };
     this.onValidationSuccess = callbacks.onValidationSuccess;
     //if (!this.onValidationSuccess) throw exception("callbacks.onValidationSuccess must be supplied");
@@ -21,40 +21,42 @@ Command.prototype = {
   constructor: Command,
 
   execute(done) {
+    debugger;
     var self = this;
-    this.onInitialization();
-    var rules = this.getRules();
+    this.onInitialization(function() {
+      var rules = self.getRules();
 
-    if (rules.length > 0) {
+      if (rules.length > 0) {
 
-      for (var i = 0, length = rules.length; i < length; i++) {
-        var rule = rules[i];
-        rule.validate(function() {
-          if (i === length) {
-            onValidationsComplete();
-          }
-        });
-      }
+        for (var j = 0, length = rules.length; j < length; j++) {
+          var rule = rules[j];
+          rule.validate(function() {
+            if (j === length - 1) {
+              onValidationsComplete();
+            }
+          });
+        }
 
-      function onValidationsComplete() {
-        var errors = rules.filter(function(rule) { return !rule.valid; })
-                          .map(function(rule) { return rule.errors; });
+        function onValidationsComplete() {
+          var errors = rules.filter(function(rule) { return !rule.valid; })
+                            .map(function(rule) { return rule.errors; });
 
-        errors = [].concat.apply([], errors); // flatten array
+          errors = [].concat.apply([], errors); // flatten array
 
-        if (errors.length > 0) 
-          return done(new ExecutionResult(false, null, errors));
+          if (errors.length > 0) 
+            return done(new ExecutionResult(false, null, errors));
 
+          self.onValidationSuccess(function(result) {
+            done(new ExecutionResult(true, result, null));
+          });
+        }
+
+      } else {
         self.onValidationSuccess(function(result) {
           done(new ExecutionResult(true, result, null));
         });
       }
-
-    } else {
-      self.onValidationSuccess(function(result) {
-        done(new ExecutionResult(true, result, null));
-      });
-    }
+    });
   }
 
 }

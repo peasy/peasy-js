@@ -28,7 +28,8 @@ AgeRule.prototype.__onValidate = function(done) {
   if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
     this.__invalidate("You are too young");
   }
-  setTimeout(() => done(this), 5000);
+  var time = Math.floor((Math.random() * 5000) + 1);
+  setTimeout(() => done(this), time);
   //done(this);
 };
 
@@ -106,16 +107,16 @@ var service = new PersonService(new PersonDataProxy());
   //console.log('---------------');
 //});
 
-var command = service.insertCommand({name: "Aaron", age: new Date('2/3/1925')});
+var command = service.insertCommand({name: "aAaron", age: new Date('2/3/1925'), address: 'aa'});
 var result = command.execute((result) => {
   console.log(result);
   console.log('---------------');
 });
 
-for (let i = 0; i < 10; i++) {
-  let time = Math.floor((Math.random() * 10000) + 1);
-  setTimeout(() => console.log(i), time); 
-}
+//for (let i = 0; i < 10; i++) {
+  //let time = Math.floor((Math.random() * 10000) + 1);
+  //setTimeout(() => console.log(i), time); 
+//}
 
 
 module.exports = service;

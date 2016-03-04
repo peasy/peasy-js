@@ -19,8 +19,8 @@ BusinessService.prototype = {
     var service = this;
     var context = {};
     return new Command({
-      onInitialization: function() {
-        service.__onGetAllCommandInitialization(context);
+      onInitialization: function(done) {
+        service.__onGetAllCommandInitialization(context, done);
       },
       getRules: function() {
         return service.__getRulesForGetAll(context);
@@ -35,8 +35,8 @@ BusinessService.prototype = {
     var service = this;
     var context = {};
     return new Command({
-      onInitialization: function() {
-        service.__onGetByIdCommandInitialization(id, context);
+      onInitialization: function(done) {
+        service.__onGetByIdCommandInitialization(id, context, done);
       },
       getRules: function() {
         return service.__getRulesForGetById(id, context);
@@ -51,8 +51,8 @@ BusinessService.prototype = {
     var service = this;
     var context = {};
     return new Command({
-      onInitialization: function() {
-        service.__onInsertCommandInitialization(data, context);
+      onInitialization: function(done) {
+        service.__onInsertCommandInitialization(data, context, done);
       },
       getRules: function() {
         return service.__getRulesForInsert(data, context);
@@ -67,8 +67,8 @@ BusinessService.prototype = {
     var service = this;
     var context = {};
     return new Command({
-      onInitialization: function() {
-        service.__onUpdateCommandInitialization(data, context);
+      onInitialization: function(done) {
+        service.__onUpdateCommandInitialization(data, context, done);
       },
       getRules: function() {
         return service.__getRulesForUpdate(data, context);
@@ -83,8 +83,8 @@ BusinessService.prototype = {
     var service = this;
     var context = {};
     return new Command({
-      onInitialization: function() {
-        service.__onDeleteCommandInitialization(id, context);
+      onInitialization: function(done) {
+        service.__onDeleteCommandInitialization(id, context, done);
       },
       getRules: function() {
         return service.__getRulesForDelete(id, context);
@@ -103,7 +103,8 @@ BusinessService.prototype = {
     return [];
   },
 
-  __onGetAllCommandInitialization: function(context) {
+  __onGetAllCommandInitialization: function(context, done) {
+    done();
   },
 
   __getById: function(id, context, done) {
@@ -114,7 +115,8 @@ BusinessService.prototype = {
     return [];
   },
 
-  __onGetByIdCommandInitialization: function(id, context) {
+  __onGetByIdCommandInitialization: function(id, context, done) {
+    done();
   },
 
   __insert: function(data, context, done) {
@@ -125,7 +127,8 @@ BusinessService.prototype = {
     return [];
   },
 
-  __onInsertCommandInitialization: function(data, context) {
+  __onInsertCommandInitialization: function(data, context, done) {
+    done();
   },
 
   __update(data, context, done) {
@@ -136,7 +139,8 @@ BusinessService.prototype = {
     return [];
   },
 
-  __onUpdateCommandInitialization: function(data, context) {
+  __onUpdateCommandInitialization: function(data, context, done) {
+    done();
   },
 
   __delete(id, context, done) {
@@ -147,7 +151,8 @@ BusinessService.prototype = {
     return [];
   },
 
-  __onDeleteCommandInitialization: function(id, context) {
+  __onDeleteCommandInitialization: function(id, context, done) {
+    done();
   }
 };
 
