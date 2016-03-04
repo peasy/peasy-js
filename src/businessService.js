@@ -25,8 +25,8 @@ BusinessService.prototype = {
       getRulesMethod: function() {
         return service.__getRulesForGetAll(context);
       }, 
-      executionMethod: function() {
-        return service.__getAll(context);
+      executionMethod: function(done) {
+        return service.__getAll(context, done);
       }
     });
   },
@@ -41,8 +41,8 @@ BusinessService.prototype = {
       getRulesMethod: function() {
         return service.__getRulesForGetById(id, context);
       }, 
-      executionMethod: function() {
-        return service.__getById(id, context);
+      executionMethod: function(done) {
+        return service.__getById(id, context, done);
       }
     });
   },
@@ -73,8 +73,8 @@ BusinessService.prototype = {
       getRulesMethod: function() {
         return service.__getRulesForUpdate(data, context);
       }, 
-      executionMethod: function() {
-        return service.__update(data, context);
+      executionMethod: function(done) {
+        return service.__update(data, context, done);
       }
     });
   },
@@ -89,14 +89,14 @@ BusinessService.prototype = {
       getRulesMethod: function() {
         return service.__getRulesForDelete(id, context);
       }, 
-      executionMethod: function() {
-        return service.__delete(id, context); 
+      executionMethod: function(done) {
+        return service.__delete(id, context, done); 
       }
     });
   },
 
-  __getAll: function(context) {
-    return this.dataProxy.getAll(data); 
+  __getAll: function(context, done) {
+    return this.dataProxy.getAll(data, done); 
   },
 
   __getRulesForGetAll: function(context) {
@@ -106,8 +106,8 @@ BusinessService.prototype = {
   __onGetAllCommandInitialization: function(context) {
   },
 
-  __getById: function(id, context) {
-    return this.dataProxy.getById(id); 
+  __getById: function(id, context, done) {
+    return this.dataProxy.getById(id, done); 
   },
 
   __getRulesForGetById: function(id, context) {
@@ -128,8 +128,8 @@ BusinessService.prototype = {
   __onInsertCommandInitialization: function(data, context) {
   },
 
-  __update(data, context) {
-    return this.dataProxy.update(data); 
+  __update(data, context, done) {
+    return this.dataProxy.update(data, done); 
   },
 
   __getRulesForUpdate: function(data, context) {
@@ -139,8 +139,8 @@ BusinessService.prototype = {
   __onUpdateCommandInitialization: function(data, context) {
   },
 
-  __delete(id, context) {
-    return this.dataProxy.delete(id); 
+  __delete(id, context, done) {
+    return this.dataProxy.delete(id, done); 
   },
 
   __getRulesForDelete: function(id, context) {
