@@ -54,8 +54,8 @@ Command.prototype = {
             });
           }
           catch(err) {
-            return done(new ExecutionResult(false, null, errors));
             // TODO: capture specific peasy exception and rethrow if not it
+            return done(new ExecutionResult(false, null, errors));
           }
         }
 
