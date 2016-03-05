@@ -20,7 +20,7 @@ Command.prototype = {
 
   constructor: Command,
 
-  execute(done) {
+  execute: function(done) {
     var self = this;
     this.onInitialization(function() {
       var rules = self.getRules();
@@ -48,9 +48,15 @@ Command.prototype = {
           if (errors.length > 0) 
             return done(new ExecutionResult(false, null, errors));
 
-          self.onValidationSuccess(function(result) {
-            done(new ExecutionResult(true, result, null));
-          });
+          try {
+            self.onValidationSuccess(function(result) {
+              done(new ExecutionResult(true, result, null));
+            });
+          }
+          catch(err) {
+            return done(new ExecutionResult(false, null, errors));
+            // TODO: capture specific peasy exception and rethrow if not it
+          }
         }
 
       } else {
