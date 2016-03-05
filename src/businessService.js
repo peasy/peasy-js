@@ -96,7 +96,7 @@ BusinessService.prototype = {
   },
 
   __getAll: function(context, done) {
-    return this.dataProxy.getAll(data, done); 
+    this.dataProxy.getAll(done); 
   },
 
   __getRulesForGetAll: function(context) {
@@ -108,7 +108,7 @@ BusinessService.prototype = {
   },
 
   __getById: function(id, context, done) {
-    return this.dataProxy.getById(id, done); 
+    this.dataProxy.getById(id, done); 
   },
 
   __getRulesForGetById: function(id, context) {
@@ -120,7 +120,7 @@ BusinessService.prototype = {
   },
 
   __insert: function(data, context, done) {
-    return this.dataProxy.insert(data, done); 
+    this.dataProxy.insert(data, done); 
   },
 
   __getRulesForInsert: function(data, context) {
@@ -132,7 +132,7 @@ BusinessService.prototype = {
   },
 
   __update(data, context, done) {
-    return this.dataProxy.update(data, done); 
+    this.dataProxy.update(data, done); 
   },
 
   __getRulesForUpdate: function(data, context) {
@@ -144,7 +144,7 @@ BusinessService.prototype = {
   },
 
   __delete(id, context, done) {
-    return this.dataProxy.delete(id, done); 
+    this.dataProxy.delete(id, done); 
   },
 
   __getRulesForDelete: function(id, context) {
