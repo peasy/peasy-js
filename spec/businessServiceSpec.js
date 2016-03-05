@@ -21,8 +21,15 @@ describe("BusinessService", function() {
       dataProxy = new DataProxy();
       service = new BusinessService(dataProxy);
       command = service.getAllCommand();
-      spyOn(service, "__onGetAllCommandInitialization").and.callThrough();
-      spyOn(service, "__getRulesForGetAll").and.callThrough();
+      spyOn(service, "__onGetAllCommandInitialization").and.callFake(function(context, done) {
+        context.foo = "bar";
+        done();
+      });
+      /*spyOn(service, "__onGetAllCommandInitialization").and.callThrough();*/
+      spyOn(service, "__getRulesForGetAll").and.callFake(function(context) {
+        console.log("MADE IT!!!", context);
+        context.foo = "meh";
+      });
       spyOn(service, "__getAll");
       command.execute(callback);
       /*spyOn(dataProxy, "getAll").and.returnValue([]);*/
@@ -39,15 +46,17 @@ describe("BusinessService", function() {
 
       describe("on command execution", () => {
         it("invokes service.__onGetAllCommandInitialization", function() {
-          expect(service.__onGetAllCommandInitialization).toHaveBeenCalledWith({}, callback);
+          expect(service.__onGetAllCommandInitialization)
+            .toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Function));
         });
 
         it("invokes service.__getRulesForGetAll", function() {
-          expect(service.__getRulesForGetAll).toHaveBeenCalled();
+          expect(service.__getRulesForGetAll).toHaveBeenCalledWith({ foo: "bar"});
         });
 
         it("invokes service.__getAll", function() {
-          expect(service.__getAll).toHaveBeenCalled();
+          expect(service.__getAll)
+            .toHaveBeenCalledWith({ foo: "bar" }, jasmine.any(Function));
         });
       });
     });
