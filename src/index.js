@@ -114,7 +114,7 @@ var service = new PersonService(new PersonDataProxy());
   //console.log('---------------');
 //});
 
-var command = service.insertCommand({name: "Aaron", age: new Date('2/3/1975')});
+var command = service.insertCommand({name: "aron", age: new Date('2/3/1925'), address: 'aaa'});
 debugger;
 command.execute((result) => {
   console.log(result);

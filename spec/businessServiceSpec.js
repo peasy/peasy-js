@@ -38,14 +38,14 @@ describe("BusinessService", function() {
             .toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Function));
         });
 
-        it("invokes service.__getRulesForGetAll", function() {
+        it("invokes service.__getRulesForGetAll", () => {
           spyOn(service, "__getRulesForGetAll").and.callThrough();
           command.execute(() => {});
           expect(service.__getRulesForGetAll)
             .toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Function));
         });
 
-        it("invokes service.__getAll", function() {
+        it("invokes service.__getAll", () => {
           spyOn(service, "__getAll");
           command.execute(() => {});
           expect(service.__getAll)
@@ -77,7 +77,7 @@ describe("BusinessService", function() {
     });
 
     describe("instance methods", () => {
-      describe("__getAll", function() {
+      describe("__getAll", () => {
         it("invokes dataProxy.getAll", () => {
           expect(dataProxy.getAll).toHaveBeenCalled();
         });
