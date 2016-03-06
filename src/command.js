@@ -5,10 +5,12 @@ var RulesValidator = require('./rulesValidator');
 
 var Command = function(callbacks) {
   if (this instanceof Command) {
+    if (!typeof callbacks.onValidationSuccess === 'function') {
+      throw Error("callbacks.onValidationSuccess must be supplied and a function");
+    }
     this.onInitialization = callbacks.onInitialization || function(done) { done() };
     this.getRules = callbacks.getRules || function(done) { done([]) };
     this.onValidationSuccess = callbacks.onValidationSuccess;
-    //if (!this.onValidationSuccess) throw exception("callbacks.onValidationSuccess must be supplied");
   } else {
     return new Command(
       callbacks.onInitialization, 
@@ -23,7 +25,7 @@ Command.prototype = {
 
   execute: function(done) {
     var self = this;
-    this.onInitialization(function() {
+    self.onInitialization(function() {
       self.getRules(function(rules) {
         new RulesValidator(rules).validate(
           function() {
