@@ -42,7 +42,7 @@ describe("BusinessService", function() {
           spyOn(service, "__getRulesForGetAll").and.callThrough();
           command.execute(() => {});
           expect(service.__getRulesForGetAll)
-            .toHaveBeenCalledWith(jasmine.any(Object));
+            .toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Function));
         });
 
         it("invokes service.__getAll", function() {
@@ -60,9 +60,9 @@ describe("BusinessService", function() {
             context.foo = "";
             done();
           };
-          TestService.prototype.__getRulesForGetAll = (context) => {
+          TestService.prototype.__getRulesForGetAll = (context, done) => {
             context.bar = "";
-            return [];
+            done([]);
           };
           TestService.prototype.__getAll = (context, done) => {
             sharedContext = context;
@@ -85,7 +85,9 @@ describe("BusinessService", function() {
 
       describe("__getRulesForGetAll", () => {
         it("returns an empty array", () => {
-          expect(service.__getRulesForGetAll()).toEqual([]);
+          var callbackValue;
+          service.__getRulesForGetAll({}, (result) => callbackValue = result); 
+          expect(callbackValue).toEqual([]);
         });
       });
     });
