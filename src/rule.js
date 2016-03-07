@@ -61,7 +61,7 @@ Rule.prototype = {
 
   ifValidThenValidate: function(rules) {
     if (!Array.isArray(rules)) {
-      rules = [rules]
+      rules = [rules];
     }
     this.successors = rules;
     return this;
