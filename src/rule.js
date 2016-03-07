@@ -44,25 +44,10 @@ Rule.prototype = {
           self.ifValidThenFunction();
         }
         if (self.successors.length > 0) {
-          var counter = self.successors.length;
-
-          self.successors.forEach(function(rule) {
-            rule.validate(onRuleValidated);
-
-            function onRuleValidated() {
-              if (!rule.valid) {
-                self.__invalidate(rule.errors);
-              }
-              counter--;
-              if (counter === 0) {
-                onValidationsComplete();
-              }
-            }
+          new RulesValidator(self.successors).validate(function(rules) {
+            self.successors.filter(function(rule) { !rule.valid })
+                           .forEach(function(rule) { self.__invalidate(rule.errors) });
           });
-
-          function onValidationsComplete() {
-            done();
-          }
           return;
         }
       } else {

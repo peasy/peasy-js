@@ -8,7 +8,7 @@ var RulesValidator = function(rules) {
   }
 }
 
-RulesValidator.prototype.validate: function(onSuccess, onFailure) {
+RulesValidator.prototype.validate = function(done) {
   var self = this;
   if (self.rules.length > 0) {
     var counter = self.rules.length;
@@ -20,24 +20,13 @@ RulesValidator.prototype.validate: function(onSuccess, onFailure) {
     function onRuleValidated() {
       counter--;
       if (counter === 0) {
-        onValidationsComplete();
+        done();
       }
     }
-
-    function onValidationsComplete() {
-      var errors = self.rules.filter(function(rule) { return !rule.valid; })
-                             .map(function(rule) { return rule.errors; });
-
-      errors = [].concat.apply([], errors); // flatten array
-
-      if (errors.length > 0) 
-        return onFailure(errors);
-
-      onSuccess();
-    }
   } else {
-    onSuccess();
+    done();
   }
 };
+
 
 module.exports = RulesValidator;

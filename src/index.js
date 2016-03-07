@@ -28,7 +28,7 @@ AgeRule.prototype.__onValidate = function(done) {
   if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
     this.__invalidate("You are too young");
   }
-  var time = Math.floor((Math.random() * 5000) + 1);
+  var time = Math.floor((Math.random() * 3000) + 1);
   setTimeout(() => done(this), time);
   //done(this);
 };
@@ -44,7 +44,7 @@ FieldRequiredRule.prototype.__onValidate = function(done) {
     this.association = this.field;
     this.__invalidate(this.field + " is required");
   }
-  var time = Math.floor((Math.random() * 5000) + 1);
+  var time = Math.floor((Math.random() * 3000) + 1);
   setTimeout(() => done(this), time);
   //done(this);
 };
@@ -59,7 +59,7 @@ NameRule.prototype.__onValidate = function(done) {
   if (this.name === "Aaron") {
     this.__invalidate("Name cannot be Aaron");
   }
-  var time = Math.floor((Math.random() * 5000) + 1);
+  var time = Math.floor((Math.random() * 3000) + 1);
   setTimeout(() => done(this), time);
   //done(this);
 };
@@ -114,7 +114,7 @@ var service = new PersonService(new PersonDataProxy());
   //console.log('---------------');
 //});
 
-var command = service.insertCommand({name: "Aaron", age: new Date('2/3/1925')});
+var command = service.insertCommand({name: "Aarons", age: new Date('2/3/1925'), address: 'aa'});
 debugger;
 command.execute((result) => {
   console.log(result);
