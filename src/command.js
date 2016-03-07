@@ -19,34 +19,29 @@ var Command = function(callbacks) {
   }
 };
 
-Command.prototype = {
-
-  constructor: Command,
-
-  execute: function(done) {
-    var self = this;
-    self.onInitialization(function() {
-      self.getRules(function(rules) {
-        new RulesValidator(rules).validate(
-          function() {
-            try {
-              self.onValidationSuccess(function(result) {
-                done(new ExecutionResult(true, result, null));
-              });
-            }
-            catch(err) {
-              // TODO: capture specific peasy exception and rethrow if not it
-              done(new ExecutionResult(false, null, errors));
-            }
-          },
-          function(errors) {
+Command.prototype.execute: function(done) {
+  var self = this;
+  self.onInitialization(function() {
+    self.getRules(function(rules) {
+      new RulesValidator(rules).validate(
+        function() {
+          try {
+            self.onValidationSuccess(function(result) {
+              done(new ExecutionResult(true, result, null));
+            });
+          }
+          catch(err) {
+            // TODO: capture specific peasy exception and rethrow if not it
             done(new ExecutionResult(false, null, errors));
           }
-        );
-      });
+        },
+        function(errors) {
+          done(new ExecutionResult(false, null, errors));
+        }
+      );
     });
-  }
+  });
+};
 
-}
 
 module.exports = Command;

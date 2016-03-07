@@ -8,40 +8,35 @@ var RulesValidator = function(rules) {
   }
 }
 
-RulesValidator.prototype = {
+RulesValidator.prototype.validate: function(onSuccess, onFailure) {
+  var self = this;
+  if (self.rules.length > 0) {
+    var counter = self.rules.length;
 
-  constructor: RulesValidator,
+    self.rules.forEach(function(rule) {
+      rule.validate(onRuleValidated);
+    });
 
-  validate: function(onSuccess, onFailure) {
-    var self = this;
-    if (self.rules.length > 0) {
-      var counter = self.rules.length;
-
-      self.rules.forEach(function(rule) {
-        rule.validate(onRuleValidated);
-      });
-
-      function onRuleValidated() {
-        counter--;
-        if (counter === 0) {
-          onValidationsComplete();
-        }
+    function onRuleValidated() {
+      counter--;
+      if (counter === 0) {
+        onValidationsComplete();
       }
+    }
 
-      function onValidationsComplete() {
-        var errors = self.rules.filter(function(rule) { return !rule.valid; })
-                               .map(function(rule) { return rule.errors; });
+    function onValidationsComplete() {
+      var errors = self.rules.filter(function(rule) { return !rule.valid; })
+                             .map(function(rule) { return rule.errors; });
 
-        errors = [].concat.apply([], errors); // flatten array
+      errors = [].concat.apply([], errors); // flatten array
 
-        if (errors.length > 0) 
-          return onFailure(errors);
+      if (errors.length > 0) 
+        return onFailure(errors);
 
-        onSuccess();
-      }
-    } else {
       onSuccess();
     }
+  } else {
+    onSuccess();
   }
 };
 
