@@ -48,27 +48,6 @@ describe("BusinessService", function() {
       });
 
       describe("on execution", () => {
-        /*it("invokes service.__onGetAllCommandInitialization", function() {*/
-          /*spyOn(service, "__onGetAllCommandInitialization");*/
-          /*command.execute(() => {});*/
-          /*expect(service.__onGetAllCommandInitialization)*/
-            /*.toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Function));*/
-        /*});*/
-
-        /*it("invokes service.__getRulesForGetAll", () => {*/
-          /*spyOn(service, "__getRulesForGetAll").and.callThrough();*/
-          /*command.execute(() => {});*/
-          /*expect(service.__getRulesForGetAll)*/
-            /*.toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Function));*/
-        /*});*/
-
-        /*it("invokes service.__getAll", () => {*/
-          /*spyOn(service, "__getAll");*/
-          /*command.execute(() => {});*/
-          /*expect(service.__getAll)*/
-            /*.toHaveBeenCalledWith(jasmine.any(Object), jasmine.any(Function));*/
-        /*});*/
-
         it("passes shared context to all getAll pipeline methods", () => {
           var TestService = function() {};
           var sharedContext;
