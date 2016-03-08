@@ -195,4 +195,66 @@ describe("BusinessService", function() {
       });
     });
   });
+
+  describe("updateCommand and associated methods", function() {
+
+    var state = { foo: "a", bar: "b", meh: "c" };
+
+    beforeAll(() => {
+      dataProxy = { update: function(id) {} };
+      service = new BusinessService(dataProxy);
+      command = service.updateCommand(state);
+      spyOn(dataProxy, "update").and.returnValue([]);
+    });
+
+    describe("instance methods", () => {
+      describe("__update", () => {
+        it("invokes dataProxy.update", () => {
+          command.execute(() => {});
+          expect(dataProxy.update).toHaveBeenCalledWith(state, jasmine.any(Function));
+        });
+      });
+
+      describe("__getRulesForUpdate", () => {
+        it("returns an empty array", () => {
+          var callbackValue;
+          service.__getRulesForUpdate(state, {}, (result) => callbackValue = result);
+          expect(callbackValue).toEqual([]);
+        });
+      });
+    });
+
+    describe("the returned command", () => {
+      it("is of the correct type", () => {
+        expect(command instanceof Command).toBe(true);
+      });
+
+      describe("on execution", () => {
+        it("passes shared context and data to all insert pipeline methods", () => {
+          var TestService = function() {};
+          var sharedContext;
+          TestService.prototype = new BusinessService();
+          TestService.prototype.__onUpdateCommandInitialization = (state, context, done) => {
+            context.foo = state.foo;
+            done();
+          };
+          TestService.prototype.__getRulesForUpdate = (state, context, done) => {
+            context.bar = state.bar;
+            done([]);
+          };
+          TestService.prototype.__update = (state, context, done) => {
+            context.meh = state.meh;
+            sharedContext = context;
+            done();
+          }
+          var command = new TestService(dataProxy).updateCommand(state);
+          command.execute(() => { });
+          expect(sharedContext.foo).toEqual("a");
+          expect(sharedContext.bar).toEqual("b");
+          expect(sharedContext.meh).toEqual("c");
+        });
+      });
+    });
+  });
+
 });

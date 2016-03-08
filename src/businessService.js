@@ -94,6 +94,7 @@ BusinessService.prototype = {
   },
 
   __getAll: function(context, done) {
+    if ("getAll" in this.dataProxy)
     this.dataProxy.getAll(done); 
   },
 
