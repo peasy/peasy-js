@@ -1,7 +1,6 @@
 describe("BusinessService", function() {
   var BusinessService = require('../src/businessService');
   var Command = require('../src/command');
-  var DataProxy = require('../src/dataProxy');
   var service, command, dataProxy;
 
   describe("constructor", () => {
@@ -19,10 +18,10 @@ describe("BusinessService", function() {
   describe("getAllCommand and associated methods", function() {
 
     beforeAll(() => {
-      dataProxy = new DataProxy();
+      dataProxy = { getAll: function() {} }; 
       service = new BusinessService(dataProxy);
       command = service.getAllCommand();
-      spyOn(dataProxy, "getAll").and.returnValue([]);
+      spyOn(dataProxy, "getAll");
     });
 
     describe("instance methods", () => {
@@ -81,7 +80,7 @@ describe("BusinessService", function() {
       dataProxy = { getById: function(id) {} };
       service = new BusinessService(dataProxy);
       command = service.getByIdCommand(id);
-      spyOn(dataProxy, "getById").and.returnValue([]);
+      spyOn(dataProxy, "getById");
     });
 
     describe("instance methods", () => {
@@ -143,7 +142,7 @@ describe("BusinessService", function() {
       dataProxy = { insert: function(id) {} };
       service = new BusinessService(dataProxy);
       command = service.insertCommand(state);
-      spyOn(dataProxy, "insert").and.returnValue([]);
+      spyOn(dataProxy, "insert");
     });
 
     describe("instance methods", () => {
@@ -204,7 +203,7 @@ describe("BusinessService", function() {
       dataProxy = { update: function(id) {} };
       service = new BusinessService(dataProxy);
       command = service.updateCommand(state);
-      spyOn(dataProxy, "update").and.returnValue([]);
+      spyOn(dataProxy, "update");
     });
 
     describe("instance methods", () => {
@@ -265,7 +264,7 @@ describe("BusinessService", function() {
       dataProxy = { delete: function(id) {} };
       service = new BusinessService(dataProxy);
       command = service.deleteCommand(id);
-      spyOn(dataProxy, "delete").and.returnValue([]);
+      spyOn(dataProxy, "delete");
     });
 
     describe("instance methods", () => {
