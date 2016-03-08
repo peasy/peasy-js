@@ -116,10 +116,11 @@ var service = new PersonService(new PersonDataProxy());
 
 var command = service.insertCommand({name: "Aarons", age: new Date('2/3/1925'), address: 'aa'});
 debugger;
-command.execute((result) => {
-  console.log(result);
-  console.log('---------------');
-});
+command.execute();
+//command.execute((result) => {
+  //console.log(result);
+  //console.log('---------------');
+//});
 
 //for (let i = 0; i < 10; i++) {
   //let time = Math.floor((Math.random() * 10000) + 1);

@@ -23,9 +23,9 @@ var Command = function(callbacks) {
 
 Command.prototype.execute = function(done) {
   var self = this;
+
   if (typeof done !== 'function') {
-    console.error('A callback method needs to be supplied to execute!');
-    return;
+    throw new Error('A callback method needs to be supplied to execute!');
   }
 
   self.onInitialization(function() {
