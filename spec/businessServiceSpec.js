@@ -75,10 +75,12 @@ describe("BusinessService", function() {
 
   describe("getByIdCommand and associated methods", function() {
 
+    var id = 1;
+
     beforeAll(() => {
-      dataProxy = new DataProxy();
+      dataProxy = { getById: function(id) {} };
       service = new BusinessService(dataProxy);
-      command = service.getByIdCommand();
+      command = service.getByIdCommand(id);
       spyOn(dataProxy, "getById").and.returnValue([]);
     });
 
@@ -86,7 +88,7 @@ describe("BusinessService", function() {
       describe("__getById", () => {
         it("invokes dataProxy.getById", () => {
           command.execute(() => {});
-          expect(dataProxy.getById).toHaveBeenCalled();
+          expect(dataProxy.getById).toHaveBeenCalledWith(id, jasmine.any(Function));
         });
       });
 
@@ -128,6 +130,67 @@ describe("BusinessService", function() {
           command.execute(() => { });
           expect(sharedContext.ids).not.toBeUndefined();
           expect(sharedContext.ids).toEqual(3);
+        });
+      });
+    });
+  });
+
+  describe("insertCommand and associated methods", function() {
+
+    var state = { foo: "a", bar: "b", meh: "c" };
+
+    beforeAll(() => {
+      dataProxy = { insert: function(id) {} };
+      service = new BusinessService(dataProxy);
+      command = service.insertCommand(state);
+      spyOn(dataProxy, "insert").and.returnValue([]);
+    });
+
+    describe("instance methods", () => {
+      describe("__insert", () => {
+        it("invokes dataProxy.insert", () => {
+          command.execute(() => {});
+          expect(dataProxy.insert).toHaveBeenCalledWith(state, jasmine.any(Function));
+        });
+      });
+
+      describe("__getRulesForInsert", () => {
+        it("returns an empty array", () => {
+          var callbackValue;
+          service.__getRulesForInsert(state, {}, (result) => callbackValue = result);
+          expect(callbackValue).toEqual([]);
+        });
+      });
+    });
+
+    describe("the returned command", () => {
+      it("is of the correct type", () => {
+        expect(command instanceof Command).toBe(true);
+      });
+
+      describe("on execution", () => {
+        it("passes shared context and data to all insert pipeline methods", () => {
+          var TestService = function() {};
+          var sharedContext;
+          TestService.prototype = new BusinessService();
+          TestService.prototype.__onInsertCommandInitialization = (state, context, done) => {
+            context.foo = state.foo;
+            done();
+          };
+          TestService.prototype.__getRulesForInsert = (state, context, done) => {
+            context.bar = state.bar;
+            done([]);
+          };
+          TestService.prototype.__insert = (state, context, done) => {
+            context.meh = state.meh;
+            sharedContext = context;
+            done();
+          }
+          var command = new TestService(dataProxy).insertCommand(state);
+          command.execute(() => { });
+          expect(sharedContext.foo).toEqual("a");
+          expect(sharedContext.bar).toEqual("b");
+          expect(sharedContext.meh).toEqual("c");
         });
       });
     });
