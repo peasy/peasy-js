@@ -5,13 +5,14 @@ var ExecutionResult = require('./executionResult');
 var RulesValidator = require('./rulesValidator');
 
 var Command = function(callbacks) {
+  callbacks = callbacks || {};
   if (this instanceof Command) {
     if (!typeof callbacks.onValidationSuccess === 'function') {
-      throw Error("callbacks.onValidationSuccess must be supplied and a function");
+      console.warn("'onValidationSuccess' was not defined.");
     }
     this.onInitialization = callbacks.onInitialization || function(done) { done() };
     this.getRules = callbacks.getRules || function(done) { done([]) };
-    this.onValidationSuccess = callbacks.onValidationSuccess;
+    this.onValidationSuccess = callbacks.onValidationSuccess || function(done) { done() };
   } else {
     return new Command(
       callbacks.onInitialization, 
@@ -22,6 +23,11 @@ var Command = function(callbacks) {
 
 Command.prototype.execute = function(done) {
   var self = this;
+  if (typeof done !== 'function') {
+    console.error('A callback method needs to be supplied to execute!');
+    return;
+  }
+
   self.onInitialization(function() {
     self.getRules(function(rules) {
       new RulesValidator(rules).validate(function() {
