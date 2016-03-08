@@ -13,8 +13,6 @@ var BusinessService = function(dataProxy) {
 
 BusinessService.prototype = {
 
-  constructor: BusinessService,
-
   getAllCommand: function() {
     var service = this;
     var context = {};
@@ -155,5 +153,10 @@ BusinessService.prototype = {
     done();
   }
 };
+
+Object.defineProperty(BusinessService.prototype, "constructor", {
+  enumerable: false,
+  value: BusinessService
+});
 
 module.exports = BusinessService;

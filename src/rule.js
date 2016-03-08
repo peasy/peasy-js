@@ -79,4 +79,9 @@ Rule.prototype = {
 
 };
 
+Object.defineProperty(Rule.prototype, "constructor", {
+  enumerable: false,
+  value: Rule
+});
+
 module.exports = Rule;

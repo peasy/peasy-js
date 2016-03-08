@@ -27,4 +27,9 @@ DataProxy.prototype = {
   }
 };
 
+Object.defineProperty(DataProxy.prototype, "constructor", {
+  enumerable: false,
+  value: DataProxy
+});
+
 module.exports = DataProxy;
