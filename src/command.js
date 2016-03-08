@@ -39,8 +39,10 @@ Command.prototype.execute = function(done) {
           });
         }
         catch(err) {
-          // TODO: capture specific peasy exception and rethrow if not it
-          done(new ExecutionResult(false, null, errors));
+          if (err instanceof ServiceException) {
+            done(new ExecutionResult(false, null, errors));
+          }
+          throw err;
         }
       });
     });
