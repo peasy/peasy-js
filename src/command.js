@@ -1,5 +1,6 @@
 "use strict";
 
+var ServiceException = require('./serviceException');
 var ExecutionResult = require('./executionResult');
 var RulesValidator = require('./rulesValidator');
 
