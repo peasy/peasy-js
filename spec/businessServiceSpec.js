@@ -257,4 +257,66 @@ describe("BusinessService", function() {
     });
   });
 
+  describe("deleteCommand and associated methods", function() {
+
+    var id = 1;
+
+    beforeAll(() => {
+      dataProxy = { delete: function(id) {} };
+      service = new BusinessService(dataProxy);
+      command = service.deleteCommand(id);
+      spyOn(dataProxy, "delete").and.returnValue([]);
+    });
+
+    describe("instance methods", () => {
+      describe("__delete", () => {
+        it("invokes dataProxy.delete", () => {
+          command.execute(() => {});
+          expect(dataProxy.delete).toHaveBeenCalledWith(id, jasmine.any(Function));
+        });
+      });
+
+      describe("__getRulesForDelete", () => {
+        it("returns an empty array", () => {
+          var callbackValue;
+          var id = 1;
+          service.__getRulesForDelete(id, {}, (result) => callbackValue = result); 
+          expect(callbackValue).toEqual([]);
+        });
+      });
+    });
+
+    describe("the returned command", () => {
+      it("is of the correct type", () => {
+        expect(command instanceof Command).toBe(true);
+      });
+
+      describe("on execution", () => {
+        it("passes shared context and id to all delete pipeline methods", () => {
+          var TestService = function() {};
+          var sharedContext;
+          TestService.prototype = new BusinessService();
+          TestService.prototype.__onDeleteCommandInitialization = (id, context, done) => {
+            context.ids = 1;
+            done();
+          };
+          TestService.prototype.__getRulesForDelete = (id, context, done) => {
+            context.ids++; 
+            done([]);
+          };
+          TestService.prototype.__delete = (id, context, done) => {
+            context.ids++; 
+            sharedContext = context;
+            done();
+          }
+          var id = 1;
+          var command = new TestService(dataProxy).deleteCommand(1);
+          command.execute(() => { });
+          expect(sharedContext.ids).toEqual(3);
+        });
+      });
+    });
+  });
+
+
 });
