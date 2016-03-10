@@ -47,9 +47,10 @@ Command.prototype.execute = function(done) {
         }
         catch(err) {
           if (err instanceof ServiceException) {
-            done(new ExecutionResult(false, null, errors));
+            done(new ExecutionResult(false, null, [{ association: "TODO", error: err.message }]));
+          } else {
+            throw err;
           }
-          throw err;
         }
       });
     });
