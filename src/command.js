@@ -7,7 +7,7 @@ var RulesValidator = require('./rulesValidator');
 var Command = function(callbacks) {
   callbacks = callbacks || {};
   if (this instanceof Command) {
-    if (!typeof callbacks.onValidationSuccess === 'function') {
+    if (typeof callbacks.onValidationSuccess !== 'function') {
       console.warn("'onValidationSuccess' was not defined.");
     }
     this.onInitialization = callbacks.onInitialization || function(done) { done() };

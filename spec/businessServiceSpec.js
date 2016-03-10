@@ -1,6 +1,6 @@
 describe("BusinessService", function() {
-  var BusinessService = require('../src/businessService');
   var Command = require('../src/command');
+  var BusinessService = require('../src/businessService');
   var service, command, dataProxy;
 
   describe("constructor", () => {
