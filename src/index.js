@@ -16,6 +16,7 @@ PersonDataProxy.prototype = {
 
 var AgeRule = function(birthdate) {
   if (this instanceof AgeRule) {
+    Rule.call(this);
     this.birthdate = birthdate;
   } else {
     return new AgeRule(birthdate);
@@ -34,6 +35,7 @@ AgeRule.prototype.__onValidate = function(done) {
 };
 
 var FieldRequiredRule = function(field, data) {
+  Rule.call(this);
   this.field = field;
   this.data = data;
 };
@@ -50,6 +52,7 @@ FieldRequiredRule.prototype.__onValidate = function(done) {
 };
 
 var NameRule = function(name) {
+  Rule.call(this);
   this.name = name;
 };
 
@@ -68,6 +71,7 @@ NameRule.prototype.__onValidate = function(done) {
 var PersonService = function(dataProxy) {
 //  BusinessServiceBase.call(this, dataProxy);
   if (this instanceof PersonService) {
+    BusinessService.call(this);
     this.dataProxy = dataProxy;
   } else {
     return new PersonService(dataProxy);
@@ -114,13 +118,25 @@ var service = new PersonService(new PersonDataProxy());
   //console.log('---------------');
 //});
 
-var command = service.insertCommand({name: "Aarons", age: new Date('2/3/1925'), address: 'aa'});
-debugger;
-command.execute();
-//command.execute((result) => {
-  //console.log(result);
-  //console.log('---------------');
-//});
+var command = service.insertCommand({name: "Aaron", age: new Date('2/3/1925'), address: 'aa'});
+var command2 = service.insertCommand({name: "Aarons", age: new Date('2/3/1925'), address: 'aa'});
+var command3 = service.insertCommand({name: "Aaron", age: new Date('2/3/1925')});
+
+command2.execute((result) => {
+  console.log(result);
+  console.log('---------------');
+});
+
+command.execute((result) => {
+  console.log(result);
+  console.log('---------------');
+});
+
+command3.execute((result) => {
+  console.log(result);
+  console.log('---------------');
+});
+
 
 //for (let i = 0; i < 10; i++) {
   //let time = Math.floor((Math.random() * 10000) + 1);
