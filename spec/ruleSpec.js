@@ -7,16 +7,17 @@ describe("Command", function() {
   };
 
   LengthRule.prototype = new Rule();
-  LengthRule.prototype.__onValidate = function() {
+  LengthRule.prototype.__onValidate = function(done) {
     if (this.word.length < 1) {
       this.__invalidate("too few characters");
     }
+    done();
   };
 
   describe("validate", function() {
     it("performs the validation supplied and retains any errors if validation fails", function() {
       var rule = new LengthRule("");
-      rule.validate();
+      rule.validate(function() {});
       expect(rule.errors.length).toEqual(1);
       expect(rule.errors[0].error).toEqual("too few characters");
     });
@@ -25,7 +26,7 @@ describe("Command", function() {
       var rule = new LengthRule("blah");
       var callback = jasmine.createSpy();
       rule.ifValidThenExecute(callback);
-      rule.validate();
+      rule.validate(function() {});
       expect(callback).toHaveBeenCalled();
     });
 
