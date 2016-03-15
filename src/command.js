@@ -1,18 +1,13 @@
 "use strict";
 
-var ServiceException = require('./serviceException');
 var ExecutionResult = require('./executionResult');
-var RulesValidator = require('./rulesValidator');
 
 var Command = function(callbacks) {
-  callbacks = callbacks || {};
   if (this instanceof Command) {
-    if (typeof callbacks.onValidationSuccess !== 'function') {
-      console.warn("'onValidationSuccess' was not defined.");
-    }
     this.onInitialization = callbacks.onInitialization || function(done) { done() };
     this.getRules = callbacks.getRules || function(done) { done([]) };
-    this.onValidationSuccess = callbacks.onValidationSuccess || function(done) { done() };
+    this.onValidationSuccess = callbacks.onValidationSuccess;
+    //if (!this.onValidationSuccess) throw exception("callbacks.onValidationSuccess must be supplied");
   } else {
     return new Command(
       callbacks.onInitialization, 
@@ -21,42 +16,59 @@ var Command = function(callbacks) {
   }
 };
 
-Command.prototype.execute = function(done) {
-  var self = this;
+Command.prototype = {
 
-  if (typeof done !== 'function') {
-    throw new Error('A callback method needs to be supplied to execute!');
-  }
+  constructor: Command,
 
-  self.onInitialization(function() {
-    self.getRules(function(rules) {
-      new RulesValidator(rules).validate(function() {
+  execute: function(done) {
+    var self = this;
+    this.onInitialization(function() {
+      self.getRules(function(rules) {
+        if (rules.length > 0) {
+          var counter = rules.length;
 
-        var errors = rules.filter(function(rule) { return !rule.valid; })
-                          .map(function(rule) { return rule.errors; });
+          rules.forEach(function(rule) {
+            debugger;
+            rule.validate(onRuleValidated);
+          });
 
-        errors = [].concat.apply([], errors); // flatten array
+          function onRuleValidated() {
+            counter--;
+            debugger;
+            if (counter === 0) {
+              onValidationsComplete();
+            }
+          }
 
-        if (errors.length > 0) 
-          return done(new ExecutionResult(false, null, errors));
+          function onValidationsComplete() {
+            var errors = rules.filter(function(rule) { return !rule.valid; })
+                              .map(function(rule) { return rule.errors; });
 
-        debugger;
-        try {
+            errors = [].concat.apply([], errors); // flatten array
+
+            if (errors.length > 0) 
+              return done(new ExecutionResult(false, null, errors));
+
+            try {
+              self.onValidationSuccess(function(result) {
+                done(new ExecutionResult(true, result, null));
+              });
+            }
+            catch(err) {
+              // TODO: capture specific peasy exception and rethrow if not it
+              return done(new ExecutionResult(false, null, errors));
+            }
+          }
+
+        } else {
           self.onValidationSuccess(function(result) {
             done(new ExecutionResult(true, result, null));
           });
         }
-        catch(err) {
-          if (err instanceof ServiceException) {
-            done(new ExecutionResult(false, null, [{ association: "TODO", error: err.message }]));
-          } else {
-            throw err;
-          }
-        }
       });
     });
-  });
-};
+  }
 
+}
 
 module.exports = Command;

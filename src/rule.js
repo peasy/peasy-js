@@ -1,7 +1,5 @@
 "use strict";
 
-var RulesValidator = require('./rulesValidator');
-
 var Rule = function() {
   if (this instanceof Rule) {
     this.association = null;
@@ -41,19 +39,32 @@ Rule.prototype = {
     var self = this;
 
     this.__onValidate(function() {
-      debugger;
       if (self.valid) {
         if (self.ifValidThenFunction) {
           self.ifValidThenFunction();
         }
         if (self.successors.length > 0) {
-          new RulesValidator(self.successors).validate(function(rules) {
-            self.successors.filter(function(rule) { return !rule.valid })
-                           .forEach(function(rule) { self.__invalidate(rule.errors) });
-            done();
+          var counter = self.successors.length;
+
+          self.successors.forEach(function(rule) {
+            rule.validate(onRuleValidated);
+
+            function onRuleValidated() {
+              if (!rule.valid) {
+                self.__invalidate(rule.errors);
+              }
+              counter--;
+              if (counter === 0) {
+                onValidationsComplete();
+              }
+            }
           });
+
+          function onValidationsComplete() {
+            done();
+          }
+          return;
         }
-        return;
       } else {
         if (self.ifInvalidThenFunction) {
           self.ifInvalidThenFunction();
@@ -65,7 +76,7 @@ Rule.prototype = {
 
   ifValidThenValidate: function(rules) {
     if (!Array.isArray(rules)) {
-      rules = [rules];
+      rules = [rules]
     }
     this.successors = rules;
     return this;
@@ -82,10 +93,5 @@ Rule.prototype = {
   }
 
 };
-
-Object.defineProperty(Rule.prototype, "constructor", {
-  enumerable: false,
-  value: Rule
-});
 
 module.exports = Rule;
