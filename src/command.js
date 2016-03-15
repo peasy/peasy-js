@@ -40,6 +40,7 @@ Command.prototype.execute = function(done) {
         if (errors.length > 0) 
           return done(new ExecutionResult(false, null, errors));
 
+        debugger;
         try {
           self.onValidationSuccess(function(result) {
             done(new ExecutionResult(true, result, null));

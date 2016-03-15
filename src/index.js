@@ -80,16 +80,16 @@ var PersonService = function(dataProxy) {
 
 PersonService.prototype = new BusinessService();
 PersonService.prototype.__getRulesForInsert = function(person, context, done) {
-  //return [new AgeRule(person.age)
-                //.ifValidThenExecute(() => console.log("Age succeeded"))
-                //.ifInvalidThenExecute(() => console.log("Age failed"))
-                //.ifValidThenValidate(new NameRule(person.name)
-                                          //.ifValidThenExecute(() => console.log("Name succeeeded"))
-                                          //.ifInvalidThenExecute(() => console.log("Name failed"))
-                                          //.ifValidThenValidate(new FieldRequiredRule("address", person)
-                                                                    //.ifValidThenExecute(() => console.log("Address succeeeded"))
-                                                                    //.ifInvalidThenExecute(() => console.log("Address failed"))
-                                                              //))]
+  done([new AgeRule(person.age)
+                .ifValidThenExecute(() => console.log("Age succeeded"))
+                .ifInvalidThenExecute(() => console.log("Age failed"))
+                .ifValidThenValidate(new NameRule(person.name)
+                                          .ifValidThenExecute(() => console.log("Name succeeeded"))
+                                          .ifInvalidThenExecute(() => console.log("Name failed"))
+                                          .ifValidThenValidate(new FieldRequiredRule("address", person)
+                                                                    .ifValidThenExecute(() => console.log("Address succeeeded"))
+                                                                    .ifInvalidThenExecute(() => console.log("Address failed"))
+                                                              ))]);
   //return [
     //new AgeRule(person.age).ifValidThenValidate([new NameRule(person.name), new FieldRequiredRule("address", person)]) 
   //];
@@ -104,9 +104,12 @@ PersonService.prototype.__getRulesForInsert = function(person, context, done) {
                                           //.ifInvalidThenExecute(() => console.log("Address failed"))])
   //];
   //return [new AgeRule(person.age)];
-  done([new AgeRule(person.age), 
-        new NameRule(person.name), 
-        new FieldRequiredRule("address", person)]);
+                                                              //
+  //done([new AgeRule(person.age).ifValidThenExecute(() => console.log("AGE GOOD")), 
+        //new NameRule(person.name), 
+        //new FieldRequiredRule("address", person)]);
+
+  //done([ new NameRule(person.name).ifValidThenValidate(new FieldRequiredRule("address", person))]);
 }
 
 
@@ -118,24 +121,24 @@ var service = new PersonService(new PersonDataProxy());
   //console.log('---------------');
 //});
 
-var command = service.insertCommand({name: "Aaron", age: new Date('2/3/1925'), address: 'aa'});
+var command = service.insertCommand({name: "Aaaron", age: new Date('2/3/1925'), address:'aa'});
 var command2 = service.insertCommand({name: "Aarons", age: new Date('2/3/1925'), address: 'aa'});
 var command3 = service.insertCommand({name: "Aaron", age: new Date('2/3/1925')});
 
-command2.execute((result) => {
-  console.log(result);
-  console.log('---------------');
-});
+//command2.execute((result) => {
+  //console.log(result);
+  //console.log('---------------');
+//});
 
 command.execute((result) => {
   console.log(result);
   console.log('---------------');
 });
 
-command3.execute((result) => {
-  console.log(result);
-  console.log('---------------');
-});
+//command3.execute((result) => {
+  //console.log(result);
+  //console.log('---------------');
+//});
 
 
 //for (let i = 0; i < 10; i++) {

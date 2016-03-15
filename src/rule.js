@@ -1,5 +1,7 @@
 "use strict";
 
+var RulesValidator = require('./rulesValidator');
+
 var Rule = function() {
   if (this instanceof Rule) {
     this.association = null;
@@ -39,17 +41,19 @@ Rule.prototype = {
     var self = this;
 
     this.__onValidate(function() {
+      debugger;
       if (self.valid) {
         if (self.ifValidThenFunction) {
           self.ifValidThenFunction();
         }
         if (self.successors.length > 0) {
           new RulesValidator(self.successors).validate(function(rules) {
-            self.successors.filter(function(rule) { !rule.valid })
+            self.successors.filter(function(rule) { return !rule.valid })
                            .forEach(function(rule) { self.__invalidate(rule.errors) });
+            done();
           });
-          return;
         }
+        return;
       } else {
         if (self.ifInvalidThenFunction) {
           self.ifInvalidThenFunction();
