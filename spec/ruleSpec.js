@@ -1,4 +1,4 @@
-describe("Command", function() {
+describe("Rule", function() {
   var Rule = require("../src/rule");
 
   var LengthRule = function(word) {
