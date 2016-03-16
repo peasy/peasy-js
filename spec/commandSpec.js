@@ -63,10 +63,30 @@ describe("Command", function() {
       expect(state).toEqual("123");
     });
 
-    describe("execution result", () => {
-      describe("when validation succeeds", () => {
-        it("returns the expected validation result", () => {
+    describe("execution results", () => {
+      var TrueRule, FalseRule;
+      beforeAll(() => {
+        TrueRule = function() {
+          Rule.call(this) 
+        };
+        TrueRule.prototype = new Rule();
+        TrueRule.prototype.__onValidate = function(done) {
+          done();
+        };
 
+        FalseRule = function(errorMessage) {
+          Rule.call(this) 
+          this.message = errorMessage;
+        };
+        FalseRule.prototype = new Rule();
+        FalseRule.prototype.__onValidate = function(done) {
+          this.__invalidate(this.message);
+          done();
+        };
+      });
+
+      describe("when no rules configured", () => {
+        it("returns the expected validation result", () => {
           var returnValue = { id: 5, data: "abc" };
           
           var callbacks = {
@@ -84,18 +104,63 @@ describe("Command", function() {
         });
       });
 
-      describe("when validation fails", () => {
-        it("returns the expected validation result", () => {
-          var FalseRule = function() {};
-          FalseRule.prototype = new Rule();
-          FalseRule.prototype.__onValidate = function(done) {
-            this.__invalidate("you can't do that");
-            done();
-          };
-          
+      describe("when one rule configured", () => {
+        describe("when validation succeeds", () => {
+          it("returns the expected validation result", () => {
+            var returnValue = { id: 5, data: "abc" };
+            
+            var callbacks = {
+              getRules: (done) => {
+                done([new TrueRule()]);
+              },
+              onValidationSuccess: (done) => {
+                done(returnValue);
+              }
+            }
+
+            var command = new Command(callbacks);
+            command.execute((result) => {
+              expect(result.success).toEqual(true);
+              expect(result.value).toEqual(returnValue);
+              expect(result.errors).toBeNull();
+            });
+          });
+        });
+
+        describe("when validation fails", () => {
+          it("returns the expected validation result", () => {
+            var returnValue = { id: 5, data: "abc" };
+            
+            var callbacks = {
+              getRules: (done) => {
+                done([new FalseRule("a")]);
+              },
+              onValidationSuccess: (done) => {
+                done(returnValue);
+              }
+            }
+
+            var command = new Command(callbacks);
+            command.execute((result) => {
+              expect(result.success).toEqual(false);
+              expect(result.value).toBeNull();
+              expect(result.errors.length).toEqual(1);
+            });
+          });
+        });
+      });
+
+      describe("when multiple rules configured", () => {
+        it("validates each rule", () => {
           var callbacks = {
             getRules: (done) => { 
-              done([new FalseRule()]);
+              done([
+                new FalseRule("a"), 
+                new TrueRule(),
+                new FalseRule("b"), 
+                new TrueRule(),
+                new FalseRule("c")
+              ]);
             },
             onValidationSuccess: (done) => {
               done();
@@ -106,8 +171,10 @@ describe("Command", function() {
           command.execute((result) => {
             expect(result.success).toEqual(false);
             expect(result.value).toBeNull();
-            expect(result.errors.length).toEqual(1);
-            expect(result.errors[0].error).toEqual("you can't do that");
+            expect(result.errors.length).toEqual(3);
+            expect(result.errors[0].error).toEqual("a");
+            expect(result.errors[1].error).toEqual("b");
+            expect(result.errors[2].error).toEqual("c");
           });
         });
 

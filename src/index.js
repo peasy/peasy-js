@@ -121,7 +121,7 @@ var service = new PersonService(new PersonDataProxy());
   //console.log('---------------');
 //});
 
-var command = service.insertCommand({name: "Aaronn", age: new Date('2/3/1925'), address:'aa'});
+var command = service.insertCommand({name: "AAaron", age: new Date('2/3/1925'), address: 'aa'});
 var command2 = service.insertCommand({name: "Aarons", age: new Date('2/3/1925'), address: 'aa'});
 var command3 = service.insertCommand({name: "Aaron", age: new Date('2/3/1925')});
 

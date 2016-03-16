@@ -2,6 +2,7 @@
 
 var ExecutionResult = require('./executionResult');
 var ServiceException = require('./serviceException');
+var RulesValidator = require('./rulesValidator');
 
 var Command = function(callbacks) {
   callbacks = callbacks || {};
@@ -32,60 +33,31 @@ Command.prototype = {
       throw new Error('A callback method needs to be supplied to execute!');
     }
 
-    this.onInitialization(function() {
+    self.onInitialization(function() {
       self.getRules(function(rules) {
-        if (rules.length > 0) {
-          var counter = rules.length;
+        new RulesValidator(rules).validate(function() {
 
-          rules.forEach(function(rule) {
-            rule.validate(onRuleValidated);
-          });
+          var errors = rules.filter(function(rule) { return !rule.valid; })
+                            .map(function(rule) { return rule.errors; });
 
-          function onRuleValidated() {
-            counter--;
-            debugger;
-            if (counter === 0) {
-              onValidationsComplete();
+          errors = [].concat.apply([], errors); // flatten array
+
+          if (errors.length > 0) 
+            return done(new ExecutionResult(false, null, errors));
+
+          try {
+            self.onValidationSuccess(function(result) {
+              done(new ExecutionResult(true, result, null));
+            });
+          }
+          catch(err) {
+            if (err instanceof ServiceException) {
+              done(new ExecutionResult(false, null, [{ association: "TODO", error: err.message }]));
+            } else {
+              throw err;
             }
           }
-
-          function onValidationsComplete() {
-            var errors = rules.filter(function(rule) { return !rule.valid; })
-                              .map(function(rule) { return rule.errors; });
-
-            errors = [].concat.apply([], errors); // flatten array
-
-            if (errors.length > 0) 
-              return done(new ExecutionResult(false, null, errors));
-
-            try {
-              self.onValidationSuccess(function(result) {
-                done(new ExecutionResult(true, result, null));
-              });
-            }
-            catch(err) {
-              if (err instanceof ServiceException) {
-                done(new ExecutionResult(false, null, [{ association: "TODO", error: err.message }]));
-              } else {
-                throw err;
-              }
-            }
-          }
-
-        } else {
-            try {
-              self.onValidationSuccess(function(result) {
-                done(new ExecutionResult(true, result, null));
-              });
-            }
-            catch(err) {
-              if (err instanceof ServiceException) {
-                done(new ExecutionResult(false, null, [{ association: "TODO", error: err.message }]));
-              } else {
-                throw err;
-              }
-            }
-        }
+        });
       });
     });
   }
