@@ -71,7 +71,7 @@ describe("Rule", function() {
 
       lengthRule1.validate(function() {});
 
-      expect(lengthRule2.errors.length).toEqual(1);
+      expect(lengthRule1.errors.length).toEqual(1);
     });
 
     it("does not execute the next validation rule if the current validation fails", function() {
@@ -83,6 +83,18 @@ describe("Rule", function() {
 
       expect(lengthRule2.errors.length).toEqual(0);
     });
+  });
 
+  describe("multiple rules", () => {
+    it ("all rules pass as expected", () => {
+      var rules = [
+        new LengthRule("a"),
+        new LengthRule("b"),
+        new LengthRule("c")
+      ];
+    });
+  });
+
+  describe("rule chaining rules", () => {
   });
 });
