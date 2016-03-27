@@ -11,9 +11,9 @@ describe("Rule", function() {
     if (this.word.length < 1) {
       this.__invalidate("too few characters");
     }
-    var time = Math.floor((Math.random() * 3000) + 1);
-    setTimeout(() => done(this), time);
-//    done();
+    //var time = Math.floor((Math.random() * 2000) + 1);
+    //setTimeout(() => done(this), time);
+    done();
   };
 
   describe("validate", function() {
@@ -71,28 +71,241 @@ describe("Rule", function() {
       });
     });
 
-    it("executes the next validation rule if the current validation passes", function(done) {
-      var lengthRule1 = new LengthRule("hello");
-      var lengthRule2 = new LengthRule("");
-      lengthRule1.ifValidThenValidate(lengthRule2);
+    it("validates the child rule if the parent validation succeeds", function(done) {
+      var parent = new LengthRule("hello");
+      var child = new LengthRule("");
+      parent.ifValidThenValidate(child);
 
-      lengthRule1.validate(() => {
-        expect(lengthRule1.errors.length).toEqual(1);
+      parent.validate(() => {
+        expect(child.errors.length).toEqual(1);
         done();
       });
     });
 
-    it("does not execute the next validation rule if the current validation fails", function(done) {
-      var lengthRule1 = new LengthRule("");
-      var lengthRule2 = new LengthRule("");
-      lengthRule1.ifValidThenValidate(lengthRule2);
+    it("sets the error on the parent when child validation fails", function(done) {
+      var parent = new LengthRule("hello");
+      var child = new LengthRule("");
+      parent.ifValidThenValidate(child);
 
-      lengthRule1.validate(() => {
-        expect(lengthRule2.errors.length).toEqual(0);
+      parent.validate(() => {
+        expect(parent.errors.length).toEqual(1);
         done();
       });
     });
 
+    it("does not validate the child rule if the parent validation fails", function(done) {
+      var parent = new LengthRule("");
+      var child = new LengthRule("");
+      parent.ifValidThenValidate(child);
+
+      parent.validate(() => {
+        expect(child.errors.length).toEqual(0);
+        done();
+      });
+    });
+
+  });
+
+  describe("multiple rules", () => {
+    it("pass as expected", (done) => {
+      var rules = [
+        new LengthRule("a"),
+        new LengthRule("b"),
+        new LengthRule("c")
+      ];
+
+      var rule = new LengthRule("test").ifValidThenValidate(rules);
+
+      rule.validate(() => {
+        expect(rule.errors.length).toEqual(0);
+        done();
+      });
+    });
+
+    it("parent rule fails if one child fails", (done) => {
+      var rules = [
+        new LengthRule("a"),
+        new LengthRule(""),
+        new LengthRule("c")
+      ];
+
+      var rule = new LengthRule("test").ifValidThenValidate(rules);
+
+      rule.validate(() => {
+        expect(rule.errors.length).toEqual(1);
+        done();
+      });
+    });
+
+    it("failing children sets errors on parent", (done) => {
+      var rules = [
+        new LengthRule(""),
+        new LengthRule(""),
+        new LengthRule("")
+      ];
+
+      var rule = new LengthRule("test").ifValidThenValidate(rules);
+
+      rule.validate(() => {
+        expect(rule.errors.length).toEqual(3);
+        done();
+      });
+    });
+  });
+
+  describe("rule chaining", () => {
+    describe("one level deep", () => {
+      it("invokes valid callbacks", (done) => {
+        var parent = new LengthRule("a");
+        var child = new LengthRule("b");
+        var parentCallback = jasmine.createSpy();
+        var childCallback = jasmine.createSpy();
+        parent.ifValidThenExecute(parentCallback);
+        child.ifValidThenExecute(childCallback);
+
+        parent.ifValidThenValidate(child);
+        parent.validate(() => {
+          expect(parentCallback).toHaveBeenCalled();
+          expect(childCallback).toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it("does not invoke child valid callback", (done) => {
+        var parent = new LengthRule("a");
+        var child = new LengthRule("");
+        var callback = jasmine.createSpy();
+        child.ifValidThenExecute(callback);
+
+        parent.ifValidThenValidate(child);
+        parent.validate(() => {
+          expect(callback).not.toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it("invokes child invalid callback", (done) => {
+        var parent = new LengthRule("a");
+        var child = new LengthRule("");
+        var callback = jasmine.createSpy();
+        child.ifInvalidThenExecute(callback);
+
+        parent.ifValidThenValidate(child);
+        parent.validate(() => {
+          expect(callback).toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it("does not invoke child invalid callback", (done) => {
+        var parent = new LengthRule("a");
+        var child = new LengthRule("b");
+        var callback = jasmine.createSpy();
+        child.ifInvalidThenExecute(callback);
+
+        parent.ifValidThenValidate(child);
+        parent.validate(() => {
+          expect(callback).not.toHaveBeenCalled();
+          done();
+        });
+      });
+    });
+
+    describe("two levels deep", () => {
+      it("invokes valid callbacks", (done) => {
+        var parent = new LengthRule("a");
+        var child = new LengthRule("b");
+        var grandchild = new LengthRule("c");
+        var parentCallback = jasmine.createSpy();
+        var childCallback = jasmine.createSpy();
+        var grandchildCallback = jasmine.createSpy();
+
+        parent.ifValidThenExecute(parentCallback);
+        child.ifValidThenExecute(childCallback);
+        grandchild.ifValidThenExecute(grandchildCallback);
+
+        parent.ifValidThenValidate(child);
+        child.ifValidThenValidate(grandchild);
+
+        parent.validate(() => {
+          expect(parentCallback).toHaveBeenCalled();
+          expect(childCallback).toHaveBeenCalled();
+          expect(grandchildCallback).toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it("does not invoke grandchild valid callback", (done) => {
+        var parent = new LengthRule("a");
+        var child = new LengthRule("");
+        var grandchild = new LengthRule("c");
+        var parentCallback = jasmine.createSpy();
+        var childCallback = jasmine.createSpy();
+        var grandchildCallback = jasmine.createSpy();
+
+        parent.ifValidThenExecute(parentCallback);
+        child.ifValidThenExecute(childCallback);
+        grandchild.ifValidThenExecute(grandchildCallback);
+
+        parent.ifValidThenValidate(child);
+        child.ifValidThenValidate(grandchild);
+
+        parent.validate(() => {
+          expect(parentCallback).toHaveBeenCalled();
+          expect(childCallback).not.toHaveBeenCalled();
+          expect(grandchildCallback).not.toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it("invokes grandchild invalid callback", (done) => {
+        var parent = new LengthRule("a");
+        var child = new LengthRule("b");
+        var grandchild = new LengthRule("");
+        var parentCallback = jasmine.createSpy();
+        var childCallback = jasmine.createSpy();
+        var grandchildCallback = jasmine.createSpy();
+
+        parent.ifValidThenExecute(parentCallback);
+        child.ifValidThenExecute(childCallback);
+        grandchild.ifInvalidThenExecute(grandchildCallback);
+
+        parent.ifValidThenValidate(child);
+        child.ifValidThenValidate(grandchild);
+
+        parent.validate(() => {
+          expect(parentCallback).toHaveBeenCalled();
+          expect(childCallback).toHaveBeenCalled();
+          expect(grandchildCallback).toHaveBeenCalled();
+          done();
+        });
+
+      });
+
+      it("does not invoke grandchild invalid callback", (done) => {
+        var parent = new LengthRule("a");
+        var child = new LengthRule("b");
+        var grandchild = new LengthRule("c");
+        var parentCallback = jasmine.createSpy();
+        var childCallback = jasmine.createSpy();
+        var grandchildCallback = jasmine.createSpy();
+
+        parent.ifValidThenExecute(parentCallback);
+        child.ifValidThenExecute(childCallback);
+        grandchild.ifInvalidThenExecute(grandchildCallback);
+
+        parent.ifValidThenValidate(child);
+        child.ifValidThenValidate(grandchild);
+
+        parent.validate(() => {
+          expect(parentCallback).toHaveBeenCalled();
+          expect(childCallback).toHaveBeenCalled();
+          expect(grandchildCallback).not.toHaveBeenCalled();
+          done();
+        });
+      });
+
+    });
   });
 
 });
