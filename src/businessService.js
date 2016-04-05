@@ -22,7 +22,7 @@ BusinessService.prototype = {
       },
       getRules: function(done) {
         return service.__getRulesForGetAll(context, done);
-      }, 
+      },
       onValidationSuccess: function(done) {
         return service.__getAll(context, done);
       }
@@ -38,7 +38,7 @@ BusinessService.prototype = {
       },
       getRules: function(done) {
         return service.__getRulesForGetById(id, context, done);
-      }, 
+      },
       onValidationSuccess: function(done) {
         return service.__getById(id, context, done);
       }
@@ -54,7 +54,7 @@ BusinessService.prototype = {
       },
       getRules: function(done) {
         return service.__getRulesForInsert(data, context, done);
-      }, 
+      },
       onValidationSuccess: function(done) {
         return service.__insert(data, context, done);
       }
@@ -70,7 +70,7 @@ BusinessService.prototype = {
       },
       getRules: function(done) {
         return service.__getRulesForUpdate(data, context, done);
-      }, 
+      },
       onValidationSuccess: function(done) {
         return service.__update(data, context, done);
       }
@@ -86,16 +86,16 @@ BusinessService.prototype = {
       },
       getRules: function(done) {
         return service.__getRulesForDelete(id, context, done);
-      }, 
+      },
       onValidationSuccess: function(done) {
-        return service.__delete(id, context, done); 
+        return service.__delete(id, context, done);
       }
     });
   },
 
   __getAll: function(context, done) {
     if ("getAll" in this.dataProxy)
-    this.dataProxy.getAll(done); 
+    this.dataProxy.getAll(done);
   },
 
   __getRulesForGetAll: function(context, done) {
@@ -107,7 +107,7 @@ BusinessService.prototype = {
   },
 
   __getById: function(id, context, done) {
-    this.dataProxy.getById(id, done); 
+    this.dataProxy.getById(id, done);
   },
 
   __getRulesForGetById: function(id, context, done) {
@@ -119,7 +119,7 @@ BusinessService.prototype = {
   },
 
   __insert: function(data, context, done) {
-    this.dataProxy.insert(data, done); 
+    this.dataProxy.insert(data, done);
   },
 
   __getRulesForInsert: function(data, context, done) {
@@ -130,8 +130,8 @@ BusinessService.prototype = {
     done();
   },
 
-  __update(data, context, done) {
-    this.dataProxy.update(data, done); 
+  __update: function(data, context, done) {
+    this.dataProxy.update(data, done);
   },
 
   __getRulesForUpdate: function(data, context, done) {
@@ -142,8 +142,8 @@ BusinessService.prototype = {
     done();
   },
 
-  __delete(id, context, done) {
-    this.dataProxy.delete(id, done); 
+  __delete: function(id, context, done) {
+    this.dataProxy.delete(id, done);
   },
 
   __getRulesForDelete: function(id, context, done) {
