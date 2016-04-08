@@ -1,5 +1,7 @@
 "use strict";
 
+var RulesValidator = require('./rulesValidator');
+
 var Rule = function() {
   if (this instanceof Rule) {
     this.association = null;
@@ -44,25 +46,14 @@ Rule.prototype = {
           self.ifValidThenFunction();
         }
         if (self.successors.length > 0) {
-          var counter = self.successors.length;
+          new RulesValidator(self.successors).validate(function() {
+            self.successors.filter(function(rule) { return !rule.valid; })
+                           .forEach(function(rule) {
+                             self.__invalidate(rule.errors);
+                           });
 
-          self.successors.forEach(function(rule) {
-            rule.validate(onRuleValidated);
-
-            function onRuleValidated() {
-              if (!rule.valid) {
-                self.__invalidate(rule.errors);
-              }
-              counter--;
-              if (counter === 0) {
-                onValidationsComplete();
-              }
-            }
-          });
-
-          function onValidationsComplete() {
             done();
-          }
+          });
           return;
         }
       } else {
