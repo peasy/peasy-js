@@ -2,9 +2,10 @@
 
 var RulesValidator = require('./rulesValidator');
 
-var Rule = function() {
+var Rule = function(options) {
   if (this instanceof Rule) {
-    this.association = null;
+    options = options || {};
+    this.association = options.association || null;
     this.errors = [];
     this.ifInvalidThenFunction = null;
     this.ifValidThenFunction = null;

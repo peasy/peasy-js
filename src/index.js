@@ -16,7 +16,7 @@ PersonDataProxy.prototype = {
 
 var AgeRule = function(birthdate) {
   if (this instanceof AgeRule) {
-    Rule.call(this);
+    Rule.call(this, { association: "age" });
     this.birthdate = birthdate;
   } else {
     return new AgeRule(birthdate);
@@ -24,7 +24,6 @@ var AgeRule = function(birthdate) {
 };
 
 AgeRule.prototype = new Rule();
-AgeRule.prototype.association = "age";
 AgeRule.prototype.__onValidate = function(done) {
   if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
     this.__invalidate("You are too young");
@@ -52,12 +51,11 @@ FieldRequiredRule.prototype.__onValidate = function(done) {
 };
 
 var NameRule = function(name) {
-  Rule.call(this);
+  Rule.call(this, { association: "name" });
   this.name = name;
 };
 
 NameRule.prototype = new Rule();
-NameRule.prototype.association = "name";
 NameRule.prototype.__onValidate = function(done) {
   if (this.name === "Aaron") {
     this.__invalidate("Name cannot be Aaron");
@@ -121,7 +119,7 @@ var service = new PersonService(new PersonDataProxy());
   //console.log('---------------');
 //});
 
-var command = service.insertCommand({name: "AAaron", age: new Date('2/3/1925'), address: 'aa'});
+var command = service.insertCommand({name: "Aaron", age: new Date('2/3/1925')});
 var command2 = service.insertCommand({name: "Aarons", age: new Date('2/3/1925'), address: 'aa'});
 var command3 = service.insertCommand({name: "Aaron", age: new Date('2/3/1925')});
 
