@@ -2,7 +2,7 @@ describe("Rule", function() {
   var Rule = require("../src/rule");
 
   var LengthRule = function(word) {
-    Rule.call(this);
+    Rule.call(this, { association: "foo" });
     this.word = word;
   };
 
@@ -17,90 +17,106 @@ describe("Rule", function() {
   };
 
   describe("validate", function() {
-    it("performs the validation supplied and retains any errors if validation fails", function(done) {
-      var rule = new LengthRule("");
+    describe("failed validation", function() {
+      it("contains an error", function(done) {
+        var rule = new LengthRule("");
 
-      rule.validate(() => {
-        expect(rule.errors.length).toEqual(1);
-        expect(rule.errors[0].error).toEqual("too few characters");
-        done();
+        rule.validate(() => {
+          expect(rule.errors.length).toEqual(1);
+          var error = rule.errors[0];
+          expect(error.association).toEqual("foo");
+          expect(error.error).toEqual("too few characters");
+          done();
+        });
       });
+
+      it("does not invoke the 'ifValidThenExecute' callback", function(done) {
+        var rule = new LengthRule("");
+        var callback = jasmine.createSpy();
+        rule.ifValidThenExecute(callback);
+
+        rule.validate(() => {
+          expect(callback).not.toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it("invokes the 'ifInvalidThenExecute' callback", function(done) {
+        var rule = new LengthRule("");
+        var callback = jasmine.createSpy();
+        rule.ifInvalidThenExecute(callback);
+
+        rule.validate(() => {
+          expect(callback).toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it("sets the error on the parent when child validation fails", function(done) {
+        var parent = new LengthRule("hello");
+        var child = new LengthRule("");
+        parent.ifValidThenValidate(child);
+
+        parent.validate(() => {
+          expect(parent.errors.length).toEqual(1);
+          done();
+        });
+      });
+
+      it("does not validate the child rule if the parent validation fails", function(done) {
+        var parent = new LengthRule("");
+        var child = new LengthRule("");
+        parent.ifValidThenValidate(child);
+
+        parent.validate(() => {
+          expect(child.errors.length).toEqual(0);
+          done();
+        });
+      });
+
     });
 
-    it("invokes the 'ifValidThenExecute' callback if the validation passes", function(done) {
-      var rule = new LengthRule("blah");
-      var callback = jasmine.createSpy();
-      rule.ifValidThenExecute(callback);
+    describe("successful validation", function() {
+      it("does not contain errors", (done) => {
+        var rule = new LengthRule("blah");
 
-      rule.validate(() => {
-        expect(callback).toHaveBeenCalled();
-        done();
+        rule.validate(() => {
+          expect(rule.errors.length).toEqual(0);
+          done();
+        });
       });
-    });
 
-    it("does not invoke the 'ifValidThenExecute' callback if the validation fails", function(done) {
-      var rule = new LengthRule("");
-      var callback = jasmine.createSpy();
-      rule.ifValidThenExecute(callback);
+      it("invokes the 'ifValidThenExecute' callback", function(done) {
+        var rule = new LengthRule("blah");
+        var callback = jasmine.createSpy();
+        rule.ifValidThenExecute(callback);
 
-      rule.validate(() => {
-        expect(callback).not.toHaveBeenCalled();
-        done();
+        rule.validate(() => {
+          expect(callback).toHaveBeenCalled();
+          done();
+        });
       });
-    });
 
-    it("invokes the 'ifInvalidThenExecute' callback if the validation fails", function(done) {
-      var rule = new LengthRule("");
-      var callback = jasmine.createSpy();
-      rule.ifInvalidThenExecute(callback);
+      it("does not invoke the 'ifInvalidThenExecute' callback if the validation passes", function(done) {
+        var rule = new LengthRule("hello");
+        var callback = jasmine.createSpy();
+        rule.ifInvalidThenExecute(callback);
 
-      rule.validate(() => {
-        expect(callback).toHaveBeenCalled();
-        done();
+        rule.validate(() => {
+          expect(callback).not.toHaveBeenCalled();
+          done();
+        });
       });
-    });
 
-    it("does not invoke the 'ifInvalidThenExecute' callback if the validation passes", function(done) {
-      var rule = new LengthRule("hello");
-      var callback = jasmine.createSpy();
-      rule.ifInvalidThenExecute(callback);
+      it("validates the child rule if the parent validation succeeds", function(done) {
+        var parent = new LengthRule("hello");
+        var child = new LengthRule("");
+        parent.ifValidThenValidate(child);
 
-      rule.validate(() => {
-        expect(callback).not.toHaveBeenCalled();
-        done();
-      });
-    });
-
-    it("validates the child rule if the parent validation succeeds", function(done) {
-      var parent = new LengthRule("hello");
-      var child = new LengthRule("");
-      parent.ifValidThenValidate(child);
-
-      parent.validate(() => {
-        expect(child.errors.length).toEqual(1);
-        done();
-      });
-    });
-
-    it("sets the error on the parent when child validation fails", function(done) {
-      var parent = new LengthRule("hello");
-      var child = new LengthRule("");
-      parent.ifValidThenValidate(child);
-
-      parent.validate(() => {
-        expect(parent.errors.length).toEqual(1);
-        done();
-      });
-    });
-
-    it("does not validate the child rule if the parent validation fails", function(done) {
-      var parent = new LengthRule("");
-      var child = new LengthRule("");
-      parent.ifValidThenValidate(child);
-
-      parent.validate(() => {
-        expect(child.errors.length).toEqual(0);
-        done();
+        parent.validate(() => {
+          expect(child.errors.length).toEqual(1);
+          done();
+        });
       });
     });
 
