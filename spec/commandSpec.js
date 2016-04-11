@@ -66,23 +66,19 @@ describe("Command", function() {
     describe("execution results", () => {
       var TrueRule, FalseRule;
       beforeAll(() => {
-        TrueRule = function() {
-          Rule.call(this) 
-        };
-        TrueRule.prototype = new Rule();
-        TrueRule.prototype.__onValidate = function(done) {
-          done();
-        };
+        TrueRule = Rule.inherit({
+          onValidate: function(done) {
+            done();
+          }
+        });
 
-        FalseRule = function(errorMessage) {
-          Rule.call(this) 
-          this.message = errorMessage;
-        };
-        FalseRule.prototype = new Rule();
-        FalseRule.prototype.__onValidate = function(done) {
-          this.__invalidate(this.message);
-          done();
-        };
+        FalseRule = Rule.inherit({
+          params: ['message'],
+          onValidate: function(done) {
+            this.__invalidate(this.message);
+            done();
+          }
+        });
       });
 
       describe("when no rules configured", () => {

@@ -163,49 +163,50 @@ describe("Rule", function() {
     describe("multiple rules", () => {
       it("pass as expected", (done) => {
         var rules = [
-        new LengthRule("a"),
-        new LengthRule("b"),
-        new LengthRule("c")
+          new LengthRule("a"),
+          new LengthRule("b"),
+          new LengthRule("c")
         ];
 
-      var rule = new LengthRule("test").ifValidThenValidate(rules);
+        var rule = new LengthRule("test").ifValidThenValidate(rules);
 
-      rule.validate(() => {
-        expect(rule.errors.length).toEqual(0);
-        done();
-      });
+        rule.validate(() => {
+          expect(rule.errors.length).toEqual(0);
+          done();
+        });
       });
 
       it("parent rule fails if one child fails", (done) => {
         var rules = [
-        new LengthRule("a"),
-        new LengthRule(""),
-        new LengthRule("c")
+          new LengthRule("a"),
+          new LengthRule(""),
+          new LengthRule("c")
         ];
 
-      var rule = new LengthRule("test").ifValidThenValidate(rules);
+        var rule = new LengthRule("test").ifValidThenValidate(rules);
 
-      rule.validate(() => {
-        expect(rule.errors.length).toEqual(1);
-        done();
-      });
+        rule.validate(() => {
+          expect(rule.errors.length).toEqual(1);
+          done();
+        });
       });
 
       it("failing children sets errors on parent", (done) => {
         var rules = [
-        new LengthRule(""),
-        new LengthRule(""),
-        new LengthRule("")
+          new LengthRule(""),
+          new LengthRule(""),
+          new LengthRule("")
         ];
 
-      var rule = new LengthRule("test").ifValidThenValidate(rules);
+        var rule = new LengthRule("test").ifValidThenValidate(rules);
 
-      rule.validate(() => {
-        expect(rule.errors.length).toEqual(3);
-        done();
+        rule.validate(() => {
+          expect(rule.errors.length).toEqual(3);
+          done();
+        });
+      
       });
-      });
-    });
+  });
 
     describe("rule chaining", () => {
       describe("one level deep", () => {
