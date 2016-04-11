@@ -14,24 +14,52 @@ PersonDataProxy.prototype = {
   }
 };
 
-var AgeRule = function(birthdate) {
-  if (this instanceof AgeRule) {
-    Rule.call(this, { association: "age" });
-    this.birthdate = birthdate;
-  } else {
-    return new AgeRule(birthdate);
-  }
-};
 
-AgeRule.prototype = new Rule();
-AgeRule.prototype.__onValidate = function(done) {
-  if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
-    this.__invalidate("You are too young");
+//var AddressRule = Rule.inherit({
+  //association: 'address',
+  //fields: ['birthdate'],
+  //onValidate: function(done) {
+    //if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
+      //this.__invalidate("You are too young");
+    //}
+  //}
+//});
+//
+
+//console.log("FOOOOOO");
+//console.log(Rule.inherit);
+
+var AgeRule = Rule.inherit({
+  association: "age",
+  params: ['birthdate'],
+  onValidate: function(done) {
+    if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
+      this.__invalidate("You are too young");
+    }
+    //done(this);
+    var time = Math.floor((Math.random() * 3000) + 1);
+    setTimeout(() => done(this), time);
   }
-  var time = Math.floor((Math.random() * 3000) + 1);
-  setTimeout(() => done(this), time);
-  //done(this);
-};
+});
+
+//var AgeRule = function(birthdate) {
+  //if (this instanceof AgeRule) {
+    //Rule.call(this, { association: "age" });
+    //this.birthdate = birthdate;
+  //} else {
+    //return new AgeRule(birthdate);
+  //}
+//};
+
+//AgeRule.prototype = new Rule();
+//AgeRule.prototype.__onValidate = function(done) {
+  //if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
+    //this.__invalidate("You are too young");
+  //}
+  //var time = Math.floor((Math.random() * 3000) + 1);
+  //setTimeout(() => done(this), time);
+  ////done(this);
+//};
 
 var FieldRequiredRule = function(field, data) {
   Rule.call(this);
@@ -50,20 +78,32 @@ FieldRequiredRule.prototype.__onValidate = function(done) {
   //done(this);
 };
 
-var NameRule = function(name) {
-  Rule.call(this, { association: "name" });
-  this.name = name;
-};
-
-NameRule.prototype = new Rule();
-NameRule.prototype.__onValidate = function(done) {
-  if (this.name === "Aaron") {
-    this.__invalidate("Name cannot be Aaron");
+var NameRule = Rule.inherit({
+  association: "name",
+  params: ['name'],
+  onValidate: function(done) {
+    if (this.name === "Aaron") {
+      this.__invalidate("Name cannot be Aaron");
+    }
+    var time = Math.floor((Math.random() * 3000) + 1);
+    setTimeout(() => done(this), time);
   }
-  var time = Math.floor((Math.random() * 3000) + 1);
-  setTimeout(() => done(this), time);
-  //done(this);
-};
+});
+
+//var NameRule = function(name) {
+  //Rule.call(this, { association: "name" });
+  //this.name = name;
+//};
+
+//NameRule.prototype = new Rule();
+//NameRule.prototype.__onValidate = function(done) {
+  //if (this.name === "Aaron") {
+    //this.__invalidate("Name cannot be Aaron");
+  //}
+  //var time = Math.floor((Math.random() * 3000) + 1);
+  //setTimeout(() => done(this), time);
+  ////done(this);
+//};
 
 
 var PersonService = function(dataProxy) {
@@ -119,7 +159,7 @@ var service = new PersonService(new PersonDataProxy());
   //console.log('---------------');
 //});
 
-var command = service.insertCommand({name: "Aaron", age: new Date('2/3/1925')});
+var command = service.insertCommand({name: "aAaron", age: new Date('2/3/1925')});
 var command2 = service.insertCommand({name: "Aarons", age: new Date('2/3/1925'), address: 'aa'});
 var command3 = service.insertCommand({name: "Aaron", age: new Date('2/3/1925')});
 

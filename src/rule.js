@@ -16,6 +16,33 @@ var Rule = function(options) {
   }
 };
 
+Rule.inherit = function(options) {
+
+  options = options || {};
+
+  if (typeof options.onValidate !== 'function') {
+    throw new Error('An onValidate method needs to be supplied to execute!');
+  }
+
+  options.association = options.association || null;
+  options.params = options.params || [];
+  options.onValidate = options.onValidate || function() {};
+
+  var Extended = function() {
+    this.args = arguments;
+    var self = this;
+    Rule.call(this, { association: options.association});
+    options.params.forEach(function(field, index) {
+      self[field] = self.args[index];
+    });
+  }
+
+  Extended.prototype = new Rule();
+  Extended.prototype.__onValidate = options.onValidate;
+
+  return Extended;
+}
+
 Rule.prototype = {
 
   constructor: Rule,
