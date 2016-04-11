@@ -52,7 +52,7 @@ Command.prototype = {
           }
           catch(err) {
             if (err instanceof ServiceException) {
-              done(new ExecutionResult(false, null, [{ association: "TODO", error: err.message }]));
+              done(new ExecutionResult(false, null, [{ association: err.association, error: err.message }]));
             } else {
               throw err;
             }
