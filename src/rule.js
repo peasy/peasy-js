@@ -16,7 +16,7 @@ var Rule = function(options) {
   }
 };
 
-Rule.inherit = function(options) {
+Rule.extend = function(options) {
 
   options = options || {};
 

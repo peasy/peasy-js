@@ -1,13 +1,13 @@
 describe("Rule", function() {
   var Rule = require("../src/rule");
 
-  describe("Inherit", () => {
+  describe("extend", () => {
     it("throws an exception when onValidate is not supplied", () => {
-      expect(Rule.inherit).toThrowError();
+      expect(Rule.extend).toThrowError();
     });
 
     it("matches params to supplied function arguments", () => {
-      var TestRule = Rule.inherit({
+      var TestRule = Rule.extend({
         params: ['word', 'bar'],
         onValidate: function(done) {
           expect(this.word).toEqual('yes');
@@ -19,8 +19,8 @@ describe("Rule", function() {
     })
   });
 
-  // this will test the Rule.inherit functionality
-  var LengthRule = Rule.inherit({
+  // this will test the Rule.extend functionality
+  var LengthRule = Rule.extend({
     association: "foo",
       params: ['word', 'bar'],
       onValidate: function(done) {

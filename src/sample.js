@@ -3,7 +3,7 @@
 var Rule = require('./rule');
 var BusinessService = require('./businessService');
 
-var AgeRule = Rule.inherit({
+var AgeRule = Rule.extend({
   association: "age",
   params: ['birthdate'],
   onValidate: function(done) {
@@ -15,7 +15,7 @@ var AgeRule = Rule.inherit({
   }
 });
 
-var NameRule = Rule.inherit({
+var NameRule = Rule.extend({
   association: "name",
   params: ['name'],
   onValidate: function(done) {
@@ -27,7 +27,7 @@ var NameRule = Rule.inherit({
   }
 });
 
-var FieldRequiredRule = Rule.inherit({
+var FieldRequiredRule = Rule.extend({
   params: ['field', 'data'],
   onValidate: function(done) {
     if (!this.data[this.field]) {

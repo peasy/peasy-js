@@ -66,13 +66,13 @@ describe("Command", function() {
     describe("execution results", () => {
       var TrueRule, FalseRule;
       beforeAll(() => {
-        TrueRule = Rule.inherit({
+        TrueRule = Rule.extend({
           onValidate: function(done) {
             done();
           }
         });
 
-        FalseRule = Rule.inherit({
+        FalseRule = Rule.extend({
           params: ['message'],
           onValidate: function(done) {
             this.__invalidate(this.message);
