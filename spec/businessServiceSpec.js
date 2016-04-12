@@ -15,6 +15,49 @@ describe("BusinessService", function() {
     });
   });
 
+  describe("extend", () => {
+    it("matches params to supplied function arguments", () => {
+      var Service = BusinessService.extend({
+        params: ['dataProxy', 'bar']
+      });
+      var service = new Service('proxy', 'no');
+      expect(service.dataProxy).toEqual('proxy');
+      expect(service.bar).toEqual('no');
+    });
+
+    it("creates a function for each supplied function config", () => {
+      var Service = BusinessService.extend({
+        functions: [
+          { "__getAll" : getAll },
+          { "__getById" : getById },
+          { "__getRulesForInsert" : getRulesForInsert },
+        ]
+      });
+
+      function getAll() {}
+      function getById() {}
+      function getRulesForInsert () {}
+
+      var service = new Service();
+      expect(service.__getAll).toEqual(getAll); 
+      expect(service.__getById).toEqual(getById); 
+      expect(service.__getRulesForInsert).toEqual(getRulesForInsert); 
+    });
+
+    it("logs a console.warn whan a supplied function name does not exist on BusinessService", () => {
+      spyOn(console, 'warn');
+
+      var Service = BusinessService.extend({
+        functions: [ { "GETALL" : getAll } ]
+      });
+
+      function getAll() {}
+
+      var service = new Service();
+      expect(console.warn).toHaveBeenCalled();
+    })
+  });
+
   describe("getAllCommand and associated methods", function() {
 
     beforeAll(() => {

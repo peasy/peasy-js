@@ -39,17 +39,12 @@ var FieldRequiredRule = Rule.inherit({
   }
 });
 
-var PersonService = function(dataProxy) {
-  if (this instanceof PersonService) {
-    BusinessService.call(this);
-    this.dataProxy = dataProxy;
-  } else {
-    return new PersonService(dataProxy);
-  }
-};
+var PersonService = BusinessService.extend({
+  params: ['dataProxy'],
+  functions: [ { '__getRulesForInsert': getRulesForInsert } ]
+});
 
-PersonService.prototype = new BusinessService();
-PersonService.prototype.__getRulesForInsert = function(person, context, done) {
+function getRulesForInsert(person, context, done) {
 
   //done([
       //new AgeRule(person.age),

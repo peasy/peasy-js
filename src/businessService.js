@@ -3,13 +3,40 @@
 var Command = require('./command');
 
 var BusinessService = function(dataProxy) {
-  //if (!dataProxy instanceof DataProxy) throw 'dataproxy must ..';
   if (this instanceof BusinessService) {
     this.dataProxy = dataProxy;
   } else {
     return new BusinessService(dataProxy);
   }
 };
+
+BusinessService.extend = function(options) {
+
+  options = options || {};
+  options.params = options.params || [];
+  options.functions = options.functions || [];
+
+  var Extended = function() {
+    this.args = arguments;
+    var self = this;
+    BusinessService.call(this);
+    options.params.forEach(function(field, index) {
+      self[field] = self.args[index];
+    });
+  }
+
+  Extended.prototype = new BusinessService();
+  var keys = Object.keys(BusinessService.prototype);
+  options.functions.forEach(function(config) {
+    var name = Object.keys(config)[0]
+    if (keys.indexOf(name) === -1) {
+      console.warn("The method: '" + name + "' is not an overridable method of BusinessService");
+    } 
+    Extended.prototype[name] = config[name];
+  });
+  
+  return Extended;
+}
 
 BusinessService.prototype = {
 
@@ -94,7 +121,6 @@ BusinessService.prototype = {
   },
 
   __getAll: function(context, done) {
-    if ("getAll" in this.dataProxy)
     this.dataProxy.getAll(done);
   },
 
