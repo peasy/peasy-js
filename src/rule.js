@@ -12,7 +12,7 @@ var Rule = function(options) {
     this.successors = [];
     this.valid = true;
   } else {
-    return new Rule(); 
+    return new Rule();
   }
 };
 

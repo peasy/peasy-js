@@ -31,10 +31,10 @@ BusinessService.extend = function(options) {
     var name = Object.keys(config)[0]
     if (keys.indexOf(name) === -1) {
       console.warn("The method: '" + name + "' is not an overridable method of BusinessService");
-    } 
+    }
     Extended.prototype[name] = config[name];
   });
-  
+
   return Extended;
 }
 

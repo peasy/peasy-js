@@ -51,7 +51,7 @@ function getRulesForInsert(person, context, done) {
       //new NameRule(person.name),
       //new FieldRequiredRule("address", person)
   //]);
-  
+
   done([new AgeRule(person.age)
                 .ifValidThenExecute(() => console.log("Age succeeded"))
                 .ifInvalidThenExecute(() => console.log("Age failed"))

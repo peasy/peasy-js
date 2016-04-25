@@ -16,8 +16,8 @@ var Command = function(callbacks) {
     this.onValidationSuccess = callbacks.onValidationSuccess || function(done) { done() };
   } else {
     return new Command(
-      callbacks.onInitialization, 
-      callbacks.getRules, 
+      callbacks.onInitialization,
+      callbacks.getRules,
       callbacks.onValidationSuccess);
   }
 };
