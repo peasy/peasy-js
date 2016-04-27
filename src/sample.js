@@ -1,7 +1,7 @@
 "use strict";
 
-var Rule = require('./rule');
-var BusinessService = require('./businessService');
+var Rule = require('./peasyjs').Rule;
+var BusinessService = require('./peasyjs').BusinessService;
 
 var AgeRule = Rule.extend({
   association: "age",
