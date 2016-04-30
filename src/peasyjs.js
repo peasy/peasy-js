@@ -1,4 +1,12 @@
-var peasyjs = (function() {
+(function(root, factory) {
+  if (typeof define === "function" && define.amd) {
+    define(["peasyjs"], factory);
+  } else if (typeof module === "object" && module.exports) {
+    module.exports = factory();
+  } else {
+    root.peasyjs = factory();
+  }
+}(this, function() {
 
   "use strict";
 
@@ -421,7 +429,5 @@ var peasyjs = (function() {
     ServiceException: ServiceException
   };
 
-})();
+}));
 
-// THIS IS WHERE WE WRITE TO GLOBAL, COMMONJS, OR AMD
-module.exports = peasyjs;
