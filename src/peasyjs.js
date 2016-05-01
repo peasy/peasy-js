@@ -1,4 +1,4 @@
-(function(root, factory) {
+;(function(root, factory) {
   if (typeof define === "function" && define.amd) {
     define(["peasyjs"], factory);
   } else if (typeof module === "object" && module.exports) {
