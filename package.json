@@ -11,16 +11,21 @@
     "url": "git+https://github.com/peasy/peasy.js.git"
   },
   "keywords": [
+    "middle tier",
     "middle",
     "tier",
     "framework",
     "business",
-    "layer"
+    "layer",
+    "middle tier framework",
+    "business layer",
+    "rules engine",
+    "rules"
   ],
   "author": "Aaron Hanusa <aaron.hanusa@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/peasy/peasy.js/issues"
   },
-  "homepage": "https://github.com/peasy/peasy.js#readme"
+  "homepage": "https://github.com/peasy/peasy.js"
 }
