@@ -1,5 +1,5 @@
 {
-  "name": "peasy.js",
+  "name": "peasy-js",
   "version": "1.0.0",
   "description": "An easy to use javascript middle tier framework",
   "main": "src/index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/peasy/Peasy.js.git"
+    "url": "git+https://github.com/peasy/peasy-js.git"
   },
   "keywords": [
     "middle",
@@ -20,7 +20,7 @@
   "author": "Aaron Hanusa <aaron.hanusa@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/peasy/Peasy.js/issues"
+    "url": "https://github.com/peasy/peasy-js/issues"
   },
-  "homepage": "https://github.com/peasy/Peasy.js#readme"
+  "homepage": "https://github.com/peasy/peasy-js#readme"
 }
