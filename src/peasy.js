@@ -1,10 +1,10 @@
 (function(root, factory) {
   if (typeof define === "function" && define.amd) {
-    define(["peasyjs"], factory);
+    define(["peasy"], factory);
   } else if (typeof module === "object" && module.exports) {
     module.exports = factory();
   } else {
-    root.peasyjs = factory();
+    root.peasy = factory();
   }
 }(this, function() {
 
