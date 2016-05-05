@@ -20,7 +20,9 @@
     "middle tier framework",
     "business layer",
     "rules engine",
-    "rules"
+    "rules",
+    "peasy-js",
+    "peasy"
   ],
   "author": "Aaron Hanusa <aaron.hanusa@gmail.com>",
   "license": "MIT",
@@ -28,6 +30,4 @@
     "url": "https://github.com/peasy/peasy-js/issues"
   },
   "homepage": "https://github.com/peasy/peasy-js#readme"
-    "url": "https://github.com/peasy/peasy-js/issues"
-  },
 }
