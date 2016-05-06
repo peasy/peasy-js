@@ -48,6 +48,36 @@
     return Extended;
   }
 
+  BusinessService.createCommand = function(name, service, options) {
+    var initializationMethod = '__on' + name + 'Initialization';
+    var getRulesMethod = '__getRulesFor' + name;
+    var successMethod = '__' + name + 'success';
+
+    service.prototype[initializationMethod] = options.initialization;
+    service.prototype[getRulesMethod] = options.getRules;
+    service.prototype[successMethod] = options.success;
+
+    service.prototype[name] = function() {
+      var self = this;
+      var context = {};
+
+      return new Command({
+        onInitialization: function(done) {
+          self[initializationMethod](context, done);
+        },
+        getRules: function(done) {
+          return self[getRulesMethod](context, done);
+        },
+        onValidationSuccess: function(done) {
+          return self[successMethod](context, done);
+        }
+      });
+    };
+
+    return service;
+  };
+
+
   BusinessService.prototype = {
 
     getAllCommand: function() {
@@ -201,7 +231,6 @@
   var Command = function(callbacks) {
     callbacks = callbacks || {};
     if (this instanceof Command) {
-
       if (typeof callbacks.onValidationSuccess !== 'function') {
         console.warn("'onValidationSuccess' was not defined.");
       }

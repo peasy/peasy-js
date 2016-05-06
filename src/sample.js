@@ -2,6 +2,7 @@
 
 var Rule = require('./peasy').Rule;
 var BusinessService = require('./peasy').BusinessService;
+var Command = require('./peasy').Command;
 
 var AgeRule = Rule.extend({
   association: "age",
@@ -43,6 +44,37 @@ var PersonService = BusinessService.extend({
   params: ['dataProxy'],
   functions: [ { '__getRulesForInsert': getRulesForInsert } ]
 });
+
+PersonService.prototype.__onFooInit = function(context, done) {
+  context.fooInitInvoked = true;
+  done();
+};
+
+PersonService.prototype.__onGetRulesForFoo = function(context, done) {
+  context.getRulesInvoked = true;
+  done([]);
+};
+
+PersonService.prototype.__onFooSuccess = function(context, done) {
+  console.log(context);
+  done();
+};
+
+PersonService.prototype.fooCommand = function() {
+  var service = this;
+  var context = {};
+  return new Command({
+    onInitialization: function(done) {
+      service.__onFooInit(context, done);
+    },
+    getRules: function(done) {
+      return service.__onGetRulesForFoo(context, done);
+    },
+    onValidationSuccess: function(done) {
+      return service.__onFooSuccess(context, done);
+    }
+  });
+}
 
 function getRulesForInsert(person, context, done) {
 
@@ -89,5 +121,7 @@ var service = new PersonService(new PersonDataProxy());
     console.log(result);
   });
 });
+
+service.fooCommand().execute(() => {});
 
 module.exports = service;
