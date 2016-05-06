@@ -45,36 +45,20 @@ var PersonService = BusinessService.extend({
   functions: [ { '__getRulesForInsert': getRulesForInsert } ]
 });
 
-PersonService.prototype.__onFooInit = function(context, done) {
-  context.fooInitInvoked = true;
-  done();
-};
-
-PersonService.prototype.__onGetRulesForFoo = function(context, done) {
-  context.getRulesInvoked = true;
-  done([]);
-};
-
-PersonService.prototype.__onFooSuccess = function(context, done) {
-  console.log(context);
-  done();
-};
-
-PersonService.prototype.fooCommand = function() {
-  var service = this;
-  var context = {};
-  return new Command({
-    onInitialization: function(done) {
-      service.__onFooInit(context, done);
-    },
-    getRules: function(done) {
-      return service.__onGetRulesForFoo(context, done);
-    },
-    onValidationSuccess: function(done) {
-      return service.__onFooSuccess(context, done);
-    }
-  });
-}
+BusinessService.createCommand('fooCommand', PersonService, {
+  initialization: function(context, done) {
+    context.fooInitInvoked = true;
+    done();
+  },
+  getRules: function(context, done) {
+    context.getRulesInvoked = false;
+    done([]);
+  },
+  success: function(context, done) {
+    console.log(context);
+    done();
+  }
+});
 
 function getRulesForInsert(person, context, done) {
 
