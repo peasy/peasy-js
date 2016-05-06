@@ -268,19 +268,19 @@
 
   RulesValidator.prototype.validate = function(done) {
     var self = this;
-    if (self.rules.length > 0) {
-      var counter = self.rules.length;
+    var counter = self.rules.length;
 
+    function onRuleValidated() {
+      counter--;
+      if (counter === 0) {
+        done();
+      }
+    }
+
+    if (self.rules.length > 0) {
       self.rules.forEach(function(rule) {
         rule.validate(onRuleValidated);
       });
-
-      function onRuleValidated() {
-        counter--;
-        if (counter === 0) {
-          done();
-        }
-      }
     } else {
       done();
     }
