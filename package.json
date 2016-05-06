@@ -1,6 +1,6 @@
 {
   "name": "peasy-js",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An easy to use javascript middle tier framework",
   "main": "src/peasy.js",
   "scripts": {
