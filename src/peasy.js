@@ -45,7 +45,19 @@
       Extended.prototype[name] = config[name];
     });
 
-    return Extended;
+    function createCommand(name, options) {
+      BusinessService.createCommand(name, Extended, options);
+      return {
+        createCommand: createCommand,
+        service: Extended
+      };
+    }
+
+    return {
+      createCommand: createCommand,
+      service: Extended
+    };
+
   }
 
   BusinessService.createCommand = function(name, service, options) {
