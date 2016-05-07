@@ -40,25 +40,26 @@ var FieldRequiredRule = Rule.extend({
   }
 });
 
-var PersonService = BusinessService.extend({
-  params: ['dataProxy'],
-  functions: [ { '__getRulesForInsert': getRulesForInsert } ]
-});
-
-BusinessService.createCommand('fooCommand', PersonService, {
-  initialization: function(context, done) {
-    context.fooInitInvoked = true;
-    done();
-  },
-  getRules: function(context, done) {
-    context.getRulesInvoked = false;
-    done([]);
-  },
-  success: function(context, done) {
-    console.log(context);
-    done();
-  }
-});
+var PersonService = BusinessService
+                      .extend({
+                        params: ['dataProxy'],
+                        functions: [ { '__getRulesForInsert': getRulesForInsert } ]
+                      })
+                      .createCommand('fooCommand', {
+                        initialization: function(context, done) {
+                          context.fooInitInvoked = true;
+                          done();
+                        },
+                        getRules: function(context, done) {
+                          context.getRulesInvoked = false;
+                          done([]);
+                        },
+                        success: function(context, done) {
+                          console.log(context);
+                          done();
+                        }
+                      })
+                      .service;
 
 function getRulesForInsert(person, context, done) {
 
