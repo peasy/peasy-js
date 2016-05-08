@@ -61,7 +61,96 @@ describe("BusinessService", function() {
 
       var service = new Service();
       expect(console.warn).toHaveBeenCalled();
-    })
+    });
+
+    describe("returned value", () => {
+      it("is an object literal containing the service function and a createCommand function", () => {
+        var result = BusinessService.extend();
+        expect(typeof result.createCommand === 'function').toBe(true);
+        expect(typeof result.service === 'function').toBe(true);
+      });
+
+      describe("createCommand", () => {
+        it("returns an object literal containing the service function and a createCommand function", () => {
+          var result = BusinessService.extend()
+                                      .createCommand('testCommand', {
+                                       });
+
+          expect(typeof result.createCommand === 'function').toBe(true);
+          expect(typeof result.service === 'function').toBe(true);
+        });
+
+        it("creates a command function exposed by the service", () => {
+          var Service = BusinessService.extend()
+                                       .createCommand('testCommand', {
+                                       })
+                                       .service;
+
+          var service = new Service();
+          expect(typeof service.testCommand === 'function').toBe(true);
+        });
+      });
+    });
+  });
+
+  describe("createCommand", () => {
+    it("creates a command function exposed by the service", () => {
+      var Service = BusinessService.extend().service;
+      BusinessService.createCommand('testCommand', Service, { });
+      var service = new Service();
+
+      expect(typeof service.testCommand === 'function').toBe(true);
+    });
+
+    it("creates defaults functions for the command to invoke when not supplied ", () => {
+      var Service = BusinessService.extend().service;
+      BusinessService.createCommand('testCommand', Service, { });
+      var service = new Service();
+
+      expect(typeof service.__onTestCommandInitialization === 'function').toBe(true);
+      expect(typeof service.__getRulesForTestCommand === 'function').toBe(true);
+      expect(typeof service.__testCommandSuccess === 'function').toBe(true);
+    });
+
+    describe("when supplied with options.functions", () => {
+      it("creates a command that executes the pipeline as expected", () => {
+        var Service = BusinessService.extend().service;
+        var sharedContext = null
+
+        BusinessService.createCommand('testCommand', Service, { 
+          initialization: function(context, done) {
+            context.testValue = "1";
+            done();
+          },
+          getRules: function(context, done) {
+            context.testValue += "2";
+            done([]);
+          },
+          success: function(context, done) {
+            sharedContext = context;
+            done();
+          },
+        });
+
+        var service = new Service();
+        service.testCommand().execute(() => {});
+        expect(sharedContext.testValue).toEqual("12"); 
+      });
+    });
+
+    describe("when supplied without options.functions", () => {
+      it("creates a command that successfully executes", () => {
+        var Service = BusinessService.extend().service;
+        var testValue = null
+        BusinessService.createCommand('testCommand', Service);
+
+        var service = new Service();
+        service.testCommand().execute(() => {
+          testValue = "done";
+        });
+        expect(testValue).toBe("done");
+      });
+    });
   });
 
   describe("getAllCommand and associated methods", function() {
