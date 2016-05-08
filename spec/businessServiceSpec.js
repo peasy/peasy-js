@@ -16,10 +16,16 @@ describe("BusinessService", function() {
   });
 
   describe("extend", () => {
+    it("creates a default param of dataProxy when no option params are supplied", () => {
+      var Service = BusinessService.extend().service;
+      var service = new Service('proxy');
+      expect(service.dataProxy).toEqual('proxy');
+    });
+
     it("matches params to supplied function arguments", () => {
       var Service = BusinessService.extend({
         params: ['dataProxy', 'bar']
-      });
+      }).service;
       var service = new Service('proxy', 'no');
       expect(service.dataProxy).toEqual('proxy');
       expect(service.bar).toEqual('no');
@@ -32,7 +38,7 @@ describe("BusinessService", function() {
           { "__getById" : getById },
           { "__getRulesForInsert" : getRulesForInsert },
         ]
-      });
+      }).service;
 
       function getAll() {}
       function getById() {}
@@ -44,12 +50,12 @@ describe("BusinessService", function() {
       expect(service.__getRulesForInsert).toEqual(getRulesForInsert); 
     });
 
-    it("logs a console.warn whan a supplied function name does not exist on BusinessService", () => {
+    it("logs a console.warn when a supplied function name does not exist on BusinessService", () => {
       spyOn(console, 'warn');
 
       var Service = BusinessService.extend({
         functions: [ { "GETALL" : getAll } ]
-      });
+      }).service;
 
       function getAll() {}
 

@@ -13,7 +13,7 @@ var BusinessService = function(dataProxy) {
 BusinessService.extend = function(options) {
 
   options = options || {};
-  options.params = options.params || [];
+  options.params = options.params || ['dataProxy'];
   options.functions = options.functions || [];
 
   var Extended = function() {
@@ -35,7 +35,19 @@ BusinessService.extend = function(options) {
     Extended.prototype[name] = config[name];
   });
 
-  return Extended;
+  function createCommand(name, options) {
+    BusinessService.createCommand(name, Extended, options);
+    return {
+      createCommand: createCommand,
+      service: Extended
+    };
+  }
+
+  return {
+    createCommand: createCommand,
+    service: Extended
+  };
+
 }
 
 BusinessService.prototype = {
