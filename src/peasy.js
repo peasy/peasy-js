@@ -60,26 +60,26 @@
 
   }
 
-  BusinessService.createCommand = function(name, service, options) {
-    var initializationMethod = '__on' + capitalize(name) + 'Initialization';
-    var getRulesMethod = '__getRulesFor' + capitalize(name);
-    var successMethod = '__' + name + 'Success';
+  BusinessService.createCommand = function(name, service, functions) {
+    var onInitialization = '__on' + capitalize(name) + 'Initialization';
+    var getRules = '__getRulesFor' + capitalize(name);
+    var onValidationSuccess = '__' + name.replace("Command", "");
 
     function capitalize(value) {
       return value.charAt(0).toUpperCase() + value.slice(1);
     };
 
-    options = options || {};
+    functions = functions || {};
 
-    service.prototype[initializationMethod] = options.initialization || function(context, done) {
+    service.prototype[onInitialization] = functions.onInitialization || function(context, done) {
       done();
     };
 
-    service.prototype[getRulesMethod] = options.getRules || function(context, done) {
+    service.prototype[getRules] = functions.getRules || function(context, done) {
       done([]);
     };
 
-    service.prototype[successMethod] = options.success || function(context, done) {
+    service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done) {
       done();
     };
 
@@ -89,13 +89,13 @@
 
       return new Command({
         onInitialization: function(done) {
-          self[initializationMethod](context, done);
+          self[onInitialization](context, done);
         },
         getRules: function(done) {
-          return self[getRulesMethod](context, done);
+          return self[getRules](context, done);
         },
         onValidationSuccess: function(done) {
-          return self[successMethod](context, done);
+          return self[onValidationSuccess](context, done);
         }
       });
     };

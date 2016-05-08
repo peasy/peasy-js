@@ -94,22 +94,14 @@ describe("BusinessService", function() {
   });
 
   describe("createCommand", () => {
-    it("creates a command function exposed by the service", () => {
+    it("creates the expected command functions on the service prototype", () => {
       var Service = BusinessService.extend().service;
       BusinessService.createCommand('testCommand', Service, { });
-      var service = new Service();
 
-      expect(typeof service.testCommand === 'function').toBe(true);
-    });
-
-    it("creates defaults functions for the command to invoke when not supplied ", () => {
-      var Service = BusinessService.extend().service;
-      BusinessService.createCommand('testCommand', Service, { });
-      var service = new Service();
-
-      expect(typeof service.__onTestCommandInitialization === 'function').toBe(true);
-      expect(typeof service.__getRulesForTestCommand === 'function').toBe(true);
-      expect(typeof service.__testCommandSuccess === 'function').toBe(true);
+      expect(typeof Service.prototype.testCommand === 'function').toBe(true);
+      expect(typeof Service.prototype.__onTestCommandInitialization === 'function').toBe(true);
+      expect(typeof Service.prototype.__getRulesForTestCommand === 'function').toBe(true);
+      expect(typeof Service.prototype.__test === 'function').toBe(true);
     });
 
     describe("when supplied with options.functions", () => {
@@ -117,8 +109,8 @@ describe("BusinessService", function() {
         var Service = BusinessService.extend().service;
         var sharedContext = null
 
-        BusinessService.createCommand('testCommand', Service, { 
-          initialization: function(context, done) {
+        BusinessService.createCommand('testCommand', Service, {
+          onInitialization: function(context, done) {
             context.testValue = "1";
             done();
           },
@@ -126,7 +118,7 @@ describe("BusinessService", function() {
             context.testValue += "2";
             done([]);
           },
-          success: function(context, done) {
+          onValidationSuccess: function(context, done) {
             sharedContext = context;
             done();
           },
@@ -134,7 +126,7 @@ describe("BusinessService", function() {
 
         var service = new Service();
         service.testCommand().execute(() => {});
-        expect(sharedContext.testValue).toEqual("12"); 
+        expect(sharedContext.testValue).toEqual("12");
       });
     });
 
