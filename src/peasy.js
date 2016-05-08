@@ -23,7 +23,7 @@
   BusinessService.extend = function(options) {
 
     options = options || {};
-    options.params = options.params || [];
+    options.params = options.params || ['dataProxy'];
     options.functions = options.functions || [];
 
     var Extended = function() {

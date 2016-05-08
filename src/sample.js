@@ -40,7 +40,7 @@ var FieldRequiredRule = Rule.extend({
   }
 });
 
-var PersonService = BusinessService.extend({ params:['dataProxy'] }).service;
+var PersonService = BusinessService.extend().service;
 
 function getRulesForInsert(person, context, done) {
 
