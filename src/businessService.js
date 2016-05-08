@@ -47,8 +47,50 @@ BusinessService.extend = function(options) {
     createCommand: createCommand,
     service: Extended
   };
-
 }
+
+BusinessService.createCommand = function(name, service, options) {
+  var initializationMethod = '__on' + capitalize(name) + 'Initialization';
+  var getRulesMethod = '__getRulesFor' + capitalize(name);
+  var successMethod = '__' + name + 'Success';
+
+  function capitalize(value) {
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  };
+
+  options = options || {};
+
+  service.prototype[initializationMethod] = options.initialization || function(context, done) {
+    done();
+  };
+
+  service.prototype[getRulesMethod] = options.getRules || function(context, done) {
+    done([]);
+  };
+
+  service.prototype[successMethod] = options.success || function(context, done) {
+    done();
+  };
+
+  service.prototype[name] = function() {
+    var self = this;
+    var context = {};
+
+    return new Command({
+      onInitialization: function(done) {
+        self[initializationMethod](context, done);
+      },
+      getRules: function(done) {
+        return self[getRulesMethod](context, done);
+      },
+      onValidationSuccess: function(done) {
+        return self[successMethod](context, done);
+      }
+    });
+  };
+
+  return service;
+};
 
 BusinessService.prototype = {
 

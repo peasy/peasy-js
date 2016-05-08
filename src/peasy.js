@@ -61,13 +61,27 @@
   }
 
   BusinessService.createCommand = function(name, service, options) {
-    var initializationMethod = '__on' + name + 'Initialization';
-    var getRulesMethod = '__getRulesFor' + name;
-    var successMethod = '__' + name + 'success';
+    var initializationMethod = '__on' + capitalize(name) + 'Initialization';
+    var getRulesMethod = '__getRulesFor' + capitalize(name);
+    var successMethod = '__' + name + 'Success';
 
-    service.prototype[initializationMethod] = options.initialization;
-    service.prototype[getRulesMethod] = options.getRules;
-    service.prototype[successMethod] = options.success;
+    function capitalize(value) {
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    };
+
+    options = options || {};
+
+    service.prototype[initializationMethod] = options.initialization || function(context, done) {
+      done();
+    };
+
+    service.prototype[getRulesMethod] = options.getRules || function(context, done) {
+      done([]);
+    };
+
+    service.prototype[successMethod] = options.success || function(context, done) {
+      done();
+    };
 
     service.prototype[name] = function() {
       var self = this;
@@ -88,7 +102,6 @@
 
     return service;
   };
-
 
   BusinessService.prototype = {
 
