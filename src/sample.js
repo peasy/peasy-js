@@ -40,7 +40,11 @@ var FieldRequiredRule = Rule.extend({
   }
 });
 
-var PersonService = BusinessService.extend().service;
+var PersonService = BusinessService.extend({ 
+  functions: [{
+    '__getRulesForInsert': getRulesForInsert
+  }]
+}).service;
 
 function getRulesForInsert(person, context, done) {
 
