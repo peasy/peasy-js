@@ -45,9 +45,9 @@ describe("BusinessService", function() {
       function getRulesForInsert () {}
 
       var service = new Service();
-      expect(service.__getAll).toEqual(getAll); 
-      expect(service.__getById).toEqual(getById); 
-      expect(service.__getRulesForInsert).toEqual(getRulesForInsert); 
+      expect(service.__getAll).toEqual(getAll);
+      expect(service.__getById).toEqual(getById);
+      expect(service.__getRulesForInsert).toEqual(getRulesForInsert);
     });
 
     it("logs a console.warn when a supplied function name does not exist on BusinessService", () => {
@@ -148,7 +148,7 @@ describe("BusinessService", function() {
   describe("getAllCommand and associated methods", function() {
 
     beforeAll(() => {
-      dataProxy = { getAll: function() {} }; 
+      dataProxy = { getAll: function() {} };
       service = new BusinessService(dataProxy);
       command = service.getAllCommand();
       spyOn(dataProxy, "getAll");
@@ -165,7 +165,7 @@ describe("BusinessService", function() {
       describe("__getRulesForGetAll", () => {
         it("returns an empty array", () => {
           var callbackValue;
-          service.__getRulesForGetAll({}, (result) => callbackValue = result); 
+          service.__getRulesForGetAll({}, (result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -225,7 +225,7 @@ describe("BusinessService", function() {
         it("returns an empty array", () => {
           var callbackValue;
           var id = 1;
-          service.__getRulesForGetById(id, {}, (result) => callbackValue = result); 
+          service.__getRulesForGetById(id, {}, (result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -409,7 +409,7 @@ describe("BusinessService", function() {
         it("returns an empty array", () => {
           var callbackValue;
           var id = 1;
-          service.__getRulesForDelete(id, {}, (result) => callbackValue = result); 
+          service.__getRulesForDelete(id, {}, (result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -430,11 +430,11 @@ describe("BusinessService", function() {
             done();
           };
           TestService.prototype.__getRulesForDelete = (id, context, done) => {
-            context.ids++; 
+            context.ids++;
             done([]);
           };
           TestService.prototype.__delete = (id, context, done) => {
-            context.ids++; 
+            context.ids++;
             sharedContext = context;
             done();
           }

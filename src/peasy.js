@@ -20,89 +20,6 @@
     }
   };
 
-  BusinessService.extend = function(options) {
-
-    options = options || {};
-    options.params = options.params || ['dataProxy'];
-    options.functions = options.functions || [];
-
-    var Extended = function() {
-      this.args = arguments;
-      var self = this;
-      BusinessService.call(this);
-      options.params.forEach(function(field, index) {
-        self[field] = self.args[index];
-      });
-    }
-
-    Extended.prototype = new BusinessService();
-    var keys = Object.keys(BusinessService.prototype);
-    options.functions.forEach(function(config) {
-      var name = Object.keys(config)[0]
-      if (keys.indexOf(name) === -1) {
-        console.warn("The method: '" + name + "' is not an overridable method of BusinessService");
-      }
-      Extended.prototype[name] = config[name];
-    });
-
-    function createCommand(name, options) {
-      BusinessService.createCommand(name, Extended, options);
-      return {
-        createCommand: createCommand,
-        service: Extended
-      };
-    }
-
-    return {
-      createCommand: createCommand,
-      service: Extended
-    };
-
-  }
-
-  BusinessService.createCommand = function(name, service, functions) {
-    var onInitialization = '__on' + capitalize(name) + 'Initialization';
-    var getRules = '__getRulesFor' + capitalize(name);
-    var onValidationSuccess = '__' + name.replace("Command", "");
-
-    function capitalize(value) {
-      return value.charAt(0).toUpperCase() + value.slice(1);
-    };
-
-    functions = functions || {};
-
-    service.prototype[onInitialization] = functions.onInitialization || function(context, done) {
-      done();
-    };
-
-    service.prototype[getRules] = functions.getRules || function(context, done) {
-      done([]);
-    };
-
-    service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done) {
-      done();
-    };
-
-    service.prototype[name] = function() {
-      var self = this;
-      var context = {};
-
-      return new Command({
-        onInitialization: function(done) {
-          self[onInitialization](context, done);
-        },
-        getRules: function(done) {
-          return self[getRules](context, done);
-        },
-        onValidationSuccess: function(done) {
-          return self[onValidationSuccess](context, done);
-        }
-      });
-    };
-
-    return service;
-  };
-
   BusinessService.prototype = {
 
     getAllCommand: function() {
@@ -244,6 +161,88 @@
     __onDeleteCommandInitialization: function(id, context, done) {
       done();
     }
+  };
+
+  BusinessService.extend = function(options) {
+
+    options = options || {};
+    options.params = options.params || ['dataProxy'];
+    options.functions = options.functions || [];
+
+    var Extended = function() {
+      this.args = arguments;
+      var self = this;
+      BusinessService.call(this);
+      options.params.forEach(function(field, index) {
+        self[field] = self.args[index];
+      });
+    }
+
+    Extended.prototype = new BusinessService();
+    var keys = Object.keys(BusinessService.prototype);
+    options.functions.forEach(function(config) {
+      var name = Object.keys(config)[0]
+      if (keys.indexOf(name) === -1) {
+        console.warn("The method: '" + name + "' is not an overridable method of BusinessService");
+      }
+      Extended.prototype[name] = config[name];
+    });
+
+    function createCommand(name, options) {
+      BusinessService.createCommand(name, Extended, options);
+      return {
+        createCommand: createCommand,
+        service: Extended
+      };
+    }
+
+    return {
+      createCommand: createCommand,
+      service: Extended
+    };
+  }
+
+  BusinessService.createCommand = function(name, service, functions) {
+    var onInitialization = '__on' + capitalize(name) + 'Initialization';
+    var getRules = '__getRulesFor' + capitalize(name);
+    var onValidationSuccess = '__' + name.replace("Command", "");
+
+    function capitalize(value) {
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    };
+
+    functions = functions || {};
+
+    service.prototype[onInitialization] = functions.onInitialization || function(context, done) {
+      done();
+    };
+
+    service.prototype[getRules] = functions.getRules || function(context, done) {
+      done([]);
+    };
+
+    service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done) {
+      done();
+    };
+
+    service.prototype[name] = function() {
+      var self = this;
+      var context = {};
+
+      return new Command({
+        onInitialization: function(done) {
+          self[onInitialization](context, done);
+        },
+        getRules: function(done) {
+          return self[getRules](context, done);
+        },
+        onValidationSuccess: function(done) {
+          return self[onValidationSuccess](context, done);
+        }
+      });
+    };
+
+    return service;
   };
 
   Object.defineProperty(BusinessService.prototype, "constructor", {
