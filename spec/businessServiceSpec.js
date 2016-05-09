@@ -64,7 +64,7 @@ describe("BusinessService", function() {
     });
 
     describe("returned value", () => {
-      it("is an object literal containing the service function and a createCommand function", () => {
+      it("is an object literal containing the service and a createCommand function", () => {
         var result = BusinessService.extend();
         expect(typeof result.createCommand === 'function').toBe(true);
         expect(typeof result.service === 'function').toBe(true);
@@ -73,8 +73,7 @@ describe("BusinessService", function() {
       describe("createCommand", () => {
         it("returns an object literal containing the service function and a createCommand function", () => {
           var result = BusinessService.extend()
-                                      .createCommand('testCommand', {
-                                       });
+                                      .createCommand('testCommand', {});
 
           expect(typeof result.createCommand === 'function').toBe(true);
           expect(typeof result.service === 'function').toBe(true);
@@ -82,8 +81,7 @@ describe("BusinessService", function() {
 
         it("creates a command function exposed by the service", () => {
           var Service = BusinessService.extend()
-                                       .createCommand('testCommand', {
-                                       })
+                                       .createCommand('testCommand', {})
                                        .service;
 
           var service = new Service();
@@ -120,12 +118,14 @@ describe("BusinessService", function() {
           },
           onValidationSuccess: function(context, done) {
             sharedContext = context;
-            done();
+            done({ data: 'abc' });
           },
         });
 
         var service = new Service();
-        service.testCommand().execute(() => {});
+        service.testCommand().execute((result) => {
+          expect(result.value).toEqual({ data: 'abc' });
+        });
         expect(sharedContext.testValue).toEqual("12");
       });
     });
