@@ -70,7 +70,7 @@ describe("BusinessService", function() {
         expect(typeof result.service === 'function').toBe(true);
       });
 
-      describe("createCommand", () => {
+      describe("createCommand function", () => {
         it("returns an object literal containing the service function and a createCommand function", () => {
           var result = BusinessService.extend()
                                       .createCommand('testCommand', {});
@@ -86,6 +86,17 @@ describe("BusinessService", function() {
 
           var service = new Service();
           expect(typeof service.testCommand === 'function').toBe(true);
+        });
+
+        it("chaining works as expected", () => {
+          var Service = BusinessService.extend()
+                                       .createCommand('test1Command', {})
+                                       .createCommand('test2Command', {})
+                                       .service;
+
+          var service = new Service();
+          expect(typeof service.test1Command === 'function').toBe(true);
+          expect(typeof service.test2Command === 'function').toBe(true);
         });
       });
     });
