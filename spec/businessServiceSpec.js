@@ -66,8 +66,8 @@ describe("BusinessService", function() {
     describe("returned value", () => {
       it("is an object literal containing the service and a createCommand function", () => {
         var result = BusinessService.extend();
-        expect(typeof result.createCommand === 'function').toBe(true);
-        expect(typeof result.service === 'function').toBe(true);
+        expect(result.createCommand).toBeDefined();
+        expect(result.service).toBeDefined();
       });
 
       describe("createCommand function", () => {
@@ -75,8 +75,8 @@ describe("BusinessService", function() {
           var result = BusinessService.extend()
                                       .createCommand('testCommand', {});
 
-          expect(typeof result.createCommand === 'function').toBe(true);
-          expect(typeof result.service === 'function').toBe(true);
+          expect(result.createCommand).toBeDefined()
+          expect(result.service).toBeDefined()
         });
 
         it("creates a command function exposed by the service", () => {
@@ -85,18 +85,36 @@ describe("BusinessService", function() {
                                        .service;
 
           var service = new Service();
-          expect(typeof service.testCommand === 'function').toBe(true);
+          expect(service.testCommand).toBeDefined();
         });
 
-        it("chaining works as expected", () => {
-          var Service = BusinessService.extend()
-                                       .createCommand('test1Command', {})
-                                       .createCommand('test2Command', {})
-                                       .service;
+        describe("chaining", () => {
+          it("creates the appropriate prototype methods", () => {
+            var Service = BusinessService.extend()
+                                         .createCommand('test1Command', {})
+                                         .createCommand('test2Command', {})
+                                         .service;
 
-          var service = new Service();
-          expect(typeof service.test1Command === 'function').toBe(true);
-          expect(typeof service.test2Command === 'function').toBe(true);
+            expect(Service.prototype.test1Command).toBeDefined()
+            expect(Service.prototype.__onTest1CommandInitialization).toBeDefined();
+            expect(Service.prototype.__getRulesForTest1Command).toBeDefined();
+            expect(Service.prototype.__test1).toBeDefined();
+            expect(Service.prototype.test2Command).toBeDefined();
+            expect(Service.prototype.__onTest2CommandInitialization).toBeDefined();
+            expect(Service.prototype.__getRulesForTest2Command).toBeDefined();
+            expect(Service.prototype.__test2).toBeDefined();
+          });
+
+          it("the created methods reference the prototype methods", () => {
+            var Service = BusinessService.extend()
+                                         .createCommand('test1Command', {})
+                                         .createCommand('test2Command', {})
+                                         .service;
+
+            var service = new Service();
+            expect(service.test1Command).toEqual(Service.prototype.test1Command);
+            expect(service.test2Command).toEqual(Service.prototype.test2Command);
+          });
         });
       });
     });
@@ -107,10 +125,10 @@ describe("BusinessService", function() {
       var Service = BusinessService.extend().service;
       BusinessService.createCommand('testCommand', Service, { });
 
-      expect(typeof Service.prototype.testCommand === 'function').toBe(true);
-      expect(typeof Service.prototype.__onTestCommandInitialization === 'function').toBe(true);
-      expect(typeof Service.prototype.__getRulesForTestCommand === 'function').toBe(true);
-      expect(typeof Service.prototype.__test === 'function').toBe(true);
+      expect(Service.prototype.testCommand).toBeDefined();
+      expect(Service.prototype.__onTestCommandInitialization).toBeDefined();
+      expect(Service.prototype.__getRulesForTestCommand).toBeDefined();
+      expect(Service.prototype.__test).toBeDefined();
     });
 
     describe("when supplied with options.functions", () => {
