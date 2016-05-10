@@ -71,7 +71,7 @@ function getRulesForInsert(person, context, done) {
                                                               ))]);
 }
 
-// CREATE AN IN-MEMORY DATA PROXY (this could be duck typed angular resource, react store, etc.)
+// CREATE AN IN-MEMORY DATA PROXY (this could be a duck typed angular resource, react store, etc.)
 
 var PersonDataProxy = function() {
   this.data = [
@@ -91,6 +91,8 @@ PersonDataProxy.prototype = {
   }
 };
 
+// CREATE INSTANCE OF A PERSON SERVICE AND REQUIRED DATA PROXY
+
 var proxy = new PersonDataProxy();
 var service = new PersonService(proxy);
 
@@ -101,6 +103,8 @@ var commands = [
   service.insertCommand({name: "Aarons", age: new Date('2/3/1925')}),
   service.insertCommand({name: "aAaron", age: new Date('2/3/1925'), address: 'aaa'})
 ];
+
+// LOOP THROUGH EACH COMMAND AND EXECUTE IT
 
 commands.forEach(function(command, index) {
   command.execute((result) => {
