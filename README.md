@@ -25,7 +25,7 @@ You can also download and add the peasy.js file to your project and reference it
 
 #Getting started
 
-You can get started by reviewing the [getting started example](https://github.com/peasy/Peasy.NET/wiki#the-simplest-possible-example) on the Peasy wiki.  The wiki also covers in-depth how-to's, general framework design, and usage scenarios.
+You can get started by reviewing the [getting started example](https://github.com/peasy/peasy-js/wiki#the-simplest-possible-example) on the Peasy wiki.  The wiki also covers in-depth how-to's, general framework design, and usage scenarios.
 
 A simple sample can be viewed [here](https://github.com/peasy/peasy-js/blob/master/src/sample.js) that showcases creating a [business service](), custom [command](), [business rules](), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, just run: ```node sample.js``` from a command line.
 
