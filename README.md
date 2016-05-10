@@ -17,7 +17,9 @@ Peasy-js is a simple middle tier framework that offers/addresses the following:
 
 #Where can I get it?
 
-npm - ``` npm install peasy-js ```
+- [Download the latest release.](https://github.com/peasy/peasy-js/archive/master.zip).
+- Clone the repo: ```git clone https://github.com/peasy/peasy-js.git```.
+- Install with npm: ```npm install peasy-js```.
 
 You can also download and add the peasy.js file to your project and reference it accordingly.
 
