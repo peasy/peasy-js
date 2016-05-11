@@ -15,6 +15,18 @@ Peasy-js is a simple middle tier framework that offers/addresses the following:
 - [Transactional support and fault tolerance](https://github.com/peasy/Peasy.NET/wiki/ITransactionContext)
 - [Easy testability](https://github.com/peasy/Peasy.NET/wiki/Testing)
 
+#What's a middle tier framework?
+
+A middle tier framework is code that facilitates creating business logic in a reusable, extensible, maintainable, and testable manner.   It promotes creating business logic that is completely decoupled from its consuming technologies and helps to ensure that separation of concerns ([SoC](https://en.wikipedia.org/wiki/Separation_of_concerns)) are adhered to.
+
+#Why peasy-js?
+
+Because the javascript ecosystem changes at a pace much more rapid than your business logic.  UI frameworks change: Backbone one day, Angular the next day, React the following...  Backend frameworks change: express one day, koa the next day, hapi the next... Data frameworks and ORMS change...  
+
+Why couple your code to technologies that are hot today and gone tomorrow?  Why not focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both!  
+
+Using peasy-js makes it trivial to whimsically swap out UI, backend, and data frameworks in your applications.
+
 #Where can I get it?
 
 - [Download the latest release](https://github.com/peasy/peasy-js/archive/master.zip).
@@ -25,7 +37,7 @@ You can also download and add the peasy.js file to your project and reference it
 
 #Getting started
 
-You can get started by reviewing the [getting started example](https://github.com/peasy/Peasy.NET/wiki#the-simplest-possible-example) on the Peasy wiki.  The wiki also covers in-depth how-to's, general framework design, and usage scenarios.
+You can get started by reviewing the [getting started example](https://github.com/peasy/peasy-js/wiki#the-simplest-possible-example) on the Peasy wiki.  The wiki also covers in-depth how-to's, general framework design, and usage scenarios.
 
 A simple sample can be viewed [here](https://github.com/peasy/peasy-js/blob/master/src/sample.js) that showcases creating a [business service](), custom [command](), [business rules](), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, just run: ```node sample.js``` from a command line.
 
