@@ -17,15 +17,15 @@ Peasy-js is a simple middle tier framework that offers/addresses the following:
 
 #What's a middle tier framework?
 
-Simply put, it's code that facilitates creating reusable, extendable, maintainable, and testable code.  A middle tier framework places focus on creating business logic that is completely decoupled from its consuming technologies.
+A middle tier framework is code that facilitates creating business logic in a reusable, extendable, maintainable, and testable manner.   It promotes creating business logic that is completely decoupled from its consuming technologies and helps to ensure that separation of concerns ([SoC](https://en.wikipedia.org/wiki/Separation_of_concerns)) are adhered to.
 
 #Why peasy-js?
 
-Because the javascript ecosystem changes at a pace much more rapid than your business logic.  UI frameworks change: Backbone one day, Angular the next day, React the next...  Backend frameworks change: express one day, koa the next day, hapi the next... Data frameworks change.  
+Because the javascript ecosystem changes at a pace much more rapid than your business logic.  UI frameworks change: Backbone one day, Angular the next day, React the following...  Backend frameworks change: express one day, koa the next day, hapi the next... Data frameworks and ORMS change...  
 
-Why couple your code to technologies that are hot today and gone tomorrow?  Focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both!  
+Why couple your code to technologies that are hot today and gone tomorrow?  Why not focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both!  
 
-Using peasy-js makes it trivial to swap UI, Backend, and Data frameworks on a whim.
+Using peasy-js makes it trivial to whimsically swap out UI, backend, and data frameworks in your applications.
 
 #Where can I get it?
 
