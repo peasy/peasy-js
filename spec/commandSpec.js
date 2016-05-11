@@ -201,7 +201,10 @@ describe("Command", function() {
             }
 
             var command = new Command(callbacks);
-            expect(() => command.execute(() => {})).toThrowError("something unexpected happened");
+            command.execute((err, result) => {
+              expect(err.message).toEqual("something unexpected happened");
+            });
+
           });
         });
 
