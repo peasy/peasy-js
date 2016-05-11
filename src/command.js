@@ -28,7 +28,8 @@ var Command = function(callbacks) {
     return new Command(
       callbacks.onInitialization,
       callbacks.getRules,
-      callbacks.onValidationSuccess);
+      callbacks.onValidationSuccess
+    );
   }
 };
 
@@ -52,7 +53,7 @@ Command.prototype = {
 
           errors = [].concat.apply([], errors); // flatten array
 
-          if (errors.length > 0) 
+          if (errors.length > 0)
             return done(null, new ExecutionResult(false, null, errors));
 
           try {
