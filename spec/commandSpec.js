@@ -45,16 +45,16 @@ describe("Command", function() {
     it("invokes the pipeline methods in the correct order", () => {
       var state = "";
       var callbacks = {
-        onInitialization: (done) => { 
-          state += "1"; 
+        onInitialization: (done) => {
+          state += "1";
           done();
         },
-        getRules: (done) => { 
-          state += "2"; 
+        getRules: (done) => {
+          state += "2";
           done([]);
         },
         onValidationSuccess: (done) => {
-          state += "3"; 
+          state += "3";
           done();
         }
       }
@@ -84,7 +84,6 @@ describe("Command", function() {
       describe("when no rules configured", () => {
         it("returns the expected validation result", () => {
           var returnValue = { id: 5, data: "abc" };
-          
           var callbacks = {
             onValidationSuccess: (done) => {
               done(returnValue);
@@ -92,7 +91,7 @@ describe("Command", function() {
           }
 
           var command = new Command(callbacks);
-          command.execute((result) => {
+          command.execute((err, result) => {
             expect(result.success).toEqual(true);
             expect(result.value).toEqual(returnValue);
             expect(result.errors).toBeNull();
@@ -104,7 +103,6 @@ describe("Command", function() {
         describe("when validation succeeds", () => {
           it("returns the expected validation result", () => {
             var returnValue = { id: 5, data: "abc" };
-            
             var callbacks = {
               getRules: (done) => {
                 done([new TrueRule()]);
@@ -115,7 +113,7 @@ describe("Command", function() {
             }
 
             var command = new Command(callbacks);
-            command.execute((result) => {
+            command.execute((err, result) => {
               expect(result.success).toEqual(true);
               expect(result.value).toEqual(returnValue);
               expect(result.errors).toBeNull();
@@ -126,7 +124,6 @@ describe("Command", function() {
         describe("when validation fails", () => {
           it("returns the expected validation result", () => {
             var returnValue = { id: 5, data: "abc" };
-            
             var callbacks = {
               getRules: (done) => {
                 done([new FalseRule("a")]);
@@ -137,7 +134,7 @@ describe("Command", function() {
             }
 
             var command = new Command(callbacks);
-            command.execute((result) => {
+            command.execute((err, result) => {
               expect(result.success).toEqual(false);
               expect(result.value).toBeNull();
               expect(result.errors.length).toEqual(1);
@@ -149,11 +146,11 @@ describe("Command", function() {
       describe("when multiple rules configured", () => {
         it("validates each rule", () => {
           var callbacks = {
-            getRules: (done) => { 
+            getRules: (done) => {
               done([
-                new FalseRule("a"), 
+                new FalseRule("a"),
                 new TrueRule(),
-                new FalseRule("b"), 
+                new FalseRule("b"),
                 new TrueRule(),
                 new FalseRule("c")
               ]);
@@ -164,7 +161,7 @@ describe("Command", function() {
           }
 
           var command = new Command(callbacks);
-          command.execute((result) => {
+          command.execute((err, result) => {
             expect(result.success).toEqual(false);
             expect(result.value).toBeNull();
             expect(result.errors.length).toEqual(3);
@@ -175,7 +172,7 @@ describe("Command", function() {
         });
 
       });
-      
+
       describe("when an error happens", () => {
         describe("when the error is an instance of ServiceException", () => {
           it("returns the expected validation result", () => {
@@ -186,18 +183,17 @@ describe("Command", function() {
             }
 
             var command = new Command(callbacks);
-            command.execute(result => {
+            command.execute((err, result) => {
               expect(result.success).toEqual(false);
               expect(result.value).toBeNull();
               expect(result.errors.length).toEqual(1);
               expect(result.errors[0].error).toEqual("name not supplied");
             });
-            
           });
         });
 
         describe("when the error is anything other than ServiceException", () => {
-          it("rethrows the error", () => {
+          it("returns the error in the callback", () => {
             var callbacks = {
               onValidationSuccess: (done) => {
                 throw new Error("something unexpected happened");

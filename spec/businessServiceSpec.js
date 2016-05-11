@@ -152,7 +152,7 @@ describe("BusinessService", function() {
         });
 
         var service = new Service();
-        service.testCommand().execute((result) => {
+        service.testCommand().execute((err, result) => {
           expect(result.value).toEqual({ data: 'abc' });
         });
         expect(sharedContext.testValue).toEqual("12");

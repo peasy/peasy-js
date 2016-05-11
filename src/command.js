@@ -11,9 +11,19 @@ var Command = function(callbacks) {
     if (typeof callbacks.onValidationSuccess !== 'function') {
       console.warn("'onValidationSuccess' was not defined.");
     }
-    this.onInitialization = callbacks.onInitialization || function(done) { done() };
-    this.getRules = callbacks.getRules || function(done) { done([]) };
-    this.onValidationSuccess = callbacks.onValidationSuccess || function(done) { done() };
+
+    this.onInitialization = callbacks.onInitialization || function(done) {
+      done();
+    };
+
+    this.getRules = callbacks.getRules || function(done) {
+      done([]);
+    };
+
+    this.onValidationSuccess = callbacks.onValidationSuccess || function(done) {
+      done();
+    };
+
   } else {
     return new Command(
       callbacks.onInitialization,
@@ -43,25 +53,24 @@ Command.prototype = {
           errors = [].concat.apply([], errors); // flatten array
 
           if (errors.length > 0) 
-            return done(new ExecutionResult(false, null, errors));
+            return done(null, new ExecutionResult(false, null, errors));
 
           try {
             self.onValidationSuccess(function(result) {
-              done(new ExecutionResult(true, result, null));
+              done(null, new ExecutionResult(true, result, null));
             });
           }
           catch(err) {
             if (err instanceof ServiceException) {
-              done(new ExecutionResult(false, null, [{ association: err.association, error: err.message }]));
+              done(null, new ExecutionResult(false, null, [{ association: err.association, error: err.message }]));
             } else {
-              throw err;
+              done(err);
             }
           }
         });
       });
     });
   }
-
 }
 
 module.exports = Command;

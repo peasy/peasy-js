@@ -290,18 +290,18 @@
             errors = [].concat.apply([], errors); // flatten array
 
             if (errors.length > 0) 
-              return done(new ExecutionResult(false, null, errors));
+              return done(null, new ExecutionResult(false, null, errors));
 
             try {
               self.onValidationSuccess(function(result) {
-                done(new ExecutionResult(true, result, null));
+                done(null, new ExecutionResult(true, result, null));
               });
             }
             catch(err) {
               if (err instanceof ServiceException) {
-                done(new ExecutionResult(false, null, [{ association: err.association, error: err.message }]));
+                done(null, new ExecutionResult(false, null, [{ association: err.association, error: err.message }]));
               } else {
-                throw err;
+                done(err);
               }
             }
           });

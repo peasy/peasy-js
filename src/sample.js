@@ -107,7 +107,7 @@ var commands = [
 // LOOP THROUGH EACH COMMAND AND EXECUTE IT
 
 commands.forEach(function(command, index) {
-  command.execute((result) => {
+  command.execute((err, result) => {
     console.log('\n---------------');
     console.log(result);
 
