@@ -15,6 +15,18 @@ Peasy-js is a simple middle tier framework that offers/addresses the following:
 - [Transactional support and fault tolerance](https://github.com/peasy/Peasy.NET/wiki/ITransactionContext)
 - [Easy testability](https://github.com/peasy/Peasy.NET/wiki/Testing)
 
+#What's a middle tier framework?
+
+Simply put, it's code that facilitates creating reusable, extendable, maintainable, and testable code.  A middle tier framework places focus on creating business logic that is completely decoupled from its consuming technologies.
+
+#Why peasy-js?
+
+Because the javascript ecosystem changes at a pace much more rapid than your business logic.  UI frameworks change: Backbone one day, Angular the next day, React the next...  Backend frameworks change: express one day, koa the next day, hapi the next... Data frameworks change.  
+
+Why couple your code to technologies that are hot today and gone tomorrow?  Focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both!  
+
+Using peasy-js makes it trivial to swap UI, Backend, and Data frameworks on a whim.
+
 #Where can I get it?
 
 - [Download the latest release](https://github.com/peasy/peasy-js/archive/master.zip).
