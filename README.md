@@ -14,6 +14,7 @@ Peasy-js is a simple middle tier framework that offers/addresses the following:
 - [Multiple deployment scenario support](https://github.com/peasy/Peasy.NET/wiki/data-proxy#multiple-deployment-scenarios)
 - [Transactional support and fault tolerance](https://github.com/peasy/Peasy.NET/wiki/ITransactionContext)
 - [Easy testability](https://github.com/peasy/Peasy.NET/wiki/Testing)
+- [AMD](), Browser, and [CommonJs]() support
 
 #What's a middle tier framework?
 
