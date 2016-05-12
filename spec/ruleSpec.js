@@ -22,15 +22,15 @@ describe("Rule", function() {
   // this will test the Rule.extend functionality
   var LengthRule = Rule.extend({
     association: "foo",
-      params: ['word', 'bar'],
-      onValidate: function(done) {
-        if (this.word.length < 1) {
-          this.__invalidate("too few characters");
-        }
-        //var time = Math.floor((Math.random() * 2000) + 1);
-        //setTimeout(() => done(), time);
-        done();
+    params: ['word', 'bar'],
+    onValidate: function(done) {
+      if (this.word.length < 1) {
+        this.__invalidate("too few characters");
       }
+      //var time = Math.floor((Math.random() * 2000) + 1);
+      //setTimeout(() => done(), time);
+      done();
+    }
   })
 
   runTests();
@@ -55,6 +55,17 @@ describe("Rule", function() {
   function runTests() {
 
     describe("validate", function() {
+
+      it("clears errors on every invocation", function() {
+        var rule = new LengthRule("");
+
+        rule.validate(() => {});
+        expect(rule.errors.length).toEqual(1);
+
+        rule.validate(() => {});
+        expect(rule.errors.length).toEqual(1);
+      });
+
       describe("failed validation", function() {
         it("contains an error", function(done) {
           var rule = new LengthRule("");

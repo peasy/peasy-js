@@ -427,6 +427,7 @@
 
     validate: function(done) {
       var self = this;
+      self.errors = [];
 
       this.__onValidate(function() {
         if (self.valid) {
