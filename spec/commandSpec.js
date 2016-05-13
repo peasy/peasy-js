@@ -100,6 +100,25 @@ describe("Command", function() {
       });
 
       describe("when one rule configured", () => {
+        it("supports single object literal argument as input to getRules callback", () => {
+          var returnValue = { id: 5, data: "abc" };
+          var callbacks = {
+            getRules: (done) => {
+              done(new TrueRule());
+            },
+            onValidationSuccess: (done) => {
+              done(returnValue);
+            }
+          }
+
+          var command = new Command(callbacks);
+          command.execute((err, result) => {
+            expect(result.success).toEqual(true);
+            expect(result.value).toEqual(returnValue);
+            expect(result.errors).toBeNull();
+          });
+        });
+
         describe("when validation succeeds", () => {
           it("returns the expected validation result", () => {
             var returnValue = { id: 5, data: "abc" };

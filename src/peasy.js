@@ -255,12 +255,23 @@
   var Command = function(callbacks) {
     callbacks = callbacks || {};
     if (this instanceof Command) {
+
       if (typeof callbacks.onValidationSuccess !== 'function') {
         console.warn("'onValidationSuccess' was not defined.");
       }
-      this.onInitialization = callbacks.onInitialization || function(done) { done() };
-      this.getRules = callbacks.getRules || function(done) { done([]) };
-      this.onValidationSuccess = callbacks.onValidationSuccess || function(done) { done() };
+
+      this.onInitialization = callbacks.onInitialization || function(done) {
+        done();
+      };
+
+      this.getRules = callbacks.getRules || function(done) {
+        done([]);
+      };
+
+      this.onValidationSuccess = callbacks.onValidationSuccess || function(done) {
+        done();
+      };
+
     } else {
       return new Command(
         callbacks.onInitialization,
@@ -283,6 +294,11 @@
 
       self.onInitialization(function() {
         self.getRules(function(rules) {
+
+          if (!Array.isArray(rules)) {
+            rules = [rules]
+          }
+
           new RulesValidator(rules).validate(function() {
 
             var errors = rules.filter(function(rule) { return !rule.valid; })

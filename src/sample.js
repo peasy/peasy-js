@@ -59,7 +59,7 @@ function getRulesForInsert(person, context, done) {
       //new FieldRequiredRule("address", person)
   //]);
 
-  done([new AgeRule(person.age)
+  done(new AgeRule(person.age)
               .ifValidThenExecute(() => console.log("Age succeeded"))
               .ifInvalidThenExecute(() => console.log("Age failed"))
               .ifValidThenValidate(new NameRule(person.name)
@@ -68,7 +68,7 @@ function getRulesForInsert(person, context, done) {
                                          .ifValidThenValidate(new FieldRequiredRule("address", person)
                                                                     .ifValidThenExecute(() => console.log("Address succeeeded"))
                                                                     .ifInvalidThenExecute(() => console.log("Address failed"))
-                                                              ))]);
+                                                              )));
 }
 
 // CREATE AN IN-MEMORY DATA PROXY (this could be a duck typed angular resource, react store, etc.)

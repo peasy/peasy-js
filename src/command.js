@@ -46,6 +46,11 @@ Command.prototype = {
 
     self.onInitialization(function() {
       self.getRules(function(rules) {
+
+        if (!Array.isArray(rules)) {
+          rules = [rules]
+        }
+
         new RulesValidator(rules).validate(function() {
 
           var errors = rules.filter(function(rule) { return !rule.valid; })
