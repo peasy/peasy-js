@@ -176,12 +176,12 @@
       options.params.forEach(function(field, index) {
         self[field] = self.args[index];
       });
-    }
+    };
 
     Extended.prototype = new BusinessService();
     var keys = Object.keys(BusinessService.prototype);
     options.functions.forEach(function(config) {
-      var name = Object.keys(config)[0]
+      var name = Object.keys(config)[0];
       if (keys.indexOf(name) === -1) {
         console.warn("The method: '" + name + "' is not an overridable method of BusinessService");
       }
@@ -200,7 +200,7 @@
       createCommand: createCommand,
       service: Extended
     };
-  }
+  };
 
   BusinessService.createCommand = function(name, service, functions) {
     var onInitialization = '__on' + capitalize(name) + 'Initialization';
@@ -209,7 +209,7 @@
 
     function capitalize(value) {
       return value.charAt(0).toUpperCase() + value.slice(1);
-    };
+    }
 
     functions = functions || {};
 
@@ -296,7 +296,7 @@
         self.getRules(function(rules) {
 
           if (!Array.isArray(rules)) {
-            rules = [rules]
+            rules = [rules];
           }
 
           new RulesValidator(rules).validate(function() {
@@ -325,7 +325,7 @@
         });
       });
     }
-  }
+  };
 
   // RULES VALIDATOR
   var RulesValidator = function(rules) {
@@ -334,7 +334,7 @@
     } else {
       return new RulesValidator(rules);
     }
-  }
+  };
 
   RulesValidator.prototype.validate = function(done) {
     var self = this;
@@ -411,13 +411,13 @@
       options.params.forEach(function(field, index) {
         self[field] = self.args[index];
       });
-    }
+    };
 
     Extended.prototype = new Rule();
     Extended.prototype.__onValidate = options.onValidate;
 
     return Extended;
-  }
+  };
 
   Rule.prototype = {
 
@@ -472,7 +472,7 @@
 
     ifValidThenValidate: function(rules) {
       if (!Array.isArray(rules)) {
-        rules = [rules]
+        rules = [rules];
       }
       this.successors = rules;
       return this;

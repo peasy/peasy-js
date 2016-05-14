@@ -6,7 +6,7 @@ var RulesValidator = function(rules) {
   } else {
     return new RulesValidator(rules);
   }
-}
+};
 
 RulesValidator.prototype.validate = function(done) {
   var self = this;

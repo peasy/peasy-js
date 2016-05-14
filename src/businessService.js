@@ -166,12 +166,12 @@ BusinessService.extend = function(options) {
     options.params.forEach(function(field, index) {
       self[field] = self.args[index];
     });
-  }
+  };
 
   Extended.prototype = new BusinessService();
   var keys = Object.keys(BusinessService.prototype);
   options.functions.forEach(function(config) {
-    var name = Object.keys(config)[0]
+    var name = Object.keys(config)[0];
     if (keys.indexOf(name) === -1) {
       console.warn("The method: '" + name + "' is not an overridable method of BusinessService");
     }
@@ -190,7 +190,7 @@ BusinessService.extend = function(options) {
     createCommand: createCommand,
     service: Extended
   };
-}
+};
 
 BusinessService.createCommand = function(name, service, functions) {
   var onInitialization = '__on' + capitalize(name) + 'Initialization';
@@ -199,7 +199,7 @@ BusinessService.createCommand = function(name, service, functions) {
 
   function capitalize(value) {
     return value.charAt(0).toUpperCase() + value.slice(1);
-  };
+  }
 
   functions = functions || {};
 

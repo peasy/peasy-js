@@ -35,13 +35,13 @@ Rule.extend = function(options) {
     options.params.forEach(function(field, index) {
       self[field] = self.args[index];
     });
-  }
+  };
 
   Extended.prototype = new Rule();
   Extended.prototype.__onValidate = options.onValidate;
 
   return Extended;
-}
+};
 
 Rule.prototype = {
 
@@ -96,7 +96,7 @@ Rule.prototype = {
 
   ifValidThenValidate: function(rules) {
     if (!Array.isArray(rules)) {
-      rules = [rules]
+      rules = [rules];
     }
     this.successors = rules;
     return this;

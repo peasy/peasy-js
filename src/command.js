@@ -48,7 +48,7 @@ Command.prototype = {
       self.getRules(function(rules) {
 
         if (!Array.isArray(rules)) {
-          rules = [rules]
+          rules = [rules];
         }
 
         new RulesValidator(rules).validate(function() {
@@ -77,6 +77,6 @@ Command.prototype = {
       });
     });
   }
-}
+};
 
 module.exports = Command;
