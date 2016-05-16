@@ -40,10 +40,10 @@ You can also download and add the peasy.js file to your project and reference it
 
 You can get started by reviewing the getting started example below.
 
-- [Browser](https://github.com/peasy/peasy-js/wiki/Browser-sample) Version
-- [Node.js](https://github.com/peasy/peasy-js/wiki/node.js-sample) Version
+- I want to run it in a client ([Browser](https://github.com/peasy/peasy-js/wiki/Browser-sample))!
+- I want to run it on a server ([Node.js](https://github.com/peasy/peasy-js/wiki/node.js-sample))!
 
-An additional simple sample can be viewed [here](https://github.com/peasy/peasy-js/blob/master/src/sample.js) that showcases creating a [business service](), custom [command](), [business rules](), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, just run: ```node src/sample.js``` from a command line.
+An additional sample can be viewed [here](https://github.com/peasy/peasy-js/blob/master/src/sample.js) that showcases creating a [business service](), custom [command](), [business rules](), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, just run: ```node src/sample.js``` from a command line.
 
 For additional help, be sure to checkout the wiki as it covers in-depth how-to's, general framework design, and usage scenarios.
 
