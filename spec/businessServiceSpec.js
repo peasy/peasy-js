@@ -415,30 +415,30 @@ describe("BusinessService", function() {
     });
   });
 
-  describe("deleteCommand and associated methods", function() {
+  describe("removeCommand and associated methods", function() {
 
     var id = 1;
 
     beforeAll(() => {
-      dataProxy = { delete: function(id) {} };
+      dataProxy = { remove: function(id) {} };
       service = new BusinessService(dataProxy);
-      command = service.deleteCommand(id);
-      spyOn(dataProxy, "delete");
+      command = service.removeCommand(id);
+      spyOn(dataProxy, "remove");
     });
 
     describe("instance methods", () => {
-      describe("__delete", () => {
-        it("invokes dataProxy.delete", () => {
+      describe("__remove", () => {
+        it("invokes dataProxy.remove", () => {
           command.execute(() => {});
-          expect(dataProxy.delete).toHaveBeenCalledWith(id, jasmine.any(Function));
+          expect(dataProxy.remove).toHaveBeenCalledWith(id, jasmine.any(Function));
         });
       });
 
-      describe("__getRulesForDelete", () => {
+      describe("__getRulesForRemove", () => {
         it("returns an empty array", () => {
           var callbackValue;
           var id = 1;
-          service.__getRulesForDelete(id, {}, (result) => callbackValue = result);
+          service.__getRulesForRemove(id, {}, (result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -450,25 +450,25 @@ describe("BusinessService", function() {
       });
 
       describe("on execution", () => {
-        it("passes shared context and id to all delete pipeline methods", () => {
+        it("passes shared context and id to all remove pipeline methods", () => {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype.__onDeleteCommandInitialization = (id, context, done) => {
+          TestService.prototype.__onRemoveCommandInitialization = (id, context, done) => {
             context.ids = 1;
             done();
           };
-          TestService.prototype.__getRulesForDelete = (id, context, done) => {
+          TestService.prototype.__getRulesForRemove = (id, context, done) => {
             context.ids++;
             done([]);
           };
-          TestService.prototype.__delete = (id, context, done) => {
+          TestService.prototype.__remove = (id, context, done) => {
             context.ids++;
             sharedContext = context;
             done();
           }
           var id = 1;
-          var command = new TestService(dataProxy).deleteCommand(1);
+          var command = new TestService(dataProxy).removeCommand(1);
           command.execute(() => { });
           expect(sharedContext.ids).toEqual(3);
         });

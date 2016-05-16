@@ -22,8 +22,8 @@ DataProxy.prototype = {
     throw Error('DataProxy.update not implemented');
   },
 
-  delete: function(id, done) {
-    throw Error('DataProxy.delete not implemented');
+  remove: function(id, done) {
+    throw Error('DataProxy.remove not implemented');
   }
 };
 

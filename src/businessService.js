@@ -78,18 +78,18 @@ var BusinessService = (function() {
       });
     },
 
-    deleteCommand: function(id) {
+    removeCommand: function(id) {
       var service = this;
       var context = {};
       return new Command({
         onInitialization: function(done) {
-          service.__onDeleteCommandInitialization(id, context, done);
+          service.__onRemoveCommandInitialization(id, context, done);
         },
         getRules: function(done) {
-          return service.__getRulesForDelete(id, context, done);
+          return service.__getRulesForRemove(id, context, done);
         },
         onValidationSuccess: function(done) {
-          return service.__delete(id, context, done);
+          return service.__remove(id, context, done);
         }
       });
     },
@@ -142,15 +142,15 @@ var BusinessService = (function() {
       done();
     },
 
-    __delete: function(id, context, done) {
-      this.dataProxy.delete(id, done);
+    __remove: function(id, context, done) {
+      this.dataProxy.remove(id, done);
     },
 
-    __getRulesForDelete: function(id, context, done) {
+    __getRulesForRemove: function(id, context, done) {
       done([]);
     },
 
-    __onDeleteCommandInitialization: function(id, context, done) {
+    __onRemoveCommandInitialization: function(id, context, done) {
       done();
     }
   };

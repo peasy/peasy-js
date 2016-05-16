@@ -86,7 +86,7 @@
       });
     },
 
-    deleteCommand: function(id) {
+    removeCommand: function(id) {
       var service = this;
       var context = {};
       return new Command({
@@ -97,7 +97,7 @@
           return service.__getRulesForDelete(id, context, done);
         },
         onValidationSuccess: function(done) {
-          return service.__delete(id, context, done);
+          return service.__remove(id, context, done);
         }
       });
     },
@@ -150,15 +150,15 @@
       done();
     },
 
-    __delete: function(id, context, done) {
-      this.dataProxy.delete(id, done);
+    __remove: function(id, context, done) {
+      this.dataProxy.remove(id, done);
     },
 
-    __getRulesForDelete: function(id, context, done) {
+    __getRulesForRemove: function(id, context, done) {
       done([]);
     },
 
-    __onDeleteCommandInitialization: function(id, context, done) {
+    __onRemoveCommandInitialization: function(id, context, done) {
       done();
     }
   };
