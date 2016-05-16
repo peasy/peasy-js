@@ -29,5 +29,11 @@
   "bugs": {
     "url": "https://github.com/peasy/peasy-js/issues"
   },
-  "homepage": "https://github.com/peasy/peasy-js#readme"
+  "homepage": "https://github.com/peasy/peasy-js#readme",
+  "devDependencies": {
+    "jshint": "2.9.2",
+    "jshint-loader": "0.8.3",
+    "strip-loader": "0.1.2",
+    "webpack": "1.13.0"
+  }
 }
