@@ -4,7 +4,7 @@
   "description": "An easy to use javascript middle tier framework",
   "main": "src/peasy.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node ./node_modules/jasmine/bin/jasmine.js"
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,7 @@
   },
   "homepage": "https://github.com/peasy/peasy-js#readme",
   "devDependencies": {
+    "jasmine": "2.4.1",
     "jshint": "2.9.2",
     "jshint-loader": "0.8.3",
     "strip-loader": "0.1.2",
