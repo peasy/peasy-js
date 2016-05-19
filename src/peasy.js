@@ -293,6 +293,7 @@
       }
 
       self.onInitialization(function() {
+
         self.getRules(function(rules) {
 
           if (!Array.isArray(rules)) {
@@ -310,15 +311,15 @@
               return done(null, new ExecutionResult(false, null, errors));
 
             try {
-              self.onValidationSuccess(function(result) {
-                done(null, new ExecutionResult(true, result, null));
+              self.onValidationSuccess(function(err, result) {
+                done(err, new ExecutionResult(true, result, null));
               });
             }
-            catch(err) {
-              if (err instanceof ServiceException) {
-                done(null, new ExecutionResult(false, null, [{ association: err.association, error: err.message }]));
+            catch(ex) {
+              if (ex instanceof ServiceException) {
+                done(null, new ExecutionResult(false, null, [{ association: ex.association, error: ex.message }]));
               } else {
-                done(err);
+                done(ex);
               }
             }
           });

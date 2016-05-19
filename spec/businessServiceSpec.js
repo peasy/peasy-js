@@ -147,7 +147,7 @@ describe("BusinessService", function() {
           },
           onValidationSuccess: function(context, done) {
             sharedContext = context;
-            done({ data: 'abc' });
+            done(null, { data: 'abc' });
           },
         });
 

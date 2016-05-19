@@ -88,7 +88,7 @@ PersonDataProxy.prototype = {
     var nextId = this.data.length + 1;
     data.id = nextId;
     this.data.push(data);
-    done(data);
+    done(null, data);
   }
 };
 

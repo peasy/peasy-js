@@ -86,7 +86,7 @@ describe("Command", function() {
           var returnValue = { id: 5, data: "abc" };
           var callbacks = {
             onValidationSuccess: (done) => {
-              done(returnValue);
+              done(null, returnValue);
             }
           }
 
@@ -107,7 +107,7 @@ describe("Command", function() {
               done(new TrueRule());
             },
             onValidationSuccess: (done) => {
-              done(returnValue);
+              done(null, returnValue);
             }
           }
 
@@ -127,7 +127,7 @@ describe("Command", function() {
                 done([new TrueRule()]);
               },
               onValidationSuccess: (done) => {
-                done(returnValue);
+                done(null, returnValue);
               }
             }
 
@@ -148,7 +148,7 @@ describe("Command", function() {
                 done([new FalseRule("a")]);
               },
               onValidationSuccess: (done) => {
-                done(returnValue);
+                done(null, returnValue);
               }
             }
 
