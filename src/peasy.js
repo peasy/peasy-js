@@ -91,10 +91,10 @@
       var context = {};
       return new Command({
         onInitialization: function(done) {
-          service._onDeleteCommandInitialization(id, context, done);
+          service._onDestroyCommandInitialization(id, context, done);
         },
         getRules: function(done) {
-          return service._getRulesForDelete(id, context, done);
+          return service._getRulesForDestroy(id, context, done);
         },
         onValidationSuccess: function(done) {
           return service._destroy(id, context, done);
@@ -154,11 +154,11 @@
       this.dataProxy.destroy(id, done);
     },
 
-    _getRulesForRemove: function(id, context, done) {
+    _getRulesForDestroy: function(id, context, done) {
       done([]);
     },
 
-    _onRemoveCommandInitialization: function(id, context, done) {
+    _onDestroyCommandInitialization: function(id, context, done) {
       done();
     }
   };

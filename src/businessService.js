@@ -83,10 +83,10 @@ var BusinessService = (function() {
       var context = {};
       return new Command({
         onInitialization: function(done) {
-          service._onRemoveCommandInitialization(id, context, done);
+          service._onDestroyCommandInitialization(id, context, done);
         },
         getRules: function(done) {
-          return service._getRulesForRemove(id, context, done);
+          return service._getRulesForDestroy(id, context, done);
         },
         onValidationSuccess: function(done) {
           return service._destroy(id, context, done);
@@ -146,11 +146,11 @@ var BusinessService = (function() {
       this.dataProxy.destroy(id, done);
     },
 
-    _getRulesForRemove: function(id, context, done) {
+    _getRulesForDestroy: function(id, context, done) {
       done([]);
     },
 
-    _onRemoveCommandInitialization: function(id, context, done) {
+    _onDestroyCommandInitialization: function(id, context, done) {
       done();
     }
   };

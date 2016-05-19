@@ -434,11 +434,11 @@ describe("BusinessService", function() {
         });
       });
 
-      describe("_getRulesForRemove", () => {
+      describe("_getRulesForDestroy", () => {
         it("returns an empty array", () => {
           var callbackValue;
           var id = 1;
-          service._getRulesForRemove(id, {}, (result) => callbackValue = result);
+          service._getRulesForDestroy(id, {}, (result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -454,11 +454,11 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onRemoveCommandInitialization = (id, context, done) => {
+          TestService.prototype._onDestroyCommandInitialization = (id, context, done) => {
             context.ids = 1;
             done();
           };
-          TestService.prototype._getRulesForRemove = (id, context, done) => {
+          TestService.prototype._getRulesForDestroy = (id, context, done) => {
             context.ids++;
             done([]);
           };
