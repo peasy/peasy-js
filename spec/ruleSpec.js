@@ -25,7 +25,7 @@ describe("Rule", function() {
     params: ['word', 'bar'],
     onValidate: function(done) {
       if (this.word.length < 1) {
-        this.__invalidate("too few characters");
+        this._invalidate("too few characters");
       }
       //var time = Math.floor((Math.random() * 2000) + 1);
       //setTimeout(() => done(), time);
@@ -41,9 +41,9 @@ describe("Rule", function() {
   };
 
   LengthRule.prototype = new Rule();
-  LengthRule.prototype.__onValidate = function(done) {
+  LengthRule.prototype._onValidate = function(done) {
     if (this.word.length < 1) {
-      this.__invalidate("too few characters");
+      this._invalidate("too few characters");
     }
     //var time = Math.floor((Math.random() * 2000) + 1);
     //setTimeout(() => done(this), time);

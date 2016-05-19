@@ -34,9 +34,9 @@ describe("BusinessService", function() {
     it("creates a function for each supplied function config", () => {
       var Service = BusinessService.extend({
         functions: [
-          { "__getAll" : getAll },
-          { "__getById" : getById },
-          { "__getRulesForInsert" : getRulesForInsert },
+          { "_getAll" : getAll },
+          { "_getById" : getById },
+          { "_getRulesForInsert" : getRulesForInsert },
         ]
       }).service;
 
@@ -45,9 +45,9 @@ describe("BusinessService", function() {
       function getRulesForInsert () {}
 
       var service = new Service();
-      expect(service.__getAll).toEqual(getAll);
-      expect(service.__getById).toEqual(getById);
-      expect(service.__getRulesForInsert).toEqual(getRulesForInsert);
+      expect(service._getAll).toEqual(getAll);
+      expect(service._getById).toEqual(getById);
+      expect(service._getRulesForInsert).toEqual(getRulesForInsert);
     });
 
     it("logs a console.warn when a supplied function name does not exist on BusinessService", () => {
@@ -96,13 +96,13 @@ describe("BusinessService", function() {
                                          .service;
 
             expect(Service.prototype.test1Command).toBeDefined()
-            expect(Service.prototype.__onTest1CommandInitialization).toBeDefined();
-            expect(Service.prototype.__getRulesForTest1Command).toBeDefined();
-            expect(Service.prototype.__test1).toBeDefined();
+            expect(Service.prototype._onTest1CommandInitialization).toBeDefined();
+            expect(Service.prototype._getRulesForTest1Command).toBeDefined();
+            expect(Service.prototype._test1).toBeDefined();
             expect(Service.prototype.test2Command).toBeDefined();
-            expect(Service.prototype.__onTest2CommandInitialization).toBeDefined();
-            expect(Service.prototype.__getRulesForTest2Command).toBeDefined();
-            expect(Service.prototype.__test2).toBeDefined();
+            expect(Service.prototype._onTest2CommandInitialization).toBeDefined();
+            expect(Service.prototype._getRulesForTest2Command).toBeDefined();
+            expect(Service.prototype._test2).toBeDefined();
           });
 
           it("the created methods reference the prototype methods", () => {
@@ -126,9 +126,9 @@ describe("BusinessService", function() {
       BusinessService.createCommand('testCommand', Service, { });
 
       expect(Service.prototype.testCommand).toBeDefined();
-      expect(Service.prototype.__onTestCommandInitialization).toBeDefined();
-      expect(Service.prototype.__getRulesForTestCommand).toBeDefined();
-      expect(Service.prototype.__test).toBeDefined();
+      expect(Service.prototype._onTestCommandInitialization).toBeDefined();
+      expect(Service.prototype._getRulesForTestCommand).toBeDefined();
+      expect(Service.prototype._test).toBeDefined();
     });
 
     describe("when supplied with options.functions", () => {
@@ -184,17 +184,17 @@ describe("BusinessService", function() {
     });
 
     describe("instance methods", () => {
-      describe("__getAll", () => {
+      describe("_getAll", () => {
         it("invokes dataProxy.getAll", () => {
           command.execute(() => {});
           expect(dataProxy.getAll).toHaveBeenCalled();
         });
       });
 
-      describe("__getRulesForGetAll", () => {
+      describe("_getRulesForGetAll", () => {
         it("returns an empty array", () => {
           var callbackValue;
-          service.__getRulesForGetAll({}, (result) => callbackValue = result);
+          service._getRulesForGetAll({}, (result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -210,15 +210,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype.__onGetAllCommandInitialization = (context, done) => {
+          TestService.prototype._onGetAllCommandInitialization = (context, done) => {
             context.foo = "";
             done();
           };
-          TestService.prototype.__getRulesForGetAll = (context, done) => {
+          TestService.prototype._getRulesForGetAll = (context, done) => {
             context.bar = "";
             done([]);
           };
-          TestService.prototype.__getAll = (context, done) => {
+          TestService.prototype._getAll = (context, done) => {
             sharedContext = context;
             done();
           }
@@ -243,18 +243,18 @@ describe("BusinessService", function() {
     });
 
     describe("instance methods", () => {
-      describe("__getById", () => {
+      describe("_getById", () => {
         it("invokes dataProxy.getById", () => {
           command.execute(() => {});
           expect(dataProxy.getById).toHaveBeenCalledWith(id, jasmine.any(Function));
         });
       });
 
-      describe("__getRulesForGetById", () => {
+      describe("_getRulesForGetById", () => {
         it("returns an empty array", () => {
           var callbackValue;
           var id = 1;
-          service.__getRulesForGetById(id, {}, (result) => callbackValue = result);
+          service._getRulesForGetById(id, {}, (result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -270,16 +270,16 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype.__onGetByIdCommandInitialization = (id, context, done) => {
+          TestService.prototype._onGetByIdCommandInitialization = (id, context, done) => {
             context.ids = 1;
             done();
           };
-          TestService.prototype.__getRulesForGetById = (id, context, done) => {
-            context.ids++; 
+          TestService.prototype._getRulesForGetById = (id, context, done) => {
+            context.ids++;
             done([]);
           };
-          TestService.prototype.__getById = (id, context, done) => {
-            context.ids++; 
+          TestService.prototype._getById = (id, context, done) => {
+            context.ids++;
             sharedContext = context;
             done();
           }
@@ -305,17 +305,17 @@ describe("BusinessService", function() {
     });
 
     describe("instance methods", () => {
-      describe("__insert", () => {
+      describe("_insert", () => {
         it("invokes dataProxy.insert", () => {
           command.execute(() => {});
           expect(dataProxy.insert).toHaveBeenCalledWith(state, jasmine.any(Function));
         });
       });
 
-      describe("__getRulesForInsert", () => {
+      describe("_getRulesForInsert", () => {
         it("returns an empty array", () => {
           var callbackValue;
-          service.__getRulesForInsert(state, {}, (result) => callbackValue = result);
+          service._getRulesForInsert(state, {}, (result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -331,15 +331,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype.__onInsertCommandInitialization = (state, context, done) => {
+          TestService.prototype._onInsertCommandInitialization = (state, context, done) => {
             context.foo = state.foo;
             done();
           };
-          TestService.prototype.__getRulesForInsert = (state, context, done) => {
+          TestService.prototype._getRulesForInsert = (state, context, done) => {
             context.bar = state.bar;
             done([]);
           };
-          TestService.prototype.__insert = (state, context, done) => {
+          TestService.prototype._insert = (state, context, done) => {
             context.meh = state.meh;
             sharedContext = context;
             done();
@@ -366,17 +366,17 @@ describe("BusinessService", function() {
     });
 
     describe("instance methods", () => {
-      describe("__update", () => {
+      describe("_update", () => {
         it("invokes dataProxy.update", () => {
           command.execute(() => {});
           expect(dataProxy.update).toHaveBeenCalledWith(state, jasmine.any(Function));
         });
       });
 
-      describe("__getRulesForUpdate", () => {
+      describe("_getRulesForUpdate", () => {
         it("returns an empty array", () => {
           var callbackValue;
-          service.__getRulesForUpdate(state, {}, (result) => callbackValue = result);
+          service._getRulesForUpdate(state, {}, (result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -392,15 +392,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype.__onUpdateCommandInitialization = (state, context, done) => {
+          TestService.prototype._onUpdateCommandInitialization = (state, context, done) => {
             context.foo = state.foo;
             done();
           };
-          TestService.prototype.__getRulesForUpdate = (state, context, done) => {
+          TestService.prototype._getRulesForUpdate = (state, context, done) => {
             context.bar = state.bar;
             done([]);
           };
-          TestService.prototype.__update = (state, context, done) => {
+          TestService.prototype._update = (state, context, done) => {
             context.meh = state.meh;
             sharedContext = context;
             done();
@@ -427,18 +427,18 @@ describe("BusinessService", function() {
     });
 
     describe("instance methods", () => {
-      describe("__remove", () => {
+      describe("_remove", () => {
         it("invokes dataProxy.remove", () => {
           command.execute(() => {});
           expect(dataProxy.remove).toHaveBeenCalledWith(id, jasmine.any(Function));
         });
       });
 
-      describe("__getRulesForRemove", () => {
+      describe("_getRulesForRemove", () => {
         it("returns an empty array", () => {
           var callbackValue;
           var id = 1;
-          service.__getRulesForRemove(id, {}, (result) => callbackValue = result);
+          service._getRulesForRemove(id, {}, (result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -454,15 +454,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype.__onRemoveCommandInitialization = (id, context, done) => {
+          TestService.prototype._onRemoveCommandInitialization = (id, context, done) => {
             context.ids = 1;
             done();
           };
-          TestService.prototype.__getRulesForRemove = (id, context, done) => {
+          TestService.prototype._getRulesForRemove = (id, context, done) => {
             context.ids++;
             done([]);
           };
-          TestService.prototype.__remove = (id, context, done) => {
+          TestService.prototype._remove = (id, context, done) => {
             context.ids++;
             sharedContext = context;
             done();

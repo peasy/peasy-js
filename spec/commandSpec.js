@@ -75,7 +75,7 @@ describe("Command", function() {
         FalseRule = Rule.extend({
           params: ['message'],
           onValidate: function(done) {
-            this.__invalidate(this.message);
+            this._invalidate(this.message);
             done();
           }
         });

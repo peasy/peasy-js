@@ -27,13 +27,13 @@
       var context = {};
       return new Command({
         onInitialization: function(done) {
-          service.__onGetAllCommandInitialization(context, done);
+          service._onGetAllCommandInitialization(context, done);
         },
         getRules: function(done) {
-          return service.__getRulesForGetAll(context, done);
+          return service._getRulesForGetAll(context, done);
         },
         onValidationSuccess: function(done) {
-          return service.__getAll(context, done);
+          return service._getAll(context, done);
         }
       });
     },
@@ -43,13 +43,13 @@
       var context = {};
       return new Command({
         onInitialization: function(done) {
-          service.__onGetByIdCommandInitialization(id, context, done);
+          service._onGetByIdCommandInitialization(id, context, done);
         },
         getRules: function(done) {
-          return service.__getRulesForGetById(id, context, done);
+          return service._getRulesForGetById(id, context, done);
         },
         onValidationSuccess: function(done) {
-          return service.__getById(id, context, done);
+          return service._getById(id, context, done);
         }
       });
     },
@@ -59,13 +59,13 @@
       var context = {};
       return new Command({
         onInitialization: function(done) {
-          service.__onInsertCommandInitialization(data, context, done);
+          service._onInsertCommandInitialization(data, context, done);
         },
         getRules: function(done) {
-          return service.__getRulesForInsert(data, context, done);
+          return service._getRulesForInsert(data, context, done);
         },
         onValidationSuccess: function(done) {
-          return service.__insert(data, context, done);
+          return service._insert(data, context, done);
         }
       });
     },
@@ -75,13 +75,13 @@
       var context = {};
       return new Command({
         onInitialization: function(done) {
-          service.__onUpdateCommandInitialization(data, context, done);
+          service._onUpdateCommandInitialization(data, context, done);
         },
         getRules: function(done) {
-          return service.__getRulesForUpdate(data, context, done);
+          return service._getRulesForUpdate(data, context, done);
         },
         onValidationSuccess: function(done) {
-          return service.__update(data, context, done);
+          return service._update(data, context, done);
         }
       });
     },
@@ -91,74 +91,74 @@
       var context = {};
       return new Command({
         onInitialization: function(done) {
-          service.__onDeleteCommandInitialization(id, context, done);
+          service._onDeleteCommandInitialization(id, context, done);
         },
         getRules: function(done) {
-          return service.__getRulesForDelete(id, context, done);
+          return service._getRulesForDelete(id, context, done);
         },
         onValidationSuccess: function(done) {
-          return service.__remove(id, context, done);
+          return service._remove(id, context, done);
         }
       });
     },
 
-    __getAll: function(context, done) {
+    _getAll: function(context, done) {
       this.dataProxy.getAll(done);
     },
 
-    __getRulesForGetAll: function(context, done) {
+    _getRulesForGetAll: function(context, done) {
       done([]);
     },
 
-    __onGetAllCommandInitialization: function(context, done) {
+    _onGetAllCommandInitialization: function(context, done) {
       done();
     },
 
-    __getById: function(id, context, done) {
+    _getById: function(id, context, done) {
       this.dataProxy.getById(id, done);
     },
 
-    __getRulesForGetById: function(id, context, done) {
+    _getRulesForGetById: function(id, context, done) {
       done([]);
     },
 
-    __onGetByIdCommandInitialization: function(id, context, done) {
+    _onGetByIdCommandInitialization: function(id, context, done) {
       done();
     },
 
-    __insert: function(data, context, done) {
+    _insert: function(data, context, done) {
       this.dataProxy.insert(data, done);
     },
 
-    __getRulesForInsert: function(data, context, done) {
+    _getRulesForInsert: function(data, context, done) {
       done([]);
     },
 
-    __onInsertCommandInitialization: function(data, context, done) {
+    _onInsertCommandInitialization: function(data, context, done) {
       done();
     },
 
-    __update: function(data, context, done) {
+    _update: function(data, context, done) {
       this.dataProxy.update(data, done);
     },
 
-    __getRulesForUpdate: function(data, context, done) {
+    _getRulesForUpdate: function(data, context, done) {
       done([]);
     },
 
-    __onUpdateCommandInitialization: function(data, context, done) {
+    _onUpdateCommandInitialization: function(data, context, done) {
       done();
     },
 
-    __remove: function(id, context, done) {
+    _remove: function(id, context, done) {
       this.dataProxy.remove(id, done);
     },
 
-    __getRulesForRemove: function(id, context, done) {
+    _getRulesForRemove: function(id, context, done) {
       done([]);
     },
 
-    __onRemoveCommandInitialization: function(id, context, done) {
+    _onRemoveCommandInitialization: function(id, context, done) {
       done();
     }
   };
@@ -203,9 +203,9 @@
   };
 
   BusinessService.createCommand = function(name, service, functions) {
-    var onInitialization = '__on' + capitalize(name) + 'Initialization';
-    var getRules = '__getRulesFor' + capitalize(name);
-    var onValidationSuccess = '__' + name.replace("Command", "");
+    var onInitialization = '_on' + capitalize(name) + 'Initialization';
+    var getRules = '_getRulesFor' + capitalize(name);
+    var onValidationSuccess = '_' + name.replace("Command", "");
 
     function capitalize(value) {
       return value.charAt(0).toUpperCase() + value.slice(1);
@@ -414,7 +414,7 @@
     };
 
     Extended.prototype = new Rule();
-    Extended.prototype.__onValidate = options.onValidate;
+    Extended.prototype._onValidate = options.onValidate;
 
     return Extended;
   };
@@ -423,7 +423,7 @@
 
     constructor: Rule,
 
-    __invalidate: function(errors) {
+    _invalidate: function(errors) {
       var self = this;
       this.valid = false;
       if (!Array.isArray(errors)) {
@@ -438,14 +438,14 @@
       });
     },
 
-    __onValidate: function(done) {
+    _onValidate: function(done) {
     },
 
     validate: function(done) {
       var self = this;
       self.errors = [];
 
-      this.__onValidate(function() {
+      this._onValidate(function() {
         if (self.valid) {
           if (self.ifValidThenFunction) {
             self.ifValidThenFunction();
@@ -454,7 +454,7 @@
             new RulesValidator(self.successors).validate(function() {
               self.successors.filter(function(rule) { return !rule.valid; })
                              .forEach(function(rule) {
-                               self.__invalidate(rule.errors);
+                               self._invalidate(rule.errors);
                              });
 
               done();

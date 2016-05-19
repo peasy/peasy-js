@@ -4,6 +4,7 @@ var Rule = require('./peasy').Rule;
 var BusinessService = require('./peasy').BusinessService;
 var Command = require('./peasy').Command;
 
+
 // CREATE RULES
 
 var AgeRule = Rule.extend({
@@ -11,7 +12,7 @@ var AgeRule = Rule.extend({
   params: ['birthdate'],
   onValidate: function(done) {
     if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
-      this.__invalidate("You are too young");
+      this._invalidate("You are too young");
     }
     var time = Math.floor((Math.random() * 3000) + 1);
     setTimeout(() => done(this), time); // simulate latency
@@ -23,7 +24,7 @@ var NameRule = Rule.extend({
   params: ['name'],
   onValidate: function(done) {
     if (this.name === "Aaron") {
-      this.__invalidate("Name cannot be Aaron");
+      this._invalidate("Name cannot be Aaron");
     }
     var time = Math.floor((Math.random() * 3000) + 1);
     setTimeout(() => done(this), time); // simulate latency
@@ -35,7 +36,7 @@ var FieldRequiredRule = Rule.extend({
   onValidate: function(done) {
     if (!this.data[this.field]) {
       this.association = this.field;
-      this.__invalidate(this.field + " is required");
+      this._invalidate(this.field + " is required");
     }
     var time = Math.floor((Math.random() * 3000) + 1);
     setTimeout(() => done(this), time); // simulate latency
@@ -46,7 +47,7 @@ var FieldRequiredRule = Rule.extend({
 
 var PersonService = BusinessService.extend({
   functions: [{
-    '__getRulesForInsert': getRulesForInsert
+    '_getRulesForInsert': getRulesForInsert
   }]
 }).service;
 

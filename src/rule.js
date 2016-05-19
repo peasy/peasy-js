@@ -19,7 +19,6 @@ var Rule = (function() {
   };
 
   Rule.extend = function(options) {
-
     options = options || {};
 
     if (typeof options.onValidate !== 'function') {
@@ -40,7 +39,7 @@ var Rule = (function() {
     };
 
     Extended.prototype = new Rule();
-    Extended.prototype.__onValidate = options.onValidate;
+    Extended.prototype._onValidate = options.onValidate;
 
     return Extended;
   };
@@ -49,7 +48,7 @@ var Rule = (function() {
 
     constructor: Rule,
 
-    __invalidate: function(errors) {
+    _invalidate: function(errors) {
       var self = this;
       this.valid = false;
       if (!Array.isArray(errors)) {
@@ -64,14 +63,14 @@ var Rule = (function() {
       });
     },
 
-    __onValidate: function(done) {
+    _onValidate: function(done) {
     },
 
     validate: function(done) {
       var self = this;
       self.errors = [];
 
-      this.__onValidate(function() {
+      this._onValidate(function() {
         if (self.valid) {
           if (self.ifValidThenFunction) {
             self.ifValidThenFunction();
@@ -80,7 +79,7 @@ var Rule = (function() {
             new RulesValidator(self.successors).validate(function() {
               self.successors.filter(function(rule) { return !rule.valid; })
                              .forEach(function(rule) {
-                               self.__invalidate(rule.errors);
+                               self._invalidate(rule.errors);
                              });
 
               done();
