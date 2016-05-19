@@ -415,22 +415,22 @@ describe("BusinessService", function() {
     });
   });
 
-  describe("removeCommand and associated methods", function() {
+  describe("destroyCommand and associated methods", function() {
 
     var id = 1;
 
     beforeAll(() => {
-      dataProxy = { remove: function(id) {} };
+      dataProxy = { destroy: function(id) {} };
       service = new BusinessService(dataProxy);
-      command = service.removeCommand(id);
-      spyOn(dataProxy, "remove");
+      command = service.destroyCommand(id);
+      spyOn(dataProxy, "destroy");
     });
 
     describe("instance methods", () => {
-      describe("_remove", () => {
-        it("invokes dataProxy.remove", () => {
+      describe("_destroy", () => {
+        it("invokes dataProxy.destroy", () => {
           command.execute(() => {});
-          expect(dataProxy.remove).toHaveBeenCalledWith(id, jasmine.any(Function));
+          expect(dataProxy.destroy).toHaveBeenCalledWith(id, jasmine.any(Function));
         });
       });
 
@@ -450,7 +450,7 @@ describe("BusinessService", function() {
       });
 
       describe("on execution", () => {
-        it("passes shared context and id to all remove pipeline methods", () => {
+        it("passes shared context and id to all destroy pipeline methods", () => {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
@@ -462,13 +462,13 @@ describe("BusinessService", function() {
             context.ids++;
             done([]);
           };
-          TestService.prototype._remove = (id, context, done) => {
+          TestService.prototype._destroy = (id, context, done) => {
             context.ids++;
             sharedContext = context;
             done();
           }
           var id = 1;
-          var command = new TestService(dataProxy).removeCommand(1);
+          var command = new TestService(dataProxy).destroyCommand(1);
           command.execute(() => { });
           expect(sharedContext.ids).toEqual(3);
         });
