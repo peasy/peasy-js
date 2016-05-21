@@ -2,7 +2,7 @@
 
 ###An easy to use middle tier framework for javascript
 
-Peasy-js is a simple middle tier framework that offers/addresses the following:
+peasy-js is a simple middle tier framework that offers/addresses the following:
 
 - Easy to use [validation](https://github.com/peasy/Peasy.NET/wiki/Validation-Rules)/[business rules](https://github.com/peasy/Peasy.NET/wiki/Business-Rules) engine
 - [Thread safety](https://github.com/peasy/Peasy.NET/wiki/Thread-Safety)
