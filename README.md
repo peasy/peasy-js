@@ -2,7 +2,7 @@
 
 ###An easy to use middle tier framework for javascript
 
-Peasy-js is a simple middle tier framework that offers/addresses the following:
+peasy-js is a simple middle tier framework that offers/addresses the following:
 
 - Easy to use [validation](https://github.com/peasy/Peasy.NET/wiki/Validation-Rules)/[business rules](https://github.com/peasy/Peasy.NET/wiki/Business-Rules) engine
 - [Thread safety](https://github.com/peasy/Peasy.NET/wiki/Thread-Safety)
@@ -40,8 +40,8 @@ You can also download and add the peasy.js file to your project and reference it
 
 You can get started by reviewing the getting started example below.
 
-- I want to run it in a [client](https://github.com/peasy/peasy-js/wiki/Browser-sample) (browser)!
-- I want to run it on a [server](https://github.com/peasy/peasy-js/wiki/node.js-sample) (Node.js)!
+- I want to run it in a [client](https://github.com/peasy/peasy-js/wiki/Browser-sample) (browser)
+- I want to run it on a [server](https://github.com/peasy/peasy-js/wiki/node.js-sample) (Node.js)
 
 An additional sample can be viewed [here](https://github.com/peasy/peasy-js/blob/master/src/sample.js) that showcases creating a [business service](), custom [command](), [business rules](), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, just run: ```node src/sample.js``` from a command line.
 
