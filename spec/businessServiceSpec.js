@@ -120,58 +120,113 @@ describe("BusinessService", function() {
     });
   });
 
-  describe("createCommand", () => {
-    it("creates the expected command functions on the service prototype", () => {
-      var Service = BusinessService.extend().service;
-      BusinessService.createCommand('testCommand', Service, { });
-
-      expect(Service.prototype.testCommand).toBeDefined();
-      expect(Service.prototype._onTestCommandInitialization).toBeDefined();
-      expect(Service.prototype._getRulesForTestCommand).toBeDefined();
-      expect(Service.prototype._test).toBeDefined();
-    });
-
-    describe("when supplied with options.functions", () => {
-      it("creates a command that executes the pipeline as expected", () => {
+  describe("BusinessService.createCommand", () => {
+    describe("method invocation", () => {
+      it("creates the expected command functions on the service prototype", () => {
         var Service = BusinessService.extend().service;
-        var sharedContext = null
+        BusinessService.createCommand('testCommand', Service, {});
 
-        BusinessService.createCommand('testCommand', Service, {
-          onInitialization: function(context, done) {
-            context.testValue = "1";
-            done();
-          },
-          getRules: function(context, done) {
-            context.testValue += "2";
-            done([]);
-          },
-          onValidationSuccess: function(context, done) {
-            sharedContext = context;
-            done(null, { data: 'abc' });
-          },
+        expect(Service.prototype.testCommand).toBeDefined();
+        expect(Service.prototype._onTestCommandInitialization).toBeDefined();
+        expect(Service.prototype._getRulesForTestCommand).toBeDefined();
+        expect(Service.prototype._test).toBeDefined();
+      });
+
+      describe("arguments", () => {
+        describe("when 'functions' supplied", () => {
+          it("creates a command that executes the pipeline as expected", () => {
+            var Service = BusinessService.extend().service;
+            var sharedContext = null
+
+            BusinessService.createCommand('testCommand', Service, {
+              onInitialization: function(context, done) {
+                context.testValue = "1";
+                done();
+              },
+              getRules: function(context, done) {
+                context.testValue += "2";
+                done([]);
+              },
+              onValidationSuccess: function(context, done) {
+                sharedContext = context;
+                done(null, { data: 'abc' });
+              },
+            });
+
+            var service = new Service();
+            service.testCommand().execute((err, result) => {
+              expect(result.value).toEqual({ data: 'abc' });
+            });
+            expect(sharedContext.testValue).toEqual("12");
+          });
         });
 
-        var service = new Service();
-        service.testCommand().execute((err, result) => {
-          expect(result.value).toEqual({ data: 'abc' });
+        describe("when 'functions' not supplied", () => {
+          it("creates a command that successfully executes", () => {
+            var Service = BusinessService.extend().service;
+            var testValue = null
+            BusinessService.createCommand('testCommand', Service);
+
+            var service = new Service();
+            service.testCommand().execute(() => {
+              testValue = "done";
+            });
+            expect(testValue).toBe("done");
+          });
         });
-        expect(sharedContext.testValue).toEqual("12");
+
+        describe("when 'params' are supplied", () => {
+          it("instance members are created and assigned the appropriate argument values", () => {
+          var params = [];
+          var Service = BusinessService.extend().service;
+          BusinessService.createCommand('testCommand',
+                                        Service,
+                                        {
+                                          onInitialization: function(context, done, args) {
+                                            params.push(this.firstName);
+                                            params.push(this.lastName);
+                                            done();
+                                          }
+                                        },
+                                        ['firstName', 'lastName']
+                                       );
+
+            var command = new Service({}).testCommand('value1', 'value2');
+            command.execute(() => {
+              expect(params).toEqual(['value1', 'value2']);
+            });
+          });
+        });
       });
     });
 
-    describe("when supplied without options.functions", () => {
-      it("creates a command that successfully executes", () => {
-        var Service = BusinessService.extend().service;
-        var testValue = null
-        BusinessService.createCommand('testCommand', Service);
+    describe("arguments on execution", () => {
+      it("instance members are created and assigned the appropriate argument values", () => {
+      var params = [];
+      var Service = BusinessService.extend()
+                                   .createCommand('testCommand', {
+                                     onInitialization: function(context, done, args) {
+                                       params.push(args[0]);
+                                       done();
+                                     },
+                                     getRules: function(context, done, args) {
+                                       params.push(args[1]);
+                                       done([]);
+                                     },
+                                     onValidationSuccess: function(context, done, args) {
+                                       params.push(args[2]);
+                                       done();
+                                     }
+                                   })
+                                   .service;
 
-        var service = new Service();
-        service.testCommand().execute(() => {
-          testValue = "done";
+        var command = new Service({}).testCommand('value1', 'value2', 'value3');
+        command.execute(() => {
+          expect(params).toEqual(['value1', 'value2', 'value3']);
         });
-        expect(testValue).toBe("done");
       });
     });
+
   });
 
   describe("getAllCommand and associated methods", function() {

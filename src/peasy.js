@@ -206,6 +206,7 @@
     var onInitialization = '_on' + capitalize(name) + 'Initialization';
     var getRules = '_getRulesFor' + capitalize(name);
     var onValidationSuccess = '_' + name.replace("Command", "");
+    var commandParams = '_' + name + 'Params';
 
     function capitalize(value) {
       return value.charAt(0).toUpperCase() + value.slice(1);
@@ -225,14 +226,14 @@
       done();
     };
 
-    service.prototype._params = params || [];
+    service.prototype[commandParams] = params || [];
 
     service.prototype[name] = function() {
       var self = this;
       var args = arguments;
       var context = {};
 
-      self._params.forEach(function(param, index) {
+      self[commandParams].forEach(function(param, index) {
         self[param] = args[index];
       });
 

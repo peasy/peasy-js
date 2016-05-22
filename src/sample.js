@@ -23,8 +23,8 @@ var NameRule = Rule.extend({
   association: "name",
   params: ['name'],
   onValidate: function(done) {
-    if (this.name === "Aaron") {
-      this._invalidate("Name cannot be Aaron");
+    if (this.name === "Jimi") {
+      this._invalidate("Name cannot be Jimi");
     }
     var time = Math.floor((Math.random() * 3000) + 1);
     setTimeout(() => done(this), time); // simulate latency
@@ -49,17 +49,7 @@ var PersonService = BusinessService.extend({
   functions: [{
     '_getRulesForInsert': getRulesForInsert
   }]
-})
-.createCommand('testCommand', {
-  onValidationSuccess: function(context, done) {
-    console.log("NAME", this.name);
-    //console.log("ARGS", args[0]);
-    console.log("CONTEXT", context);
-    console.log("DONE", done);
-    done();
-  }
-}, ['name'])
-.service;
+}).service;
 
 function getRulesForInsert(person, context, done) {
 
@@ -73,10 +63,10 @@ function getRulesForInsert(person, context, done) {
               .ifValidThenExecute(() => console.log("Age succeeded"))
               .ifInvalidThenExecute(() => console.log("Age failed"))
               .ifValidThenValidate(new NameRule(person.name)
-                                         .ifValidThenExecute(() => console.log("Name succeeeded"))
+                                         .ifValidThenExecute(() => console.log("Name succeeded"))
                                          .ifInvalidThenExecute(() => console.log("Name failed"))
                                          .ifValidThenValidate(new FieldRequiredRule("address", person)
-                                                                    .ifValidThenExecute(() => console.log("Address succeeeded"))
+                                                                    .ifValidThenExecute(() => console.log("Address succeeded"))
                                                                     .ifInvalidThenExecute(() => console.log("Address failed"))
                                                               )));
 }
@@ -106,18 +96,12 @@ PersonDataProxy.prototype = {
 var proxy = new PersonDataProxy();
 var service = new PersonService(proxy);
 
-debugger;
-service.testCommand("hello").execute((err, result) => {
-  console.log("RESULT FROM TEST COMMAND", result);
-});
-
-
 var commands = [
-  service.insertCommand({name: "Aaron", age: new Date('2/3/1975')}),
-  service.insertCommand({name: "Aarons", age: new Date('2/3/1975'), address: 'aa'}),
-  service.insertCommand({name: "Aaron", age: new Date('2/3/1925'), address: 'aa'}),
-  service.insertCommand({name: "Aarons", age: new Date('2/3/1925')}),
-  service.insertCommand({name: "aAaron", age: new Date('2/3/1925'), address: 'aaa'})
+  service.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
+  service.insertCommand({name: "James", age: new Date('2/3/1975'), address: 'aa'}),
+  service.insertCommand({name: "Jimi", age: new Date('2/3/1925'), address: 'aa'}),
+  service.insertCommand({name: "James", age: new Date('2/3/1925')}),
+  service.insertCommand({name: "James", age: new Date('2/3/1925'), address: 'aaa'})
 ];
 
 // LOOP THROUGH EACH COMMAND AND EXECUTE IT
