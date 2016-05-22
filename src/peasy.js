@@ -188,8 +188,8 @@
       Extended.prototype[name] = config[name];
     });
 
-    function createCommand(name, options) {
-      BusinessService.createCommand(name, Extended, options);
+    function createCommand(name, options, params) {
+      BusinessService.createCommand(name, Extended, options, params);
       return {
         createCommand: createCommand,
         service: Extended
@@ -202,7 +202,7 @@
     };
   };
 
-  BusinessService.createCommand = function(name, service, functions) {
+  BusinessService.createCommand = function(name, service, functions, params) {
     var onInitialization = '_on' + capitalize(name) + 'Initialization';
     var getRules = '_getRulesFor' + capitalize(name);
     var onValidationSuccess = '_' + name.replace("Command", "");
@@ -213,31 +213,38 @@
 
     functions = functions || {};
 
-    service.prototype[onInitialization] = functions.onInitialization || function(context, done) {
+    service.prototype[onInitialization] = functions.onInitialization || function(context, done, args) {
       done();
     };
 
-    service.prototype[getRules] = functions.getRules || function(context, done) {
+    service.prototype[getRules] = functions.getRules || function(context, done, args) {
       done([]);
     };
 
-    service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done) {
+    service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done, args) {
       done();
     };
 
+    service.prototype._params = params || [];
+
     service.prototype[name] = function() {
       var self = this;
+      var args = arguments;
       var context = {};
+
+      self._params.forEach(function(param, index) {
+        self[param] = args[index];
+      });
 
       return new Command({
         onInitialization: function(done) {
-          self[onInitialization](context, done);
+          self[onInitialization](context, done, args);
         },
         getRules: function(done) {
-          return self[getRules](context, done);
+          return self[getRules](context, done, args);
         },
         onValidationSuccess: function(done) {
-          return self[onValidationSuccess](context, done);
+          return self[onValidationSuccess](context, done, args);
         }
       });
     };

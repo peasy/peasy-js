@@ -49,8 +49,17 @@ var PersonService = BusinessService.extend({
   functions: [{
     '_getRulesForInsert': getRulesForInsert
   }]
-}).service;
-
+})
+.createCommand('testCommand', {
+  onValidationSuccess: function(context, done) {
+    console.log("NAME", this.name);
+    //console.log("ARGS", args[0]);
+    console.log("CONTEXT", context);
+    console.log("DONE", done);
+    done();
+  }
+}, ['name'])
+.service;
 
 function getRulesForInsert(person, context, done) {
 
@@ -96,6 +105,12 @@ PersonDataProxy.prototype = {
 
 var proxy = new PersonDataProxy();
 var service = new PersonService(proxy);
+
+debugger;
+service.testCommand("hello").execute((err, result) => {
+  console.log("RESULT FROM TEST COMMAND", result);
+});
+
 
 var commands = [
   service.insertCommand({name: "Aaron", age: new Date('2/3/1975')}),
