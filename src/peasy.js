@@ -24,15 +24,14 @@
 
     getAllCommand: function() {
       var service = this;
-      var context = {};
       return new Command({
-        onInitialization: function(done) {
+        onInitialization: function(context, done) {
           service._onGetAllCommandInitialization(context, done);
         },
-        getRules: function(done) {
+        getRules: function(context, done) {
           return service._getRulesForGetAll(context, done);
         },
-        onValidationSuccess: function(done) {
+        onValidationSuccess: function(context, done) {
           return service._getAll(context, done);
         }
       });
@@ -40,15 +39,14 @@
 
     getByIdCommand: function(id) {
       var service = this;
-      var context = {};
       return new Command({
-        onInitialization: function(done) {
+        onInitialization: function(context, done) {
           service._onGetByIdCommandInitialization(id, context, done);
         },
-        getRules: function(done) {
+        getRules: function(context, done) {
           return service._getRulesForGetById(id, context, done);
         },
-        onValidationSuccess: function(done) {
+        onValidationSuccess: function(context, done) {
           return service._getById(id, context, done);
         }
       });
@@ -56,15 +54,14 @@
 
     insertCommand: function(data) {
       var service = this;
-      var context = {};
       return new Command({
-        onInitialization: function(done) {
+        onInitialization: function(context, done) {
           service._onInsertCommandInitialization(data, context, done);
         },
-        getRules: function(done) {
+        getRules: function(context, done) {
           return service._getRulesForInsert(data, context, done);
         },
-        onValidationSuccess: function(done) {
+        onValidationSuccess: function(context, done) {
           return service._insert(data, context, done);
         }
       });
@@ -72,15 +69,14 @@
 
     updateCommand: function(data) {
       var service = this;
-      var context = {};
       return new Command({
-        onInitialization: function(done) {
+        onInitialization: function(context, done) {
           service._onUpdateCommandInitialization(data, context, done);
         },
-        getRules: function(done) {
+        getRules: function(context, done) {
           return service._getRulesForUpdate(data, context, done);
         },
-        onValidationSuccess: function(done) {
+        onValidationSuccess: function(context, done) {
           return service._update(data, context, done);
         }
       });
@@ -88,15 +84,14 @@
 
     destroyCommand: function(id) {
       var service = this;
-      var context = {};
       return new Command({
-        onInitialization: function(done) {
+        onInitialization: function(context, done) {
           service._onDestroyCommandInitialization(id, context, done);
         },
-        getRules: function(done) {
+        getRules: function(context, done) {
           return service._getRulesForDestroy(id, context, done);
         },
-        onValidationSuccess: function(done) {
+        onValidationSuccess: function(context, done) {
           return service._destroy(id, context, done);
         }
       });
@@ -268,15 +263,15 @@
         console.warn("'onValidationSuccess' was not defined.");
       }
 
-      this.onInitialization = callbacks.onInitialization || function(done) {
+      this.onInitialization = callbacks.onInitialization || function(context, done) {
         done();
       };
 
-      this.getRules = callbacks.getRules || function(done) {
+      this.getRules = callbacks.getRules || function(context, done) {
         done([]);
       };
 
-      this.onValidationSuccess = callbacks.onValidationSuccess || function(done) {
+      this.onValidationSuccess = callbacks.onValidationSuccess || function(context, done) {
         done();
       };
 
@@ -295,14 +290,15 @@
 
     execute: function(done) {
       var self = this;
+      var context = {};
 
       if (typeof done !== 'function') {
         throw new Error('A callback method needs to be supplied to execute!');
       }
 
-      self.onInitialization(function() {
+      self.onInitialization(context, function() {
 
-        self.getRules(function(rules) {
+        self.getRules(context, function(rules) {
 
           if (!Array.isArray(rules)) {
             rules = [rules];
@@ -319,7 +315,7 @@
               return done(null, new ExecutionResult(false, null, errors));
 
             try {
-              self.onValidationSuccess(function(err, result) {
+              self.onValidationSuccess(context, function(err, result) {
                 done(err, new ExecutionResult(true, result, null));
               });
             }

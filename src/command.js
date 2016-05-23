@@ -14,7 +14,7 @@ var Command = (function() {
         console.warn("'onValidationSuccess' was not defined.");
       }
 
-      this.onInitialization = callbacks.onInitialization || function(done) {
+      this.onInitialization = callbacks.onInitialization || function(context, done) {
         done();
       };
 
@@ -41,12 +41,13 @@ var Command = (function() {
 
     execute: function(done) {
       var self = this;
+      var context = {};
 
       if (typeof done !== 'function') {
         throw new Error('A callback method needs to be supplied to execute!');
       }
 
-      self.onInitialization(function() {
+      self.onInitialization(context, function() {
 
         self.getRules(function(rules) {
 
