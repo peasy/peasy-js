@@ -233,13 +233,13 @@
       });
 
       return new Command({
-        onInitialization: function(done) {
+        onInitialization: function(context, done) {
           self[onInitialization](context, done, args);
         },
-        getRules: function(done) {
+        getRules: function(context, done) {
           return self[getRules](context, done, args);
         },
-        onValidationSuccess: function(done) {
+        onValidationSuccess: function(context, done) {
           return self[onValidationSuccess](context, done, args);
         }
       });
@@ -332,6 +332,29 @@
     }
   };
 
+  Command.extend = function(options) {
+    var options = options || {};
+    var params = options.params || [];
+    var functions = options.functions || {};
+
+    var Extended = function() {
+      var self = this;
+      self.args = arguments;
+      Command.call(self, options.functions);
+      params.forEach(function(param, index) {
+        self[param] = self.args[index];
+      });
+    }
+
+    Extended.prototype = new Command();
+
+    params.forEach(function(param) {
+      Extended.prototype[param] = null;
+    });
+
+    return Extended;
+  }
+
   // RULES VALIDATOR
   var RulesValidator = function(rules) {
     if (this instanceof RulesValidator) {
@@ -410,9 +433,9 @@
     options.onValidate = options.onValidate || function() {};
 
     var Extended = function() {
-      this.args = arguments;
       var self = this;
-      Rule.call(this, { association: options.association});
+      self.args = arguments;
+      Rule.call(self, { association: options.association});
       options.params.forEach(function(field, index) {
         self[field] = self.args[index];
       });

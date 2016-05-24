@@ -45,11 +45,120 @@ var FieldRequiredRule = Rule.extend({
 
 // CREATE SERVICE AND WIRE UP VALIDATION/BUSINESS LOGIC FOR INSERT
 
+//var PersonService = BusinessService.extend({
+  //functions: [{
+    //'_getRulesForInsert': getRulesForInsert
+  //}]
+//}).service;
+
+//var PersonService = BusinessService.extend({
+  //functions: [{
+    //'_getRulesForInsert': getRulesForInsert
+  //}]
+//})
+//.createCommand('testCommand', {
+  //onInitialization: function(context, done) {
+    //context.foo = "bar";
+    //done();
+  //},
+  //getRules: function(context, done) {
+    //context.meh = "yay";
+    //done([]);
+  //},
+  //onValidationSuccess: function(context, done, args) {
+    //console.log("NAME", this.name);
+    //console.log("ARGS", args[0]);
+    //console.log("CONTEXT", context);
+    //console.log("DONE", done);
+    //done();
+  //}
+//}, ['name'])
+//.service;
+
 var PersonService = BusinessService.extend({
   functions: [{
     '_getRulesForInsert': getRulesForInsert
   }]
 }).service;
+
+debugger;
+var TestCommand = Command.extend({
+  params: ['id', 'dataProxy'],
+  functions: {
+    onInitialization: function(context, done, args) {
+      context.foo = "bar";
+      //console.log("ARGS INIT", args[0]);
+      console.log("THIS", this);
+      done();
+    },
+    getRules: function(context, done, args) {
+      context.meh = "yay";
+      //console.log("ARGS RULES", args[0]);
+      done([]);
+    },
+    onValidationSuccess: function(context, done, args) {
+      console.log("NAME", this.id);
+      //console.log("ARGS VALIDATION SUCCESS", args[0]);
+      console.log("CONTEXT", context);
+      console.log("DONE", done);
+      done();
+    }
+  }
+});
+
+//var TestCommand = function(val, dataProxy) {
+  //this.value = val;
+  //this.dataProxy = dataProxy;
+//}
+
+//TestCommand.prototype = new Command();
+//TestCommand.prototype.onInitialization = function(context, done, args) {
+  //context.foo = "bar";
+  ////console.log("ARGS INIT", args[0]);
+  //console.log("THIS", this);
+  //done();
+//};
+//TestCommand.prototype.getRules = function(context, done, args) {
+  //context.meh = "yay";
+  //done([]);
+//};
+//TestCommand.prototype.onValidationSuccess = function(context, done, args) {
+  //console.log("NAME", this.name);
+  ////console.log("ARGS VALIDATION SUCCESS", args[0]);
+  //console.log("CONTEXT", context);
+  //console.log("DONE", done);
+  //done();
+//};
+
+PersonService.prototype.testCommand = function(val) {
+  return new TestCommand(val);
+};
+//PersonService.prototype.testCommand = function(arg) {
+  //var self = this;
+  //return new Command({
+    //onInitialization: function(context, done, args) {
+      //context.foo = "bar";
+      ////console.log("ARGS INIT", args[0]);
+      //console.log("THIS", this);
+      //console.log("SELF", self);
+      //done();
+    //},
+    //getRules: function(context, done, args) {
+      //context.meh = "yay";
+      ////console.log("ARGS RULES", args[0]);
+      //done([]);
+    //},
+    //onValidationSuccess: function(context, done, args) {
+      //console.log("NAME", this.name);
+      ////console.log("ARGS VALIDATION SUCCESS", args[0]);
+      //console.log("CONTEXT", context);
+      //console.log("DONE", done);
+      //done();
+    //}
+  //});
+//};
+
+
 
 function getRulesForInsert(person, context, done) {
 
@@ -95,6 +204,11 @@ PersonDataProxy.prototype = {
 
 var proxy = new PersonDataProxy();
 var service = new PersonService(proxy);
+
+debugger;
+service.testCommand("hello").execute((err, result) => {
+  console.log("RESULT FROM TEST COMMAND", result);
+});
 
 var commands = [
   service.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
