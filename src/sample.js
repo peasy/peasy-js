@@ -4,7 +4,6 @@ var Rule = require('./peasy').Rule;
 var BusinessService = require('./peasy').BusinessService;
 var Command = require('./peasy').Command;
 
-
 // CREATE RULES
 
 var AgeRule = Rule.extend({
@@ -91,10 +90,29 @@ PersonDataProxy.prototype = {
   }
 };
 
+var MyCommand = function(someData) {
+  this.someData = someData;
+}
+
+MyCommand.prototype = new Command();
+MyCommand.prototype.onInitialization = function(context, done) {
+  console.log("YAY");
+  console.log("someData", this.someData);
+  done();
+}
+
+PersonService.prototype.myCommand = function(data) {
+  return new MyCommand(data);
+}
+
+
+
 // CREATE INSTANCE OF A PERSON SERVICE AND REQUIRED DATA PROXY
 
 var proxy = new PersonDataProxy();
 var service = new PersonService(proxy);
+
+var x = service.myCommand("hello").execute(() => {});
 
 var commands = [
   service.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
@@ -103,6 +121,9 @@ var commands = [
   service.insertCommand({name: "James", age: new Date('2/3/1925')}),
   service.insertCommand({name: "James", age: new Date('2/3/1925'), address: 'aaa'})
 ];
+
+
+
 
 // LOOP THROUGH EACH COMMAND AND EXECUTE IT
 

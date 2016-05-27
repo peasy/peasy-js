@@ -258,10 +258,6 @@
     callbacks = callbacks || {};
     if (this instanceof Command) {
 
-      if (typeof callbacks.onValidationSuccess !== 'function') {
-        console.warn("'onValidationSuccess' was not defined.");
-      }
-
       this.onInitialization = callbacks.onInitialization || function(context, done) {
         done();
       };
@@ -290,10 +286,6 @@
     execute: function(done) {
       var self = this;
       var context = {};
-
-      if (typeof done !== 'function') {
-        throw new Error('A callback method needs to be supplied to execute!');
-      }
 
       self.onInitialization(context, function() {
 

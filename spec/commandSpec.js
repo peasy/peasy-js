@@ -14,12 +14,6 @@ describe("Command", function() {
       expect(command instanceof Command).toBe(true);
     });
 
-    it("console.warns if a function was not provided for onValidationSuccess", () => {
-      spyOn(console, "warn");
-      var command = new Command();
-      expect(console.warn).toHaveBeenCalled();
-    });
-
     it("sets callbacks.onInitialization to a default if not supplied", () => {
       var command = new Command();
       expect(typeof command.onInitialization).toEqual('function');
@@ -37,11 +31,6 @@ describe("Command", function() {
   });
 
   describe("execute", () => {
-    it("throws an error if a callback is not supplied", () => {
-      var command = new Command();
-      expect(command.execute).toThrowError('A callback method needs to be supplied to execute!');
-    });
-
     it("invokes the pipeline methods in the correct order", () => {
       var state = "";
       var callbacks = {
