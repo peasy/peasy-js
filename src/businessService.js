@@ -16,15 +16,14 @@ var BusinessService = (function() {
 
     getAllCommand: function() {
       var service = this;
-      var context = {};
       return new Command({
-        onInitialization: function(done) {
+        onInitialization: function(context, done) {
           service._onGetAllCommandInitialization(context, done);
         },
-        getRules: function(done) {
+        getRules: function(context, done) {
           return service._getRulesForGetAll(context, done);
         },
-        onValidationSuccess: function(done) {
+        onValidationSuccess: function(context, done) {
           return service._getAll(context, done);
         }
       });
@@ -32,15 +31,14 @@ var BusinessService = (function() {
 
     getByIdCommand: function(id) {
       var service = this;
-      var context = {};
       return new Command({
-        onInitialization: function(done) {
+        onInitialization: function(context, done) {
           service._onGetByIdCommandInitialization(id, context, done);
         },
-        getRules: function(done) {
+        getRules: function(context, done) {
           return service._getRulesForGetById(id, context, done);
         },
-        onValidationSuccess: function(done) {
+        onValidationSuccess: function(context, done) {
           return service._getById(id, context, done);
         }
       });
@@ -48,15 +46,14 @@ var BusinessService = (function() {
 
     insertCommand: function(data) {
       var service = this;
-      var context = {};
       return new Command({
-        onInitialization: function(done) {
+        onInitialization: function(context, done) {
           service._onInsertCommandInitialization(data, context, done);
         },
-        getRules: function(done) {
+        getRules: function(context, done) {
           return service._getRulesForInsert(data, context, done);
         },
-        onValidationSuccess: function(done) {
+        onValidationSuccess: function(context, done) {
           return service._insert(data, context, done);
         }
       });
@@ -64,15 +61,14 @@ var BusinessService = (function() {
 
     updateCommand: function(data) {
       var service = this;
-      var context = {};
       return new Command({
-        onInitialization: function(done) {
+        onInitialization: function(context, done) {
           service._onUpdateCommandInitialization(data, context, done);
         },
-        getRules: function(done) {
+        getRules: function(context, done) {
           return service._getRulesForUpdate(data, context, done);
         },
-        onValidationSuccess: function(done) {
+        onValidationSuccess: function(context, done) {
           return service._update(data, context, done);
         }
       });
@@ -80,15 +76,14 @@ var BusinessService = (function() {
 
     destroyCommand: function(id) {
       var service = this;
-      var context = {};
       return new Command({
-        onInitialization: function(done) {
+        onInitialization: function(context, done) {
           service._onDestroyCommandInitialization(id, context, done);
         },
-        getRules: function(done) {
+        getRules: function(context, done) {
           return service._getRulesForDestroy(id, context, done);
         },
-        onValidationSuccess: function(done) {
+        onValidationSuccess: function(context, done) {
           return service._destroy(id, context, done);
         }
       });
