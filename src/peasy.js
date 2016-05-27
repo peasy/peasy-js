@@ -162,7 +162,7 @@
 
     options = options || {};
     options.params = options.params || ['dataProxy'];
-    options.functions = options.functions || [];
+    options.functions = options.functions || {};
 
     var Extended = function() {
       this.arguments = arguments;
@@ -175,12 +175,11 @@
 
     Extended.prototype = new BusinessService();
     var keys = Object.keys(BusinessService.prototype);
-    options.functions.forEach(function(config) {
-      var name = Object.keys(config)[0];
-      if (keys.indexOf(name) === -1) {
-        console.warn("The method: '" + name + "' is not an overridable method of BusinessService");
+    Object.keys(options.functions).forEach(function(key, value) {
+      if (keys.indexOf(key) === -1) {
+        console.warn("The method: '" + key + "' is not an overridable method of BusinessService");
       }
-      Extended.prototype[name] = config[name];
+      Extended.prototype[key] = options.functions[key];
     });
 
     function createCommand(options) {

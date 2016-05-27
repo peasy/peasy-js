@@ -31,13 +31,13 @@ describe("BusinessService", function() {
       expect(service.bar).toEqual('no');
     });
 
-    it("creates a function for each supplied function config", () => {
+    it("creates a function for each supplied function", () => {
       var Service = BusinessService.extend({
-        functions: [
-          { "_getAll" : getAll },
-          { "_getById" : getById },
-          { "_getRulesForInsert" : getRulesForInsert },
-        ]
+        functions: {
+          _getAll: getAll,
+          _getById: getById,
+          _getRulesForInsert: getRulesForInsert
+        }
       }).service;
 
       function getAll() {}
@@ -54,7 +54,7 @@ describe("BusinessService", function() {
       spyOn(console, 'warn');
 
       var Service = BusinessService.extend({
-        functions: [ { "GETALL" : getAll } ]
+        functions: { GETALL: getAll }
       }).service;
 
       function getAll() {}

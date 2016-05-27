@@ -45,13 +45,14 @@ var FieldRequiredRule = Rule.extend({
 // CREATE SERVICE AND WIRE UP VALIDATION/BUSINESS LOGIC FOR INSERT
 
 var PersonService = BusinessService.extend({
-  functions: [{
+  functions: {
     _getRulesForInsert: getRulesForInsert
-  }]
+  }
 })
 .createCommand({
   name: 'myCommand',
-  functions: 
+  params: ['id'],
+  functions:
   {
     onInitialization: function(context, done) {
       // get access to the service
@@ -66,7 +67,8 @@ var PersonService = BusinessService.extend({
           done();
         }
       });
-      done(new FalseRule());
+      //done(new FalseRule());
+      done([]);
     },
     onValidationSuccess: function(context, done) {
       console.log("ARGS", this.arguments);
@@ -75,8 +77,7 @@ var PersonService = BusinessService.extend({
       console.log("DATA PROXY", this.dataProxy);
       done(null, 'yey');
     }
-  },
-  params: ['id']
+  }
 })
 .service;
 
