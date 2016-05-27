@@ -175,8 +175,14 @@ var BusinessService = (function() {
       Extended.prototype[name] = config[name];
     });
 
-    function createCommand(name, options, params) {
-      BusinessService.createCommand(name, Extended, options, params);
+    function createCommand(options) {
+      var options = options || {};
+
+      if (!options.name) {
+        throw new Error('A value for name must be supplied');
+      }
+
+      BusinessService.createCommand(options.name, Extended, options.functions, options.params);
       return {
         createCommand: createCommand,
         service: Extended

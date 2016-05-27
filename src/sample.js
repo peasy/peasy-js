@@ -48,7 +48,37 @@ var PersonService = BusinessService.extend({
   functions: [{
     _getRulesForInsert: getRulesForInsert
   }]
-}).service;
+})
+.createCommand({
+  name: 'myCommand',
+  functions: 
+  {
+    onInitialization: function(context, done) {
+      // get access to the service
+      context.foo = "bar";
+      done();
+    },
+    getRules: function(context, done) {
+      context.meh = "yay";
+      var FalseRule = Rule.extend({
+        onValidate: function(done) {
+          this._invalidate("Nope!");
+          done();
+        }
+      });
+      done(new FalseRule());
+    },
+    onValidationSuccess: function(context, done) {
+      console.log("ARGS", this.arguments);
+      console.log("id", this.id);
+      console.log("CONTEXT YAY", context);
+      console.log("DATA PROXY", this.dataProxy);
+      done(null, 'yey');
+    }
+  },
+  params: ['id']
+})
+.service;
 
 function getRulesForInsert(person, context, done) {
 
@@ -90,29 +120,13 @@ PersonDataProxy.prototype = {
   }
 };
 
-var MyCommand = function(someData) {
-  this.someData = someData;
-}
-
-MyCommand.prototype = new Command();
-MyCommand.prototype.onInitialization = function(context, done) {
-  console.log("YAY");
-  console.log("someData", this.someData);
-  done();
-}
-
-PersonService.prototype.myCommand = function(data) {
-  return new MyCommand(data);
-}
-
-
 
 // CREATE INSTANCE OF A PERSON SERVICE AND REQUIRED DATA PROXY
 
 var proxy = new PersonDataProxy();
 var service = new PersonService(proxy);
 
-var x = service.myCommand("hello").execute(() => {});
+var x = service.myCommand("hello").execute((err, result) => { console.log("RESULT", result)});
 
 var commands = [
   service.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
@@ -121,8 +135,6 @@ var commands = [
   service.insertCommand({name: "James", age: new Date('2/3/1925')}),
   service.insertCommand({name: "James", age: new Date('2/3/1925'), address: 'aaa'})
 ];
-
-
 
 
 // LOOP THROUGH EACH COMMAND AND EXECUTE IT

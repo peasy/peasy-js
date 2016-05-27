@@ -73,7 +73,7 @@ describe("BusinessService", function() {
       describe("createCommand function", () => {
         it("returns an object literal containing the service function and a createCommand function", () => {
           var result = BusinessService.extend()
-                                      .createCommand('testCommand', {});
+                                      .createCommand({ name: 'testCommand' });
 
           expect(result.createCommand).toBeDefined()
           expect(result.service).toBeDefined()
@@ -81,7 +81,7 @@ describe("BusinessService", function() {
 
         it("creates a command function exposed by the service", () => {
           var Service = BusinessService.extend()
-                                       .createCommand('testCommand', {})
+                                       .createCommand({ name: 'testCommand' })
                                        .service;
 
           var service = new Service();
@@ -91,8 +91,8 @@ describe("BusinessService", function() {
         describe("chaining", () => {
           it("creates the appropriate prototype methods", () => {
             var Service = BusinessService.extend()
-                                         .createCommand('test1Command', {})
-                                         .createCommand('test2Command', {})
+                                         .createCommand({ name: 'test1Command' })
+                                         .createCommand({ name: 'test2Command' })
                                          .service;
 
             expect(Service.prototype.test1Command).toBeDefined()
@@ -107,8 +107,8 @@ describe("BusinessService", function() {
 
           it("the created methods reference the prototype methods", () => {
             var Service = BusinessService.extend()
-                                         .createCommand('test1Command', {})
-                                         .createCommand('test2Command', {})
+                                         .createCommand({ name: 'test1Command' })
+                                         .createCommand({ name: 'test2Command' })
                                          .service;
 
             var service = new Service();
