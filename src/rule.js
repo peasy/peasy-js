@@ -30,11 +30,11 @@ var Rule = (function() {
     options.onValidate = options.onValidate || function() {};
 
     var Extended = function() {
-      this.args = arguments;
       var self = this;
-      Rule.call(this, { association: options.association});
+      self.arguments = arguments;
+      Rule.call(self, { association: options.association});
       options.params.forEach(function(field, index) {
-        self[field] = self.args[index];
+        self[field] = self.arguments[index];
       });
     };
 

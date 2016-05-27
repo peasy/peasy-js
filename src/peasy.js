@@ -165,11 +165,11 @@
     options.functions = options.functions || [];
 
     var Extended = function() {
-      this.args = arguments;
+      this.arguments = arguments;
       var self = this;
       BusinessService.call(this);
       options.params.forEach(function(field, index) {
-        self[field] = self.args[index];
+        self[field] = self.arguments[index];
       });
     };
 
@@ -209,15 +209,15 @@
 
     functions = functions || {};
 
-    service.prototype[onInitialization] = functions.onInitialization || function(context, done, args) {
+    service.prototype[onInitialization] = functions.onInitialization || function(context, done) {
       done();
     };
 
-    service.prototype[getRules] = functions.getRules || function(context, done, args) {
+    service.prototype[getRules] = functions.getRules || function(context, done) {
       done([]);
     };
 
-    service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done, args) {
+    service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done) {
       done();
     };
 
@@ -225,22 +225,21 @@
 
     service.prototype[name] = function() {
       var self = this;
-      var args = arguments;
-      var context = {};
+      self.arguments = arguments;
 
       self[commandParams].forEach(function(param, index) {
-        self[param] = args[index];
+        self[param] = self.arguments[index];
       });
 
       return new Command({
         onInitialization: function(context, done) {
-          self[onInitialization](context, done, args);
+          self[onInitialization].call(self, context, done);
         },
         getRules: function(context, done) {
-          return self[getRules](context, done, args);
+          return self[getRules].call(self, context, done);
         },
         onValidationSuccess: function(context, done) {
-          return self[onValidationSuccess](context, done, args);
+          return self[onValidationSuccess].call(self, context, done);
         }
       });
     };
@@ -339,14 +338,18 @@
 
     var Extended = function() {
       var self = this;
-      self.args = arguments;
+      self.arguments = arguments;
       Command.call(self, options.functions);
       params.forEach(function(param, index) {
-        self[param] = self.args[index];
+        self[param] = self.arguments[index];
       });
     }
 
-    Extended.prototype = new Command();
+    Extended.prototype = new Command({
+      onValidationSuccess: function(context, done) {
+        done();
+      }
+    });
 
     params.forEach(function(param) {
       Extended.prototype[param] = null;
@@ -434,10 +437,10 @@
 
     var Extended = function() {
       var self = this;
-      self.args = arguments;
+      self.arguments = arguments;
       Rule.call(self, { association: options.association});
       options.params.forEach(function(field, index) {
-        self[field] = self.args[index];
+        self[field] = self.arguments[index];
       });
     };
 

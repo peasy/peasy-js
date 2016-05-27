@@ -6,7 +6,7 @@ var Command = (function() {
 
   "use strict";
 
-  var Command = function(callbacks) {
+  var Command = function(callbacks, parent) {
     callbacks = callbacks || {};
     if (this instanceof Command) {
 
@@ -18,11 +18,11 @@ var Command = (function() {
         done();
       };
 
-      this.getRules = callbacks.getRules || function(done) {
+      this.getRules = callbacks.getRules || function(context, done) {
         done([]);
       };
 
-      this.onValidationSuccess = callbacks.onValidationSuccess || function(done) {
+      this.onValidationSuccess = callbacks.onValidationSuccess || function(context, done) {
         done();
       };
 
@@ -49,7 +49,7 @@ var Command = (function() {
 
       self.onInitialization(context, function() {
 
-        self.getRules(function(rules) {
+        self.getRules(context, function(rules) {
 
           if (!Array.isArray(rules)) {
             rules = [rules];
@@ -66,7 +66,7 @@ var Command = (function() {
               return done(null, new ExecutionResult(false, null, errors));
 
             try {
-              self.onValidationSuccess(function(err, result) {
+              self.onValidationSuccess(context, function(err, result) {
                 done(err, new ExecutionResult(true, result, null));
               });
             }
@@ -82,6 +82,33 @@ var Command = (function() {
       });
     }
   };
+
+  Command.extend = function(options) {
+    var options = options || {};
+    var params = options.params || [];
+    var functions = options.functions || {};
+
+    var Extended = function() {
+      var self = this;
+      self.arguments = arguments;
+      Command.call(self, options.functions);
+      params.forEach(function(param, index) {
+        self[param] = self.arguments[index];
+      });
+    }
+
+    Extended.prototype = new Command({
+      onValidationSuccess: function(context, done) {
+        done();
+      }
+    });
+
+    params.forEach(function(param) {
+      Extended.prototype[param] = null;
+    });
+
+    return Extended;
+  }
 
   return Command;
 

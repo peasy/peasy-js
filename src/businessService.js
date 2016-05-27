@@ -162,11 +162,11 @@ var BusinessService = (function() {
     options.functions = options.functions || [];
 
     var Extended = function() {
-      this.args = arguments;
+      this.arguments = arguments;
       var self = this;
       BusinessService.call(this);
       options.params.forEach(function(field, index) {
-        self[field] = self.args[index];
+        self[field] = self.arguments[index];
       });
     };
 
@@ -206,15 +206,15 @@ var BusinessService = (function() {
 
     functions = functions || {};
 
-    service.prototype[onInitialization] = functions.onInitialization || function(context, done, args) {
+    service.prototype[onInitialization] = functions.onInitialization || function(context, done) {
       done();
     };
 
-    service.prototype[getRules] = functions.getRules || function(context, done, args) {
+    service.prototype[getRules] = functions.getRules || function(context, done) {
       done([]);
     };
 
-    service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done, args) {
+    service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done) {
       done();
     };
 
@@ -222,22 +222,21 @@ var BusinessService = (function() {
 
     service.prototype[name] = function() {
       var self = this;
-      var args = arguments;
-      var context = {};
+      self.arguments = arguments;
 
       self[commandParams].forEach(function(param, index) {
-        self[param] = args[index];
+        self[param] = self.arguments[index];
       });
 
       return new Command({
-        onInitialization: function(done) {
-          self[onInitialization](context, done, args);
+        onInitialization: function(context, done) {
+          self[onInitialization].call(self, context, done);
         },
-        getRules: function(done) {
-          return self[getRules](context, done, args);
+        getRules: function(context, done) {
+          return self[getRules].call(self, context, done);
         },
-        onValidationSuccess: function(done) {
-          return self[onValidationSuccess](context, done, args);
+        onValidationSuccess: function(context, done) {
+          return self[onValidationSuccess].call(self, context, done);
         }
       });
     };

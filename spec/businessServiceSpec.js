@@ -200,32 +200,32 @@ describe("BusinessService", function() {
       });
     });
 
-    describe("arguments on execution", () => {
-      it("instance members are created and assigned the appropriate argument values", () => {
-      var params = [];
-      var Service = BusinessService.extend()
-                                   .createCommand('testCommand', {
-                                     onInitialization: function(context, done, args) {
-                                       params.push(args[0]);
-                                       done();
-                                     },
-                                     getRules: function(context, done, args) {
-                                       params.push(args[1]);
-                                       done([]);
-                                     },
-                                     onValidationSuccess: function(context, done, args) {
-                                       params.push(args[2]);
-                                       done();
-                                     }
-                                   })
-                                   .service;
+    //describe("arguments on execution", () => {
+      //it("instance members are created and assigned the appropriate argument values", () => {
+      //var params = [];
+      //var Service = BusinessService.extend()
+                                   //.createCommand('testCommand', {
+                                     //onInitialization: function(context, done, args) {
+                                       //params.push(args[0]);
+                                       //done();
+                                     //},
+                                     //getRules: function(context, done, args) {
+                                       //params.push(args[1]);
+                                       //done([]);
+                                     //},
+                                     //onValidationSuccess: function(context, done, args) {
+                                       //params.push(args[2]);
+                                       //done();
+                                     //}
+                                   //})
+                                   //.service;
 
-        var command = new Service({}).testCommand('value1', 'value2', 'value3');
-        command.execute(() => {
-          expect(params).toEqual(['value1', 'value2', 'value3']);
-        });
-      });
-    });
+        //var command = new Service({}).testCommand('value1', 'value2', 'value3');
+        //command.execute(() => {
+          //expect(params).toEqual(['value1', 'value2', 'value3']);
+        //});
+      //});
+    //});
 
   });
 
