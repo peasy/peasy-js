@@ -175,13 +175,9 @@ var BusinessService = (function() {
     });
 
     function createCommand(options) {
-      var options = options || {};
-
-      if (!options.name) {
-        throw new Error('A value for name must be supplied');
-      }
-
-      BusinessService.createCommand(options.name, Extended, options.functions, options.params);
+      options = options || {};
+      options.service = Extended;
+      BusinessService.createCommand(options);
       return {
         createCommand: createCommand,
         service: Extended
@@ -194,17 +190,29 @@ var BusinessService = (function() {
     };
   };
 
-  BusinessService.createCommand = function(name, service, functions, params) {
-    var onInitialization = '_on' + capitalize(name) + 'Initialization';
-    var getRules = '_getRulesFor' + capitalize(name);
-    var onValidationSuccess = '_' + name.replace("Command", "");
-    var commandParams = '_' + name + 'Params';
+  BusinessService.createCommand = function(options) {
 
     function capitalize(value) {
       return value.charAt(0).toUpperCase() + value.slice(1);
     }
 
-    functions = functions || {};
+    options = options || {};
+
+    if (!options.name) {
+      throw new Error('A value for name must be supplied');
+    }
+
+    if (!options.service) {
+      throw new Error('A function for the service argument must be supplied');
+    }
+
+    var name = options.name;
+    var onInitialization = '_on' + capitalize(name) + 'Initialization';
+    var getRules = '_getRulesFor' + capitalize(name);
+    var onValidationSuccess = '_' + name.replace("Command", "");
+    var commandParams = '_' + name + 'Params';
+    var functions = options.functions || {};
+    var service = options.service;
 
     service.prototype[onInitialization] = functions.onInitialization || function(context, done) {
       done();
@@ -218,7 +226,7 @@ var BusinessService = (function() {
       done();
     };
 
-    service.prototype[commandParams] = params || [];
+    service.prototype[commandParams] = options.params || [];
 
     service.prototype[name] = function() {
       var self = this;

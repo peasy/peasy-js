@@ -124,7 +124,10 @@ describe("BusinessService", function() {
     describe("method invocation", () => {
       it("creates the expected command functions on the service prototype", () => {
         var Service = BusinessService.extend().service;
-        BusinessService.createCommand('testCommand', Service, {});
+        BusinessService.createCommand({
+          name: 'testCommand',
+          service: Service
+        });
 
         expect(Service.prototype.testCommand).toBeDefined();
         expect(Service.prototype._onTestCommandInitialization).toBeDefined();
@@ -138,19 +141,23 @@ describe("BusinessService", function() {
             var Service = BusinessService.extend().service;
             var sharedContext = null
 
-            BusinessService.createCommand('testCommand', Service, {
-              onInitialization: function(context, done) {
-                context.testValue = "1";
-                done();
-              },
-              getRules: function(context, done) {
-                context.testValue += "2";
-                done([]);
-              },
-              onValidationSuccess: function(context, done) {
-                sharedContext = context;
-                done(null, { data: 'abc' });
-              },
+            BusinessService.createCommand({
+              name: 'testCommand',
+              service: Service,
+              functions: {
+                onInitialization: function(context, done) {
+                  context.testValue = "1";
+                  done();
+                },
+                getRules: function(context, done) {
+                  context.testValue += "2";
+                  done([]);
+                },
+                onValidationSuccess: function(context, done) {
+                  sharedContext = context;
+                  done(null, { data: 'abc' });
+                }
+              }
             });
 
             var service = new Service();
@@ -165,7 +172,10 @@ describe("BusinessService", function() {
           it("creates a command that successfully executes", () => {
             var Service = BusinessService.extend().service;
             var testValue = null
-            BusinessService.createCommand('testCommand', Service);
+            BusinessService.createCommand({
+              name: 'testCommand',
+              service: Service
+            });
 
             var service = new Service();
             service.testCommand().execute(() => {
@@ -177,26 +187,27 @@ describe("BusinessService", function() {
 
         describe("when 'params' are supplied", () => {
           it("instance members are created and assigned the appropriate argument values", () => {
-          var params = [];
-          var Service = BusinessService.extend().service;
-          BusinessService.createCommand('testCommand',
-                                        Service,
-                                        {
-                                          onInitialization: function(context, done, args) {
-                                            params.push(this.firstName);
-                                            params.push(this.lastName);
-                                            done();
-                                          }
-                                        },
-                                        ['firstName', 'lastName']
-                                       );
-
+            var params = [];
+            var Service = BusinessService.extend().service;
+            BusinessService.createCommand({
+              name: 'testCommand',
+              service: Service,
+              functions: {
+                onInitialization: function(context, done) {
+                  params.push(this.firstName);
+                  params.push(this.lastName);
+                  done();
+                }
+              },
+              params: ['firstName', 'lastName']
+            });
             var command = new Service({}).testCommand('value1', 'value2');
             command.execute(() => {
               expect(params).toEqual(['value1', 'value2']);
             });
           });
         });
+
       });
     });
 
@@ -205,15 +216,15 @@ describe("BusinessService", function() {
       //var params = [];
       //var Service = BusinessService.extend()
                                    //.createCommand('testCommand', {
-                                     //onInitialization: function(context, done, args) {
+                                     //onInitialization: function(context, done) {
                                        //params.push(args[0]);
                                        //done();
                                      //},
-                                     //getRules: function(context, done, args) {
+                                     //getRules: function(context, done) {
                                        //params.push(args[1]);
                                        //done([]);
                                      //},
-                                     //onValidationSuccess: function(context, done, args) {
+                                     //onValidationSuccess: function(context, done) {
                                        //params.push(args[2]);
                                        //done();
                                      //}
