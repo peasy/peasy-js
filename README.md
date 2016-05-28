@@ -34,7 +34,7 @@ Using peasy-js makes it trivial to whimsically swap out UI, backend, and data fr
 - Clone the repo: ```git clone https://github.com/peasy/peasy-js.git```.
 - Install with npm: ```npm install peasy-js```.
 
-You can also download and add the peasy.js file to your project and reference it accordingly.
+You can also download and add the [peasy.js](https://github.com/peasy/peasy-js/blob/master/src/peasy.js) file to your project and reference it accordingly.
 
 #Getting started
 
