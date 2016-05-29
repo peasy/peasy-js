@@ -10,17 +10,23 @@ var Command = (function() {
     callbacks = callbacks || {};
     if (this instanceof Command) {
 
-      this.onInitialization = callbacks.onInitialization || function(context, done) {
-        done();
-      };
+      if (!this.onInitialization) { // allow for inheritance (ES6)
+        this.onInitialization = callbacks.onInitialization || function(context, done) {
+          done();
+        };
+      }
 
-      this.getRules = callbacks.getRules || function(context, done) {
-        done([]);
-      };
+      if (!this.getRules) { // allow for inheritance (ES6)
+        this.getRules = callbacks.getRules || function(context, done) {
+          done([]);
+        };
+      }
 
-      this.onValidationSuccess = callbacks.onValidationSuccess || function(context, done) {
-        done();
-      };
+      if (!this.onValidationSuccess) { // allow for inheritance (ES6)
+        this.onValidationSuccess = callbacks.onValidationSuccess || function(context, done) {
+          done();
+        };
+      }
 
     } else {
       return new Command(

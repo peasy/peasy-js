@@ -28,6 +28,31 @@ describe("Command", function() {
       var command = new Command();
       expect(typeof command.onValidationSuccess).toEqual('function');
     });
+
+    it("does not override existing functions if already exists (es6 inheritance support)", () => {
+      "use strict";
+      var val = 0
+      class MyCommand extends Command {
+        constructor() {
+          super();
+        }
+        onInitialization(context, done) {
+          val += 1;
+          done();
+        }
+        getRules(context, done) {
+          val += 1;
+          done([]);
+        }
+        onValidationSuccess(context, done) {
+          val += 1;
+          done();
+        }
+      }
+      var command = new MyCommand();
+      command.execute(() => { });
+      expect(val).toEqual(3);
+    });
   });
 
   describe("execute", () => {
