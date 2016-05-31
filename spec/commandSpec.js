@@ -16,17 +16,17 @@ describe("Command", function() {
 
     it("sets callbacks.onInitialization to a default if not supplied", () => {
       var command = new Command();
-      expect(typeof command.onInitialization).toEqual('function');
+      expect(typeof command._onInitialization).toEqual('function');
     });
 
     it("sets callbacks.getRules to a default if not supplied", () => {
       var command = new Command();
-      expect(typeof command.getRules).toEqual('function');
+      expect(typeof command._getRules).toEqual('function');
     });
 
     it("sets callbacks.onValidationSuccess to a default if not supplied", () => {
       var command = new Command();
-      expect(typeof command.onValidationSuccess).toEqual('function');
+      expect(typeof command._onValidationSuccess).toEqual('function');
     });
 
     it("does not override existing functions if already exists (es6 inheritance support)", () => {
@@ -36,15 +36,15 @@ describe("Command", function() {
         constructor() {
           super();
         }
-        onInitialization(context, done) {
+        _onInitialization(context, done) {
           val += 1;
           done();
         }
-        getRules(context, done) {
+        _getRules(context, done) {
           val += 1;
           done([]);
         }
-        onValidationSuccess(context, done) {
+        _onValidationSuccess(context, done) {
           val += 1;
           done();
         }

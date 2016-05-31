@@ -10,29 +10,29 @@ var Command = (function() {
     callbacks = callbacks || {};
     if (this instanceof Command) {
 
-      if (!this.onInitialization) { // allow for inheritance (ES6)
-        this.onInitialization = callbacks.onInitialization || function(context, done) {
+      if (!this._onInitialization) { // allow for inheritance (ES6)
+        this._onInitialization = callbacks.onInitialization || function(context, done) {
           done();
         };
       }
 
-      if (!this.getRules) { // allow for inheritance (ES6)
-        this.getRules = callbacks.getRules || function(context, done) {
+      if (!this._getRules) { // allow for inheritance (ES6)
+        this._getRules = callbacks.getRules || function(context, done) {
           done([]);
         };
       }
 
-      if (!this.onValidationSuccess) { // allow for inheritance (ES6)
-        this.onValidationSuccess = callbacks.onValidationSuccess || function(context, done) {
+      if (!this._onValidationSuccess) { // allow for inheritance (ES6)
+        this._onValidationSuccess = callbacks.onValidationSuccess || function(context, done) {
           done();
         };
       }
 
     } else {
       return new Command(
-        callbacks.onInitialization,
-        callbacks.getRules,
-        callbacks.onValidationSuccess
+        callbacks._onInitialization,
+        callbacks._getRules,
+        callbacks._onValidationSuccess
       );
     }
   };
@@ -45,9 +45,9 @@ var Command = (function() {
       var self = this;
       var context = {};
 
-      self.onInitialization(context, function() {
+      self._onInitialization(context, function() {
 
-        self.getRules(context, function(rules) {
+        self._getRules(context, function(rules) {
 
           if (!Array.isArray(rules)) {
             rules = [rules];
@@ -64,7 +64,7 @@ var Command = (function() {
               return done(null, new ExecutionResult(false, null, errors));
 
             try {
-              self.onValidationSuccess(context, function(err, result) {
+              self._onValidationSuccess(context, function(err, result) {
                 done(err, new ExecutionResult(true, result, null));
               });
             }
