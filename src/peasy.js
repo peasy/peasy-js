@@ -291,9 +291,9 @@
 
     } else {
       return new Command(
-        callbacks._onInitialization,
-        callbacks._getRules,
-        callbacks._onValidationSuccess
+        callbacks.onInitialization,
+        callbacks.getRules,
+        callbacks.onValidationSuccess
       );
     }
   };
@@ -350,21 +350,24 @@
     var Extended = function() {
       var self = this;
       self.arguments = arguments;
-      Command.call(self, options.functions);
       params.forEach(function(param, index) {
         self[param] = self.arguments[index];
       });
     }
 
-    Extended.prototype = new Command({
-      onValidationSuccess: function(context, done) {
-        done();
-      }
-    });
+    Extended.prototype = new Command();
 
-    params.forEach(function(param) {
-      Extended.prototype[param] = null;
-    });
+    Extended.prototype._onInitialization = functions._onInitialization || function(context, done) {
+      done();
+    };
+
+    Extended.prototype._getRules = functions._getRules || function(context, done) {
+      done([]);
+    };
+
+    Extended.prototype._onValidationSuccess = functions._onValidationSuccess || function(context, done) {
+      done();
+    };
 
     return Extended;
   }

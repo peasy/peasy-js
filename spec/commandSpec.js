@@ -243,6 +243,77 @@ describe("Command", function() {
 
       });
     });
+  });
+
+  describe("extend", () => {
+
+    it("returns a constructor function that creates a new Command", () => {
+      var TestCommand = Command.extend({});
+      var command = new TestCommand();
+
+      expect(command instanceof Command).toBe(true);
+    });
+
+    it("creates different instances", () => {
+      var Test1Command = Command.extend({});
+      var Test2Command = Command.extend({});
+      var test1Command = new Test1Command();
+      var test2Command = new Test2Command();
+
+      expect(test1Command._onInitialization).not.toEqual(test2Command._onInitialization);
+    })
+
+    it("creates default functions if none supplied", () => {
+      var TestCommand = Command.extend({});
+      var command = new TestCommand();
+
+      expect(command._onInitialization).toBeDefined();
+      expect(command._getRules).toBeDefined();
+      expect(command._onValidationSuccess).toBeDefined();
+    });
+
+    it("contains a reference to the supplied arguments", () => {
+      var TestCommand = Command.extend({});
+      var command = new TestCommand(1, "my name is");
+      expect(command.arguments[0]).toEqual(1);
+      expect(command.arguments[1]).toEqual("my name is");
+    });
+
+    it("correctly maps params to arguments", () => {
+      var TestCommand = Command.extend({
+        params: ['id', 'name']
+      });
+      var command = new TestCommand(1, "my name is");
+      expect(command.id).toEqual(1);
+      expect(command.name).toEqual("my name is");
+    });
+
+    it("creates instances that do not share state", () => {
+      var TestCommand = Command.extend({});
+      var command1 = new TestCommand(1, "my name is");
+      var command2 = new TestCommand(2, "your name is");
+      expect(command1.arguments[0]).not.toEqual(command2.arguments[0]);
+      expect(command1.arguments[1]).not.toEqual(command2.arguments[1]);
+    });
+
+    it("does not override supplied functions", () => {
+      function onInitialization(context, done) { }
+      function getRules(context, done) { }
+      function onValidationSuccess(context, done) { }
+
+      var TestCommand = Command.extend({
+        functions: {
+          _onInitialization: onInitialization,
+          _getRules: getRules,
+          _onValidationSuccess: onValidationSuccess
+        }
+      });
+
+      var command = new TestCommand();
+      expect(command._onInitialization).toEqual(onInitialization);
+      expect(command._getRules).toEqual(getRules);
+      expect(command._onValidationSuccess).toEqual(onValidationSuccess);
+    });
 
   });
 });

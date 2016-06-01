@@ -30,9 +30,9 @@ var Command = (function() {
 
     } else {
       return new Command(
-        callbacks._onInitialization,
-        callbacks._getRules,
-        callbacks._onValidationSuccess
+        callbacks.onInitialization,
+        callbacks.getRules,
+        callbacks.onValidationSuccess
       );
     }
   };
@@ -89,15 +89,24 @@ var Command = (function() {
     var Extended = function() {
       var self = this;
       self.arguments = arguments;
-      Command.call(self, options.functions);
       params.forEach(function(param, index) {
         self[param] = self.arguments[index];
       });
     }
 
-    params.forEach(function(param) {
-      Extended.prototype[param] = null;
-    });
+    Extended.prototype = new Command();
+
+    Extended.prototype._onInitialization = functions._onInitialization || function(context, done) {
+      done();
+    };
+
+    Extended.prototype._getRules = functions._getRules || function(context, done) {
+      done([]);
+    };
+
+    Extended.prototype._onValidationSuccess = functions._onValidationSuccess || function(context, done) {
+      done();
+    };
 
     return Extended;
   }
