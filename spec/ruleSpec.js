@@ -2,14 +2,14 @@ describe("Rule", function() {
   var Rule = require("../src/rule");
 
   describe("extend", () => {
-    it("throws an exception when onValidate is not supplied", () => {
+    it("throws an exception when _onValidate is not supplied", () => {
       expect(Rule.extend).toThrowError();
     });
 
     it("matches params to supplied function arguments", () => {
       var TestRule = Rule.extend({
         params: ['word', 'bar'],
-        onValidate: function(done) {
+        _onValidate: function(done) {
           expect(this.word).toEqual('yes');
           expect(this.bar).toEqual('no');
           done();
@@ -23,7 +23,7 @@ describe("Rule", function() {
   var LengthRule = Rule.extend({
     association: "foo",
     params: ['word', 'bar'],
-    onValidate: function(done) {
+    _onValidate: function(done) {
       if (this.word.length < 1) {
         this._invalidate("too few characters");
       }

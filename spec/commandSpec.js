@@ -81,14 +81,14 @@ describe("Command", function() {
       var TrueRule, FalseRule;
       beforeAll(() => {
         TrueRule = Rule.extend({
-          onValidate: function(done) {
+          _onValidate: function(done) {
             done();
           }
         });
 
         FalseRule = Rule.extend({
           params: ['message'],
-          onValidate: function(done) {
+          _onValidate: function(done) {
             this._invalidate(this.message);
             done();
           }
