@@ -9,7 +9,7 @@ var Command = require('./peasy').Command;
 var AgeRule = Rule.extend({
   association: "age",
   params: ['birthdate'],
-  onValidate: function(done) {
+  _onValidate: function(done) {
     if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
       this._invalidate("You are too young");
     }
@@ -21,7 +21,7 @@ var AgeRule = Rule.extend({
 var NameRule = Rule.extend({
   association: "name",
   params: ['name'],
-  onValidate: function(done) {
+  _onValidate: function(done) {
     if (this.name === "Jimi") {
       this._invalidate("Name cannot be Jimi");
     }
@@ -32,7 +32,7 @@ var NameRule = Rule.extend({
 
 var FieldRequiredRule = Rule.extend({
   params: ['field', 'data'],
-  onValidate: function(done) {
+  _onValidate: function(done) {
     if (!this.data[this.field]) {
       this.association = this.field;
       this._invalidate(this.field + " is required");
@@ -42,7 +42,7 @@ var FieldRequiredRule = Rule.extend({
   }
 });
 
-// CREATE SERVICE AND WIRE UP VALIDATION/BUSINESS LOGIC FOR INSERT
+// CREATE SERVICE, CUSTOM COMMAND, AND WIRE UP VALIDATION/BUSINESS LOGIC FOR INSERT
 
 var PersonService = BusinessService.extend({
   functions: {
@@ -62,18 +62,18 @@ var PersonService = BusinessService.extend({
     getRules: function(context, done) {
       context.meh = "yay";
       var FalseRule = Rule.extend({
-        onValidate: function(done) {
+        _onValidate: function(done) {
           this._invalidate("Nope!");
           done();
         }
       });
-      //done(new FalseRule());
-      done([]);
+      done(new FalseRule());
+      //done([]);
     },
     onValidationSuccess: function(context, done) {
       console.log("ARGS", this.arguments);
       console.log("id", this.id);
-      console.log("CONTEXT YAY", context);
+      console.log("CONTEXT", context);
       console.log("DATA PROXY", this.dataProxy);
       done(null, 'yey');
     }
@@ -127,7 +127,10 @@ PersonDataProxy.prototype = {
 var proxy = new PersonDataProxy();
 var service = new PersonService(proxy);
 
-var x = service.myCommand("hello").execute((err, result) => { console.log("RESULT", result)});
+// EXECUTE CUSTOM COMMAND
+service.myCommand("hello").execute(function(err, result) {
+  console.log("RESULT", result)
+});
 
 var commands = [
   service.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
