@@ -439,14 +439,14 @@
 
   Rule.extend = function(options) {
     options = options || {};
+    options.functions = options.functions || {};
 
-    if (typeof options._onValidate !== 'function') {
+    if (typeof options.functions._onValidate !== 'function') {
       throw new Error('An onValidate method needs to be supplied to execute!');
     }
 
     options.association = options.association || null;
     options.params = options.params || [];
-    options.onValidate = options._onValidate || function() {};
 
     var Extended = function() {
       var self = this;
@@ -458,7 +458,7 @@
     };
 
     Extended.prototype = new Rule();
-    Extended.prototype._onValidate = options._onValidate;
+    Extended.prototype._onValidate = options.functions._onValidate;
 
     return Extended;
   };

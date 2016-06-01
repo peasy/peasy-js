@@ -9,36 +9,42 @@ var Command = require('./peasy').Command;
 var AgeRule = Rule.extend({
   association: "age",
   params: ['birthdate'],
-  _onValidate: function(done) {
-    if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
-      this._invalidate("You are too young");
+  functions: {
+    _onValidate: function(done) {
+      if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
+        this._invalidate("You are too young");
+      }
+      var time = Math.floor((Math.random() * 3000) + 1);
+      setTimeout(() => done(this), time); // simulate latency
     }
-    var time = Math.floor((Math.random() * 3000) + 1);
-    setTimeout(() => done(this), time); // simulate latency
   }
 });
 
 var NameRule = Rule.extend({
   association: "name",
   params: ['name'],
-  _onValidate: function(done) {
-    if (this.name === "Jimi") {
-      this._invalidate("Name cannot be Jimi");
+  functions: {
+    _onValidate: function(done) {
+      if (this.name === "Jimi") {
+        this._invalidate("Name cannot be Jimi");
+      }
+      var time = Math.floor((Math.random() * 3000) + 1);
+      setTimeout(() => done(this), time); // simulate latency
     }
-    var time = Math.floor((Math.random() * 3000) + 1);
-    setTimeout(() => done(this), time); // simulate latency
   }
 });
 
 var FieldRequiredRule = Rule.extend({
   params: ['field', 'data'],
-  _onValidate: function(done) {
-    if (!this.data[this.field]) {
-      this.association = this.field;
-      this._invalidate(this.field + " is required");
+  functions: {
+    _onValidate: function(done) {
+      if (!this.data[this.field]) {
+        this.association = this.field;
+        this._invalidate(this.field + " is required");
+      }
+      var time = Math.floor((Math.random() * 3000) + 1);
+      setTimeout(() => done(this), time); // simulate latency
     }
-    var time = Math.floor((Math.random() * 3000) + 1);
-    setTimeout(() => done(this), time); // simulate latency
   }
 });
 
@@ -62,9 +68,11 @@ var PersonService = BusinessService.extend({
     getRules: function(context, done) {
       context.meh = "yay";
       var FalseRule = Rule.extend({
-        _onValidate: function(done) {
-          this._invalidate("Nope!");
-          done();
+        functions: {
+          _onValidate: function(done) {
+            this._invalidate("Nope!");
+            done();
+          }
         }
       });
       done(new FalseRule());

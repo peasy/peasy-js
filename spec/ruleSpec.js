@@ -9,10 +9,12 @@ describe("Rule", function() {
     it("matches params to supplied function arguments", () => {
       var TestRule = Rule.extend({
         params: ['word', 'bar'],
-        _onValidate: function(done) {
-          expect(this.word).toEqual('yes');
-          expect(this.bar).toEqual('no');
-          done();
+        functions: {
+          _onValidate: function(done) {
+            expect(this.word).toEqual('yes');
+            expect(this.bar).toEqual('no');
+            done();
+          }
         }
       })
       new TestRule('yes', 'no').validate(() => {});
@@ -23,13 +25,15 @@ describe("Rule", function() {
   var LengthRule = Rule.extend({
     association: "foo",
     params: ['word', 'bar'],
-    _onValidate: function(done) {
-      if (this.word.length < 1) {
-        this._invalidate("too few characters");
+    functions: {
+      _onValidate: function(done) {
+        if (this.word.length < 1) {
+          this._invalidate("too few characters");
+        }
+        //var time = Math.floor((Math.random() * 2000) + 1);
+        //setTimeout(() => done(), time);
+        done();
       }
-      //var time = Math.floor((Math.random() * 2000) + 1);
-      //setTimeout(() => done(), time);
-      done();
     }
   })
 
