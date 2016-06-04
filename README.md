@@ -33,9 +33,9 @@ A middle tier framework is code that facilitates creating business logic in a re
 
 Because the javascript ecosystem changes at a pace much more rapid than your business logic.  UI frameworks change: Backbone one day, Angular the next day, React the following...  Backend frameworks change: Express one day, Koa the next day, Hapi the next... Data frameworks and ORMS change...  
 
-Why couple your code to technologies that are hot today and gone tomorrow?  Why not focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both, and by any UI or backend framework? 
+Why couple your code with technologies that are hot today and gone tomorrow?  Why not focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both, and by any UI or backend framework? 
 
-Using peasy-js makes it trivial to whimsically swap out UI, backend, and data frameworks in your applications.
+peasy-js makes it trivial to whimsically swap out UI, backend, and data frameworks in your applications by creating your business logic in a composable, reusable, scalable, and testable manner.
 
 #Where can I get it?
 
