@@ -1,6 +1,7 @@
 var RulesValidator = (function() {
   "use strict";
 
+  // RULES VALIDATOR
   var RulesValidator = function(rules) {
     if (this instanceof RulesValidator) {
       this.rules = rules;
@@ -13,7 +14,8 @@ var RulesValidator = (function() {
     var self = this;
     var counter = self.rules.length;
 
-    function onRuleValidated() {
+    function onRuleValidated(err) {
+      if(err) return done(err);
       counter--;
       if (counter === 0) {
         done();
@@ -24,7 +26,6 @@ var RulesValidator = (function() {
       self.rules.forEach(function(rule) {
         rule.validate(onRuleValidated);
       });
-
     } else {
       done();
     }

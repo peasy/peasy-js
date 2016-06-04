@@ -18,7 +18,7 @@ var Command = (function() {
 
       if (!this._getRules) { // allow for inheritance (ES6)
         this._getRules = callbacks.getRules || function(context, done) {
-          done([]);
+          done(null, []);
         };
       }
 
@@ -45,15 +45,21 @@ var Command = (function() {
       var self = this;
       var context = {};
 
-      self._onInitialization(context, function() {
+      self._onInitialization(context, function(err) {
 
-        self._getRules(context, function(rules) {
+        if(err) return done(err);
+
+        self._getRules(context, function(err, rules) {
+
+          if(err) return done(err);
 
           if (!Array.isArray(rules)) {
             rules = [rules];
           }
 
-          new RulesValidator(rules).validate(function() {
+          new RulesValidator(rules).validate(function(err) {
+
+            if (err) return done(err);
 
             var errors = rules.filter(function(rule) { return !rule.valid; })
                               .map(function(rule) { return rule.errors; });
@@ -65,7 +71,8 @@ var Command = (function() {
 
             try {
               self._onValidationSuccess(context, function(err, result) {
-                done(err, new ExecutionResult(true, result, null));
+                if(err) return done(err);
+                done(null, new ExecutionResult(true, result, null));
               });
             }
             catch(ex) {
@@ -101,7 +108,7 @@ var Command = (function() {
     };
 
     Extended.prototype._getRules = functions._getRules || function(context, done) {
-      done([]);
+      done(null, []);
     };
 
     Extended.prototype._onValidationSuccess = functions._onValidationSuccess || function(context, done) {

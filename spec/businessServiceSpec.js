@@ -151,7 +151,7 @@ describe("BusinessService", function() {
                 },
                 getRules: function(context, done) {
                   context.testValue += "2";
-                  done([]);
+                  done(null, []);
                 },
                 onValidationSuccess: function(context, done) {
                   sharedContext = context;
@@ -260,7 +260,7 @@ describe("BusinessService", function() {
       describe("_getRulesForGetAll", () => {
         it("returns an empty array", () => {
           var callbackValue;
-          service._getRulesForGetAll({}, (result) => callbackValue = result);
+          service._getRulesForGetAll({}, (err, result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -282,7 +282,7 @@ describe("BusinessService", function() {
           };
           TestService.prototype._getRulesForGetAll = (context, done) => {
             context.bar = "";
-            done([]);
+            done(null, []);
           };
           TestService.prototype._getAll = (context, done) => {
             sharedContext = context;
@@ -320,7 +320,7 @@ describe("BusinessService", function() {
         it("returns an empty array", () => {
           var callbackValue;
           var id = 1;
-          service._getRulesForGetById(id, {}, (result) => callbackValue = result);
+          service._getRulesForGetById(id, {}, (err, result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -342,7 +342,7 @@ describe("BusinessService", function() {
           };
           TestService.prototype._getRulesForGetById = (id, context, done) => {
             context.ids++;
-            done([]);
+            done(null, []);
           };
           TestService.prototype._getById = (id, context, done) => {
             context.ids++;
@@ -381,7 +381,7 @@ describe("BusinessService", function() {
       describe("_getRulesForInsert", () => {
         it("returns an empty array", () => {
           var callbackValue;
-          service._getRulesForInsert(state, {}, (result) => callbackValue = result);
+          service._getRulesForInsert(state, {}, (err, result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -403,7 +403,7 @@ describe("BusinessService", function() {
           };
           TestService.prototype._getRulesForInsert = (state, context, done) => {
             context.bar = state.bar;
-            done([]);
+            done(null, []);
           };
           TestService.prototype._insert = (state, context, done) => {
             context.meh = state.meh;
@@ -442,7 +442,7 @@ describe("BusinessService", function() {
       describe("_getRulesForUpdate", () => {
         it("returns an empty array", () => {
           var callbackValue;
-          service._getRulesForUpdate(state, {}, (result) => callbackValue = result);
+          service._getRulesForUpdate(state, {}, (err, result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -464,7 +464,7 @@ describe("BusinessService", function() {
           };
           TestService.prototype._getRulesForUpdate = (state, context, done) => {
             context.bar = state.bar;
-            done([]);
+            done(null, []);
           };
           TestService.prototype._update = (state, context, done) => {
             context.meh = state.meh;
@@ -504,7 +504,7 @@ describe("BusinessService", function() {
         it("returns an empty array", () => {
           var callbackValue;
           var id = 1;
-          service._getRulesForDestroy(id, {}, (result) => callbackValue = result);
+          service._getRulesForDestroy(id, {}, (err, result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -526,7 +526,7 @@ describe("BusinessService", function() {
           };
           TestService.prototype._getRulesForDestroy = (id, context, done) => {
             context.ids++;
-            done([]);
+            done(null, []);
           };
           TestService.prototype._destroy = (id, context, done) => {
             context.ids++;

@@ -35,7 +35,7 @@ var NameRule = Rule.extend({
         this._invalidate("Name cannot be Jimi");
       }
       var time = Math.floor((Math.random() * 3000) + 1);
-      setTimeout(() => done(this), time); // simulate latency
+      setTimeout(() => done(), time); // simulate latency
     }
   }
 });
@@ -49,7 +49,7 @@ var FieldRequiredRule = Rule.extend({
         this._invalidate(this.field + " is required");
       }
       var time = Math.floor((Math.random() * 3000) + 1);
-      setTimeout(() => done(this), time); // simulate latency
+      setTimeout(() => done(), time); // simulate latency
     }
   }
 });
@@ -103,7 +103,7 @@ var CustomerService = BusinessService
           if (err) return done(err);
           if (!result.success) return done(null, result.errors);
           var roles = result.value;
-          done(new CustomerAuthorizationRule(roles));
+          done(null, new CustomerAuthorizationRule(roles));
         });
       },
       onValidationSuccess: function(context, done) {
@@ -123,7 +123,7 @@ function getRulesForInsert(customer, context, done) {
       //new FieldRequiredRule("address", customer)
   //]);
 
-  done(new AgeRule(customer.age)
+  done(null, new AgeRule(customer.age)
              .ifValidThenExecute(() => console.log("Age succeeded"))
              .ifInvalidThenExecute(() => console.log("Age failed"))
              .ifValidThenValidate(new NameRule(customer.name)

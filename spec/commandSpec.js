@@ -42,7 +42,7 @@ describe("Command", function() {
         }
         _getRules(context, done) {
           val += 1;
-          done([]);
+          done(null, []);
         }
         _onValidationSuccess(context, done) {
           val += 1;
@@ -65,7 +65,7 @@ describe("Command", function() {
         },
         getRules: (context, done) => {
           state += "2";
-          done([]);
+          done(null, []);
         },
         onValidationSuccess: (context, done) => {
           state += "3";
@@ -122,7 +122,7 @@ describe("Command", function() {
           var returnValue = { id: 5, data: "abc" };
           var callbacks = {
             getRules: (context, done) => {
-              done(new TrueRule());
+              done(null, new TrueRule());
             },
             onValidationSuccess: (context, done) => {
               done(null, returnValue);
@@ -142,7 +142,7 @@ describe("Command", function() {
             var returnValue = { id: 5, data: "abc" };
             var callbacks = {
               getRules: (context, done) => {
-                done([new TrueRule()]);
+                done(null, [new TrueRule()]);
               },
               onValidationSuccess: (context, done) => {
                 done(null, returnValue);
@@ -163,7 +163,7 @@ describe("Command", function() {
             var returnValue = { id: 5, data: "abc" };
             var callbacks = {
               getRules: (context, done) => {
-                done([new FalseRule("a")]);
+                done(null, [new FalseRule("a")]);
               },
               onValidationSuccess: (context, done) => {
                 done(null, returnValue);
@@ -184,7 +184,7 @@ describe("Command", function() {
         it("validates each rule", () => {
           var callbacks = {
             getRules: (context, done) => {
-              done([
+              done(null, [
                 new FalseRule("a"),
                 new TrueRule(),
                 new FalseRule("b"),

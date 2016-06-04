@@ -102,7 +102,7 @@
     },
 
     _getRulesForGetAll: function(context, done) {
-      done([]);
+      done(null, []);
     },
 
     _onGetAllCommandInitialization: function(context, done) {
@@ -114,7 +114,7 @@
     },
 
     _getRulesForGetById: function(id, context, done) {
-      done([]);
+      done(null, []);
     },
 
     _onGetByIdCommandInitialization: function(id, context, done) {
@@ -126,7 +126,7 @@
     },
 
     _getRulesForInsert: function(data, context, done) {
-      done([]);
+      done(null, []);
     },
 
     _onInsertCommandInitialization: function(data, context, done) {
@@ -138,7 +138,7 @@
     },
 
     _getRulesForUpdate: function(data, context, done) {
-      done([]);
+      done(null, []);
     },
 
     _onUpdateCommandInitialization: function(data, context, done) {
@@ -150,7 +150,7 @@
     },
 
     _getRulesForDestroy: function(id, context, done) {
-      done([]);
+      done(null, []);
     },
 
     _onDestroyCommandInitialization: function(id, context, done) {
@@ -227,7 +227,7 @@
     };
 
     service.prototype[getRules] = functions.getRules || function(context, done) {
-      done([]);
+      done(null, []);
     };
 
     service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done) {
@@ -279,7 +279,7 @@
 
       if (!this._getRules) { // allow for inheritance (ES6)
         this._getRules = callbacks.getRules || function(context, done) {
-          done([]);
+          done(null, []);
         };
       }
 
@@ -306,15 +306,21 @@
       var self = this;
       var context = {};
 
-      self._onInitialization(context, function() {
+      self._onInitialization(context, function(err) {
 
-        self._getRules(context, function(rules) {
+        if(err) return done(err);
+
+        self._getRules(context, function(err, rules) {
+
+          if(err) return done(err);
 
           if (!Array.isArray(rules)) {
             rules = [rules];
           }
 
-          new RulesValidator(rules).validate(function() {
+          new RulesValidator(rules).validate(function(err) {
+
+            if (err) return done(err);
 
             var errors = rules.filter(function(rule) { return !rule.valid; })
                               .map(function(rule) { return rule.errors; });
@@ -326,7 +332,8 @@
 
             try {
               self._onValidationSuccess(context, function(err, result) {
-                done(err, new ExecutionResult(true, result, null));
+                if(err) return done(err);
+                done(null, new ExecutionResult(true, result, null));
               });
             }
             catch(ex) {
@@ -362,7 +369,7 @@
     };
 
     Extended.prototype._getRules = functions._getRules || function(context, done) {
-      done([]);
+      done(null, []);
     };
 
     Extended.prototype._onValidationSuccess = functions._onValidationSuccess || function(context, done) {
@@ -385,7 +392,8 @@
     var self = this;
     var counter = self.rules.length;
 
-    function onRuleValidated() {
+    function onRuleValidated(err) {
+      if(err) return done(err);
       counter--;
       if (counter === 0) {
         done();
@@ -489,13 +497,15 @@
       var self = this;
       self.errors = [];
 
-      this._onValidate(function() {
+      this._onValidate(function(err) {
+        if (err) return done(err);
         if (self.valid) {
           if (self.ifValidThenFunction) {
             self.ifValidThenFunction();
           }
           if (self.successors.length > 0) {
-            new RulesValidator(self.successors).validate(function() {
+            new RulesValidator(self.successors).validate(function(err) {
+              if (err) return done(err);
               self.successors.filter(function(rule) { return !rule.valid; })
                              .forEach(function(rule) {
                                self._invalidate(rule.errors);

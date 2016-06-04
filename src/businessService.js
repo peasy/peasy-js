@@ -4,6 +4,8 @@ var BusinessService = (function() {
 
   "use strict";
 
+  // BUSINESS SERVICE
+
   var BusinessService = function(dataProxy) {
     if (this instanceof BusinessService) {
       this.dataProxy = dataProxy;
@@ -94,7 +96,7 @@ var BusinessService = (function() {
     },
 
     _getRulesForGetAll: function(context, done) {
-      done([]);
+      done(null, []);
     },
 
     _onGetAllCommandInitialization: function(context, done) {
@@ -106,7 +108,7 @@ var BusinessService = (function() {
     },
 
     _getRulesForGetById: function(id, context, done) {
-      done([]);
+      done(null, []);
     },
 
     _onGetByIdCommandInitialization: function(id, context, done) {
@@ -118,7 +120,7 @@ var BusinessService = (function() {
     },
 
     _getRulesForInsert: function(data, context, done) {
-      done([]);
+      done(null, []);
     },
 
     _onInsertCommandInitialization: function(data, context, done) {
@@ -130,7 +132,7 @@ var BusinessService = (function() {
     },
 
     _getRulesForUpdate: function(data, context, done) {
-      done([]);
+      done(null, []);
     },
 
     _onUpdateCommandInitialization: function(data, context, done) {
@@ -142,7 +144,7 @@ var BusinessService = (function() {
     },
 
     _getRulesForDestroy: function(id, context, done) {
-      done([]);
+      done(null, []);
     },
 
     _onDestroyCommandInitialization: function(id, context, done) {
@@ -219,7 +221,7 @@ var BusinessService = (function() {
     };
 
     service.prototype[getRules] = functions.getRules || function(context, done) {
-      done([]);
+      done(null, []);
     };
 
     service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done) {

@@ -70,13 +70,15 @@ var Rule = (function() {
       var self = this;
       self.errors = [];
 
-      this._onValidate(function() {
+      this._onValidate(function(err) {
+        if (err) return done(err);
         if (self.valid) {
           if (self.ifValidThenFunction) {
             self.ifValidThenFunction();
           }
           if (self.successors.length > 0) {
-            new RulesValidator(self.successors).validate(function() {
+            new RulesValidator(self.successors).validate(function(err) {
+              if (err) return done(err);
               self.successors.filter(function(rule) { return !rule.valid; })
                              .forEach(function(rule) {
                                self._invalidate(rule.errors);
