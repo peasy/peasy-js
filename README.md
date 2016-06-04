@@ -51,4 +51,4 @@ All contributions are welcome, from general framework improvements to sample cli
 
 #Like what you see?
 
-Please consider showing your appreciation by starring the project.
+Please consider showing your support by starring the project.
