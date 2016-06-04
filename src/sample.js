@@ -146,6 +146,7 @@ var customerDataProxy = (function() {
 
   return {
     insert: insert,
+    getAll: getAll,
     getNationalSecurityData: getNationalSecurityData
   };
 
@@ -153,6 +154,13 @@ var customerDataProxy = (function() {
     var nextId = state.length + 1;
     data.id = nextId;
     state.push(Object.assign({}, data));
+    done(null, data);
+  }
+
+  function getAll(done) {
+    var data = state.map(function(customer) {
+      return Object.assign({}, customer);
+    });
     done(null, data);
   }
 
@@ -176,7 +184,7 @@ var rolesService = new RolesService(currentUserId, rolesDataProxy);
 var service = new CustomerService(customerDataProxy, rolesService);
 
 // EXECUTE CUSTOM COMMAND
-service.getNationalSecurityCommand(213).execute(function(err, result) {
+service.getNationalSecurityCommand(2213).execute(function(err, result) {
   console.log("getNationalSecurityCommand execution complete!", result)
 });
 
@@ -199,7 +207,9 @@ commands.forEach(function(command, index) {
 
     if (index == commands.length - 1) {
       console.log('\n---------------');
-      console.log("End Result", customerDataProxy.data);
+      service.getAllCommand().execute(function(err, result) {
+        console.log("End Result", result.value);
+      });
     }
   });
 });
