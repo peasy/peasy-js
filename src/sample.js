@@ -1,3 +1,9 @@
+// This sample is meant to illustrate how to create business services,
+// custom commands, and rules, and to showcase how they interact with
+// each other.  In a real world application, you would most likely keep
+// each business service, command, and rule in its own file, or at least
+// similar actors in the same files.
+
 "use strict";
 
 var Rule = require('./peasy').Rule;
@@ -15,7 +21,7 @@ var AgeRule = Rule.extend({
         this._invalidate("You are too young");
       }
       var time = Math.floor((Math.random() * 3000) + 1);
-      setTimeout(() => done(this), time); // simulate latency
+      setTimeout(() => done(), time); // simulate latency
     }
   }
 });
@@ -48,98 +54,133 @@ var FieldRequiredRule = Rule.extend({
   }
 });
 
-// CREATE SERVICE, CUSTOM COMMAND, AND WIRE UP VALIDATION/BUSINESS LOGIC FOR INSERT
-
-var PersonService = BusinessService.extend({
+var CustomerAuthorizationRule = Rule.extend({
+  params: ['roles'],
   functions: {
-    _getRulesForInsert: getRulesForInsert
-  }
-})
-.createCommand({
-  name: 'myCommand',
-  params: ['id'],
-  functions:
-  {
-    onInitialization: function(context, done) {
-      // get access to the service
-      context.foo = "bar";
-      done();
-    },
-    getRules: function(context, done) {
-      context.meh = "yay";
-      var FalseRule = Rule.extend({
-        functions: {
-          _onValidate: function(done) {
-            this._invalidate("Nope!");
-            done();
-          }
+    _onValidate: function(done) {
+      var validRoles = ['super admin', 'admin'];
+      this.roles.forEach(function(role) {
+        if (validRoles.indexOf(role) > 0) {
+          return done();
         }
       });
-      done(new FalseRule());
-      //done([]);
-    },
-    onValidationSuccess: function(context, done) {
-      console.log("ARGS", this.arguments);
-      console.log("id", this.id);
-      console.log("CONTEXT", context);
-      console.log("DATA PROXY", this.dataProxy);
-      done(null, 'yey');
+      this._invalidate("You do not have sufficient priviledges to access national security information");
+      done();
     }
   }
-})
-.service;
+});
 
-function getRulesForInsert(person, context, done) {
+// CREATE SERVICES, CUSTOM COMMANDS, AND WIRE UP VALIDATION AND BUSINESS RULES
+
+// ROLES SERVICE
+var RolesService = BusinessService.extend({
+  params: ['userId', 'dataProxy'],
+  functions: {
+    _getAll: function(context, done) {
+      this.dataProxy.getById(this.userId, function(err, roles) {
+        done(null, roles);
+      });
+    }
+  }
+}).service;
+
+// CUSTOMER SERVICE
+var CustomerService = BusinessService
+  .extend({
+    params: ['dataProxy', 'rolesService'],
+    functions: {
+      _getRulesForInsert: getRulesForInsert
+    }
+  })
+  .createCommand({
+    name: 'getNationalSecurityCommand',
+    params: ['id'],
+    functions:
+    {
+      getRules: function(context, done) {
+        var getRolesForCurrentUserCommand = this.rolesService.getAllCommand();
+        getRolesForCurrentUserCommand.execute(function(err, result) {
+          if (err) return done(err);
+          if (!result.success) return done(null, result.errors);
+          var roles = result.value;
+          done(new CustomerAuthorizationRule(roles));
+        });
+      },
+      onValidationSuccess: function(context, done) {
+        this.dataProxy.getNationalSecurityData(this.id, function(err, data) {
+          done(null, data);
+        });
+      }
+    }
+  })
+  .service;
+
+function getRulesForInsert(customer, context, done) {
 
   //done([
-      //new AgeRule(person.age),
-      //new NameRule(person.name),
-      //new FieldRequiredRule("address", person)
+      //new AgeRule(customer.age),
+      //new NameRule(customer.name),
+      //new FieldRequiredRule("address", customer)
   //]);
 
-  done(new AgeRule(person.age)
-              .ifValidThenExecute(() => console.log("Age succeeded"))
-              .ifInvalidThenExecute(() => console.log("Age failed"))
-              .ifValidThenValidate(new NameRule(person.name)
-                                         .ifValidThenExecute(() => console.log("Name succeeded"))
-                                         .ifInvalidThenExecute(() => console.log("Name failed"))
-                                         .ifValidThenValidate(new FieldRequiredRule("address", person)
-                                                                    .ifValidThenExecute(() => console.log("Address succeeded"))
-                                                                    .ifInvalidThenExecute(() => console.log("Address failed"))
-                                                              )));
+  done(new AgeRule(customer.age)
+             .ifValidThenExecute(() => console.log("Age succeeded"))
+             .ifInvalidThenExecute(() => console.log("Age failed"))
+             .ifValidThenValidate(new NameRule(customer.name)
+                                        .ifValidThenExecute(() => console.log("Name succeeded"))
+                                        .ifInvalidThenExecute(() => console.log("Name failed"))
+                                        .ifValidThenValidate(new FieldRequiredRule("address", customer)
+                                                                   .ifValidThenExecute(() => console.log("Address succeeded"))
+                                                                   .ifInvalidThenExecute(() => console.log("Address failed"))
+                                                             )));
 }
 
-// CREATE AN IN-MEMORY DATA PROXY (this could be a duck typed angular resource, react store, etc.)
+// CREATE IN-MEMORY DATA PROXIES (these could be a duck typed angular resources, react stores, mongo db implementations, http proxies, etc.)
 
-var PersonDataProxy = function() {
-  this.data = [
+var customerDataProxy = (function() {
+  var state = [
     { id: 1, name: "James Hendrix" },
     { id: 2, name: "James Page" },
     { id: 3, name: "David Gilmour" },
   ];
-}
 
-PersonDataProxy.prototype = {
-  constructor: PersonDataProxy,
-  insert: function(data, done) {
-    var nextId = this.data.length + 1;
+  return {
+    insert: insert,
+    getNationalSecurityData: getNationalSecurityData
+  };
+
+  function insert(data, done) {
+    var nextId = state.length + 1;
     data.id = nextId;
-    this.data.push(data);
+    state.push(Object.assign({}, data));
     done(null, data);
   }
-};
+
+  function getNationalSecurityData(id, done) {
+    done(null, { id: id, nsd: "12345678"});
+  }
+})();
+
+var rolesDataProxy = {
+  getById: function(id, done) {
+    // add/remove roles to manipulate execution of getNationalSecurityCommand
+    done(null, ['admin', 'user']);
+  }
+}
 
 
-// CREATE INSTANCE OF A PERSON SERVICE AND REQUIRED DATA PROXY
+// CREATE INSTANCE OF A CUSTOMER SERVICE WITH THE REQUIRED DATA PROXY
 
-var proxy = new PersonDataProxy();
-var service = new PersonService(proxy);
+var currentUserId = 12345; // this id would likely come from some authentication service
+var rolesService = new RolesService(currentUserId, rolesDataProxy);
+var service = new CustomerService(customerDataProxy, rolesService);
 
 // EXECUTE CUSTOM COMMAND
-service.myCommand("hello").execute(function(err, result) {
-  console.log("RESULT", result)
+service.getNationalSecurityCommand(213).execute(function(err, result) {
+  console.log("getNationalSecurityCommand execution complete!", result)
 });
 
+// CREATE AN ARRAY OF INSERT COMMANDS
 var commands = [
   service.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
   service.insertCommand({name: "James", age: new Date('2/3/1975'), address: 'aa'}),
@@ -158,7 +199,7 @@ commands.forEach(function(command, index) {
 
     if (index == commands.length - 1) {
       console.log('\n---------------');
-      console.log("End Result", proxy.data);
+      console.log("End Result", customerDataProxy.data);
     }
   });
 });
