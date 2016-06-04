@@ -6,7 +6,7 @@ peasy-js is a simple middle tier framework that offers/addresses the following:
 
 - Easy to use [business rules and validation rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) engine
 - [Scalability](https://github.com/peasy/peasy-js/wiki/Data-Proxy#scalability)
-- Reusability (decouples business validation logic from other frameworks)
+- Reusability (decouples business and validation logic from consuming code and frameworks)
 - [Swappable](https://github.com/peasy/peasy-js/wiki/Data-Proxy#swappable-data-proxies) [data proxies](https://github.com/peasy/peasy-js/wiki/Data-Proxy)
 - [Multiple client support](https://github.com/peasy/peasy-js/wiki/Multiple-Client-Support)
 - [Multiple deployment scenario support](https://github.com/peasy/peasy-js/wiki/Data-Proxy#multiple-deployment-scenarios)
