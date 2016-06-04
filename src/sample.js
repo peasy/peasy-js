@@ -181,20 +181,21 @@ var rolesDataProxy = {
 
 var currentUserId = 12345; // this id would likely come from some authentication service
 var rolesService = new RolesService(currentUserId, rolesDataProxy);
-var service = new CustomerService(customerDataProxy, rolesService);
+var customerService = new CustomerService(customerDataProxy, rolesService);
 
 // EXECUTE CUSTOM COMMAND
-service.getNationalSecurityCommand(2213).execute(function(err, result) {
+var customerId = 123;
+customerService.getNationalSecurityCommand(customerId).execute(function(err, result) {
   console.log("getNationalSecurityCommand execution complete!", result)
 });
 
 // CREATE AN ARRAY OF INSERT COMMANDS
 var commands = [
-  service.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
-  service.insertCommand({name: "James", age: new Date('2/3/1975'), address: 'aa'}),
-  service.insertCommand({name: "Jimi", age: new Date('2/3/1925'), address: 'aa'}),
-  service.insertCommand({name: "James", age: new Date('2/3/1925')}),
-  service.insertCommand({name: "James", age: new Date('2/3/1925'), address: 'aaa'})
+  customerService.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
+  customerService.insertCommand({name: "James", age: new Date('2/3/1975'), address: 'aa'}),
+  customerService.insertCommand({name: "Jimi", age: new Date('2/3/1925'), address: 'aa'}),
+  customerService.insertCommand({name: "James", age: new Date('2/3/1925')}),
+  customerService.insertCommand({name: "James", age: new Date('2/3/1925'), address: 'aaa'})
 ];
 
 
@@ -207,11 +208,11 @@ commands.forEach(function(command, index) {
 
     if (index == commands.length - 1) {
       console.log('\n---------------');
-      service.getAllCommand().execute(function(err, result) {
+      customerService.getAllCommand().execute(function(err, result) {
         console.log("End Result", result.value);
       });
     }
   });
 });
 
-module.exports = service;
+module.exports = customerService;
