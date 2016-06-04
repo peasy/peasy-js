@@ -78,7 +78,7 @@ describe("Rule", function() {
             expect(rule.errors.length).toEqual(1);
             var error = rule.errors[0];
             expect(error.association).toEqual("foo");
-            expect(error.error).toEqual("too few characters");
+            expect(error.message).toEqual("too few characters");
             done();
           });
         });

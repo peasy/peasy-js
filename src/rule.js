@@ -56,7 +56,7 @@ var Rule = (function() {
       }
       errors.forEach(function(err) {
         if (typeof err === "string") {
-          self.errors.push({ association: self.association, error: err });
+          self.errors.push({ association: self.association, message: err });
         } else {
           self.errors.push(err);
         }

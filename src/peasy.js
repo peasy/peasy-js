@@ -331,7 +331,7 @@
             }
             catch(ex) {
               if (ex instanceof ServiceException) {
-                done(null, new ExecutionResult(false, null, [{ association: ex.association, error: ex.message }]));
+                done(null, new ExecutionResult(false, null, [{ association: ex.association, message: ex.message }]));
               } else {
                 done(ex);
               }
@@ -475,7 +475,7 @@
       }
       errors.forEach(function(err) {
         if (typeof err === "string") {
-          self.errors.push({ association: self.association, error: err });
+          self.errors.push({ association: self.association, message: err });
         } else {
           self.errors.push(err);
         }

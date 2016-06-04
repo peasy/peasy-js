@@ -202,9 +202,9 @@ describe("Command", function() {
             expect(result.success).toEqual(false);
             expect(result.value).toBeNull();
             expect(result.errors.length).toEqual(3);
-            expect(result.errors[0].error).toEqual("a");
-            expect(result.errors[1].error).toEqual("b");
-            expect(result.errors[2].error).toEqual("c");
+            expect(result.errors[0].message).toEqual("a");
+            expect(result.errors[1].message).toEqual("b");
+            expect(result.errors[2].message).toEqual("c");
           });
         });
 
@@ -224,7 +224,7 @@ describe("Command", function() {
               expect(result.success).toEqual(false);
               expect(result.value).toBeNull();
               expect(result.errors.length).toEqual(1);
-              expect(result.errors[0].error).toEqual("name not supplied");
+              expect(result.errors[0].message).toEqual("name not supplied");
             });
           });
         });

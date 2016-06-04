@@ -70,7 +70,7 @@ var Command = (function() {
             }
             catch(ex) {
               if (ex instanceof ServiceException) {
-                done(null, new ExecutionResult(false, null, [{ association: ex.association, error: ex.message }]));
+                done(null, new ExecutionResult(false, null, [{ association: ex.association, message: ex.message }]));
               } else {
                 done(ex);
               }
