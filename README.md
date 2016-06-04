@@ -4,17 +4,15 @@
 
 peasy-js is a simple middle tier framework that offers/addresses the following:
 
-- Easy to use [validation](https://github.com/peasy/Peasy.NET/wiki/Validation-Rules)/[business rules](https://github.com/peasy/Peasy.NET/wiki/Business-Rules) engine
-- [Thread safety](https://github.com/peasy/Peasy.NET/wiki/Thread-Safety)
-- [Scalability](https://github.com/peasy/Peasy.NET/wiki/data-proxy#scalability)
-- [Concurrency](https://github.com/peasy/Peasy.NET/wiki/BusinessServiceBase#concurrency-handling)
-- [Swappable](https://github.com/peasy/Peasy.NET/wiki/data-proxy#swappable-data-proxies) [data proxies](https://github.com/peasy/Peasy.NET/wiki/Data-Proxy)
-- [Async support](https://github.com/peasy/Peasy.NET/wiki/The-Asynchronous-Pipeline)
-- [Multiple client support](https://github.com/peasy/Peasy.NET/wiki/Multiple-client-support)
-- [Multiple deployment scenario support](https://github.com/peasy/Peasy.NET/wiki/data-proxy#multiple-deployment-scenarios)
-- [Transactional support and fault tolerance](https://github.com/peasy/Peasy.NET/wiki/ITransactionContext)
-- [Easy testability](https://github.com/peasy/Peasy.NET/wiki/Testing)
+- Easy to use [business rules and validation rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) engine
+- [Scalability](https://github.com/peasy/peasy-js/wiki/Data-Proxy#scalability)
+- Reusability (decouples business validation logic from other frameworks)
+- [Swappable](https://github.com/peasy/peasy-js/wiki/Data-Proxy#swappable-data-proxies) [data proxies](https://github.com/peasy/peasy-js/wiki/Data-Proxy)
+- [Multiple client support](https://github.com/peasy/peasy-js/wiki/Multiple-Client-Support)
+- [Multiple deployment scenario support](https://github.com/peasy/peasy-js/wiki/Data-Proxy#multiple-deployment-scenarios)
+- [Easy testability](https://github.com/peasy/peasy-js/wiki/Testing)
 - [AMD](https://en.wikipedia.org/wiki/Asynchronous_module_definition), Browser, and [CommonJS](https://en.wikipedia.org/wiki/CommonJS) support
+
 
 #Getting started
 
