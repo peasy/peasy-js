@@ -13,6 +13,7 @@ var Command = peasy.Command;
 
 
 // CREATE RULES
+// see https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules for more details
 
 var AgeRule = Rule.extend({
   association: "age",
@@ -73,7 +74,8 @@ var CustomerAuthorizationRule = Rule.extend({
 });
 
 
-// CREATE SERVICES, CUSTOM COMMANDS, AND WIRE UP VALIDATION AND BUSINESS RULES
+// CREATE SERVICES, CUSTOM COMMAND, AND WIRE UP VALIDATION AND BUSINESS RULES
+// see https://github.com/peasy/peasy-js/wiki/BusinessService for more details
 
 // ROLES SERVICE
 
@@ -123,6 +125,8 @@ var CustomerService = BusinessService
 
 function getRulesForInsert(customer, context, done) {
 
+  // see https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules for more details
+
   // these will all execute
   //done([
       //new AgeRule(customer.age),
@@ -144,7 +148,8 @@ function getRulesForInsert(customer, context, done) {
 }
 
 
-// CREATE IN-MEMORY DATA PROXIES (these could be a duck typed angular resources, react stores, mongo db implementations, http proxies, etc.)
+// CREATE IN-MEMORY DATA PROXIES (these could be duck typed angular resources, react stores, mongo db implementations, http proxies, etc.)
+// See https://github.com/peasy/peasy-js/wiki/Data-Proxy for more details
 
 var customerDataProxy = (function() {
   var state = [
