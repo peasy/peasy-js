@@ -1,7 +1,7 @@
 {
   "name": "peasy-js",
   "version": "1.0.0",
-  "description": "An easy to use javascript middle tier framework",
+  "description": "An middle tier framework for javascript",
   "main": "src/peasy.js",
   "scripts": {
     "test": "node ./node_modules/jasmine/bin/jasmine.js"
