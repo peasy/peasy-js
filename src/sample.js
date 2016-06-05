@@ -97,7 +97,23 @@ var CustomerService = BusinessService
   .extend({
     params: ['dataProxy', 'rolesService'],
     functions: {
-      _getRulesForInsert: getRulesForInsert
+      _getRulesForInsert: getRulesForInsert,
+      _getAll: function(context, done) {
+        this.dataProxy.getAll(function(err, data) {
+          if (err) return done(err);
+          data.forEach(function(customer) {
+            delete customer.nsd; // remove confidential data
+          });
+          done(null, data);
+        });
+      },
+      _getById: function(id, context, done) {
+        this.dataProxy.getById(function(err, data) {
+          if (err) return done(err);
+          delete data.nsd; // remove confidential data
+          done(null, data);
+        });
+      }
     }
   })
   .createCommand({
@@ -115,8 +131,9 @@ var CustomerService = BusinessService
         });
       },
       onValidationSuccess: function(context, done) {
-        this.dataProxy.getNationalSecurityData(this.id, function(err, data) {
-          done(null, data);
+        this.dataProxy.getById(this.id, function(err, data) {
+          console.log("DATA", data);
+          done(null, { id: data.id, nsd: data.nsd });
         });
       }
     }
@@ -149,19 +166,19 @@ function getRulesForInsert(customer, context, done) {
 
 
 // CREATE IN-MEMORY DATA PROXIES (these could be duck typed angular resources, react stores, mongo db implementations, http proxies, etc.)
-// See https://github.com/peasy/peasy-js/wiki/Data-Proxy for more details
+// See https://github.com/peasy/peasy-js/wiki/Data-Proxy for details
 
 var customerDataProxy = (function() {
   var state = [
-    { id: 1, name: "James Hendrix" },
-    { id: 2, name: "James Page" },
-    { id: 3, name: "David Gilmour" },
+    { id: 1, name: "James Hendrix", nsd: "234322345" },
+    { id: 2, name: "James Page", nsd: "8492834926" },
+    { id: 3, name: "David Gilmour", nsd: "433423422" },
   ];
 
   return {
     insert: insert,
     getAll: getAll,
-    getNationalSecurityData: getNationalSecurityData
+    getById: getById
   };
 
   function insert(data, done) {
@@ -178,9 +195,13 @@ var customerDataProxy = (function() {
     done(null, data);
   }
 
-  function getNationalSecurityData(id, done) {
-    done(null, { id: id, nsd: "12345678"});
+  function getById(id, done) {
+    var customer = state.filter(function(c) {
+      return c.id === id;
+    })[0];
+    done(null, Object.assign({}, customer));
   }
+
 })();
 
 var rolesDataProxy = {
@@ -200,7 +221,7 @@ var customerService = new CustomerService(customerDataProxy, rolesService);
 
 // EXECUTE CUSTOM COMMAND
 
-var customerId = 123;
+var customerId = 1;
 customerService.getNationalSecurityCommand(customerId).execute(function(err, result) {
   console.log("getNationalSecurityCommand execution complete!", result)
 });
@@ -224,7 +245,7 @@ commands.forEach(function(command, index) {
     console.log('\n---------------');
     console.log(result);
 
-    if (index == commands.length - 1) {
+    if (index === commands.length - 1) {
       console.log('\n---------------');
       customerService.getAllCommand().execute(function(err, result) {
         console.log("End Result", result.value);
