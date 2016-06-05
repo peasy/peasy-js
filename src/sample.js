@@ -6,9 +6,11 @@
 
 "use strict";
 
-var Rule = require('./peasy').Rule;
-var BusinessService = require('./peasy').BusinessService;
-var Command = require('./peasy').Command;
+var peasy = require('./peasy');
+var Rule = peasy.Rule;
+var BusinessService = peasy.BusinessService;
+var Command = peasy.Command;
+
 
 // CREATE RULES
 
@@ -70,9 +72,11 @@ var CustomerAuthorizationRule = Rule.extend({
   }
 });
 
+
 // CREATE SERVICES, CUSTOM COMMANDS, AND WIRE UP VALIDATION AND BUSINESS RULES
 
 // ROLES SERVICE
+
 var RolesService = BusinessService.extend({
   params: ['userId', 'dataProxy'],
   functions: {
@@ -84,7 +88,9 @@ var RolesService = BusinessService.extend({
   }
 }).service;
 
+
 // CUSTOMER SERVICE
+
 var CustomerService = BusinessService
   .extend({
     params: ['dataProxy', 'rolesService'],
@@ -117,12 +123,14 @@ var CustomerService = BusinessService
 
 function getRulesForInsert(customer, context, done) {
 
+  // these will all execute
   //done([
       //new AgeRule(customer.age),
       //new NameRule(customer.name),
       //new FieldRequiredRule("address", customer)
   //]);
 
+  // chained rules - rules will only execute upon successful validation of predecessor
   done(null, new AgeRule(customer.age)
              .ifValidThenExecute(() => console.log("Age succeeded"))
              .ifInvalidThenExecute(() => console.log("Age failed"))
@@ -134,6 +142,7 @@ function getRulesForInsert(customer, context, done) {
                                                                    .ifInvalidThenExecute(() => console.log("Address failed"))
                                                              )));
 }
+
 
 // CREATE IN-MEMORY DATA PROXIES (these could be a duck typed angular resources, react stores, mongo db implementations, http proxies, etc.)
 
@@ -183,13 +192,17 @@ var currentUserId = 12345; // this id would likely come from some authentication
 var rolesService = new RolesService(currentUserId, rolesDataProxy);
 var customerService = new CustomerService(customerDataProxy, rolesService);
 
+
 // EXECUTE CUSTOM COMMAND
+
 var customerId = 123;
 customerService.getNationalSecurityCommand(customerId).execute(function(err, result) {
   console.log("getNationalSecurityCommand execution complete!", result)
 });
 
+
 // CREATE AN ARRAY OF INSERT COMMANDS
+
 var commands = [
   customerService.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
   customerService.insertCommand({name: "James", age: new Date('2/3/1975'), address: 'aa'}),
