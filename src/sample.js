@@ -75,7 +75,8 @@ var CustomerAuthorizationRule = Rule.extend({
 
 
 // CREATE SERVICES, CUSTOM COMMAND, AND WIRE UP VALIDATION AND BUSINESS RULES
-// see https://github.com/peasy/peasy-js/wiki/BusinessService for more details
+// see https://github.com/peasy/peasy-js/wiki/BusinessService and
+// https://github.com/peasy/peasy-js/wiki/Command for more details
 
 // ROLES SERVICE
 
@@ -100,18 +101,16 @@ var CustomerService = BusinessService
       _getRulesForInsert: getRulesForInsert,
       _getAll: function(context, done) {
         this.dataProxy.getAll(function(err, data) {
-          if (err) return done(err);
           data.forEach(function(customer) {
             delete customer.nsd; // remove confidential data
           });
-          done(null, data);
+          done(err, data);
         });
       },
       _getById: function(id, context, done) {
         this.dataProxy.getById(function(err, data) {
-          if (err) return done(err);
           delete data.nsd; // remove confidential data
-          done(null, data);
+          done(err, data);
         });
       }
     }
@@ -124,16 +123,14 @@ var CustomerService = BusinessService
       getRules: function(context, done) {
         var getRolesForCurrentUserCommand = this.rolesService.getAllCommand();
         getRolesForCurrentUserCommand.execute(function(err, result) {
-          if (err) return done(err);
           if (!result.success) return done(null, result.errors);
           var roles = result.value;
-          done(null, new CustomerAuthorizationRule(roles));
+          done(err, new CustomerAuthorizationRule(roles));
         });
       },
       onValidationSuccess: function(context, done) {
         this.dataProxy.getById(this.id, function(err, data) {
-          console.log("DATA", data);
-          done(null, { id: data.id, nsd: data.nsd });
+          done(err, { id: data.id, nsd: data.nsd });
         });
       }
     }
