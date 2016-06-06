@@ -145,15 +145,15 @@ describe("BusinessService", function() {
               name: 'testCommand',
               service: Service,
               functions: {
-                onInitialization: function(context, done) {
+                _onInitialization: function(context, done) {
                   context.testValue = "1";
                   done();
                 },
-                getRules: function(context, done) {
+                _getRules: function(context, done) {
                   context.testValue += "2";
                   done(null, []);
                 },
-                onValidationSuccess: function(context, done) {
+                _onValidationSuccess: function(context, done) {
                   sharedContext = context;
                   done(null, { data: 'abc' });
                 }
@@ -193,7 +193,7 @@ describe("BusinessService", function() {
               name: 'testCommand',
               service: Service,
               functions: {
-                onInitialization: function(context, done) {
+                _onInitialization: function(context, done) {
                   params.push(this.firstName);
                   params.push(this.lastName);
                   done();

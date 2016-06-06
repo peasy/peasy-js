@@ -120,7 +120,7 @@ var CustomerService = BusinessService
     params: ['id'],
     functions:
     {
-      getRules: function(context, done) {
+      _getRules: function(context, done) {
         var getRolesForCurrentUserCommand = this.rolesService.getAllCommand();
         getRolesForCurrentUserCommand.execute(function(err, result) {
           if (!result.success) return done(null, result.errors);
@@ -128,7 +128,7 @@ var CustomerService = BusinessService
           done(err, new CustomerAuthorizationRule(roles));
         });
       },
-      onValidationSuccess: function(context, done) {
+      _onValidationSuccess: function(context, done) {
         this.dataProxy.getById(this.id, function(err, data) {
           done(err, { id: data.id, nsd: data.nsd });
         });
@@ -220,6 +220,7 @@ var customerService = new CustomerService(customerDataProxy, rolesService);
 
 var customerId = 1;
 customerService.getNationalSecurityCommand(customerId).execute(function(err, result) {
+  if (err) console.log("ERROR!", err);
   console.log("getNationalSecurityCommand execution complete!", result)
 });
 

@@ -11,19 +11,19 @@ var Command = (function() {
     if (this instanceof Command) {
 
       if (!this._onInitialization) { // allow for inheritance (ES6)
-        this._onInitialization = callbacks.onInitialization || function(context, done) {
+        this._onInitialization = callbacks._onInitialization || function(context, done) {
           done();
         };
       }
 
       if (!this._getRules) { // allow for inheritance (ES6)
-        this._getRules = callbacks.getRules || function(context, done) {
+        this._getRules = callbacks._getRules || function(context, done) {
           done(null, []);
         };
       }
 
       if (!this._onValidationSuccess) { // allow for inheritance (ES6)
-        this._onValidationSuccess = callbacks.onValidationSuccess || function(context, done) {
+        this._onValidationSuccess = callbacks._onValidationSuccess || function(context, done) {
           done();
         };
       }

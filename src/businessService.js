@@ -19,13 +19,13 @@ var BusinessService = (function() {
     getAllCommand: function() {
       var service = this;
       return new Command({
-        onInitialization: function(context, done) {
+        _onInitialization: function(context, done) {
           service._onGetAllCommandInitialization(context, done);
         },
-        getRules: function(context, done) {
+        _getRules: function(context, done) {
           return service._getRulesForGetAll(context, done);
         },
-        onValidationSuccess: function(context, done) {
+        _onValidationSuccess: function(context, done) {
           return service._getAll(context, done);
         }
       });
@@ -34,13 +34,13 @@ var BusinessService = (function() {
     getByIdCommand: function(id) {
       var service = this;
       return new Command({
-        onInitialization: function(context, done) {
+        _onInitialization: function(context, done) {
           service._onGetByIdCommandInitialization(id, context, done);
         },
-        getRules: function(context, done) {
+        _getRules: function(context, done) {
           return service._getRulesForGetById(id, context, done);
         },
-        onValidationSuccess: function(context, done) {
+        _onValidationSuccess: function(context, done) {
           return service._getById(id, context, done);
         }
       });
@@ -49,13 +49,13 @@ var BusinessService = (function() {
     insertCommand: function(data) {
       var service = this;
       return new Command({
-        onInitialization: function(context, done) {
+        _onInitialization: function(context, done) {
           service._onInsertCommandInitialization(data, context, done);
         },
-        getRules: function(context, done) {
+        _getRules: function(context, done) {
           return service._getRulesForInsert(data, context, done);
         },
-        onValidationSuccess: function(context, done) {
+        _onValidationSuccess: function(context, done) {
           return service._insert(data, context, done);
         }
       });
@@ -64,13 +64,13 @@ var BusinessService = (function() {
     updateCommand: function(data) {
       var service = this;
       return new Command({
-        onInitialization: function(context, done) {
+        _onInitialization: function(context, done) {
           service._onUpdateCommandInitialization(data, context, done);
         },
-        getRules: function(context, done) {
+        _getRules: function(context, done) {
           return service._getRulesForUpdate(data, context, done);
         },
-        onValidationSuccess: function(context, done) {
+        _onValidationSuccess: function(context, done) {
           return service._update(data, context, done);
         }
       });
@@ -79,13 +79,13 @@ var BusinessService = (function() {
     destroyCommand: function(id) {
       var service = this;
       return new Command({
-        onInitialization: function(context, done) {
+        _onInitialization: function(context, done) {
           service._onDestroyCommandInitialization(id, context, done);
         },
-        getRules: function(context, done) {
+        _getRules: function(context, done) {
           return service._getRulesForDestroy(id, context, done);
         },
-        onValidationSuccess: function(context, done) {
+        _onValidationSuccess: function(context, done) {
           return service._destroy(id, context, done);
         }
       });
@@ -216,15 +216,15 @@ var BusinessService = (function() {
     var functions = options.functions || {};
     var service = options.service;
 
-    service.prototype[onInitialization] = functions.onInitialization || function(context, done) {
+    service.prototype[onInitialization] = functions._onInitialization || function(context, done) {
       done();
     };
 
-    service.prototype[getRules] = functions.getRules || function(context, done) {
+    service.prototype[getRules] = functions._getRules || function(context, done) {
       done(null, []);
     };
 
-    service.prototype[onValidationSuccess] = functions.onValidationSuccess || function(context, done) {
+    service.prototype[onValidationSuccess] = functions._onValidationSuccess || function(context, done) {
       done();
     };
 
@@ -239,13 +239,13 @@ var BusinessService = (function() {
       });
 
       return new Command({
-        onInitialization: function(context, done) {
+        _onInitialization: function(context, done) {
           self[onInitialization].call(self, context, done);
         },
-        getRules: function(context, done) {
+        _getRules: function(context, done) {
           return self[getRules].call(self, context, done);
         },
-        onValidationSuccess: function(context, done) {
+        _onValidationSuccess: function(context, done) {
           return self[onValidationSuccess].call(self, context, done);
         }
       });

@@ -58,21 +58,21 @@ describe("Command", function() {
   describe("execute", () => {
     it("invokes the pipeline methods in the correct order", () => {
       var state = "";
-      var callbacks = {
-        onInitialization: (context, done) => {
+      var functions = {
+        _onInitialization: (context, done) => {
           state += "1";
           done();
         },
-        getRules: (context, done) => {
+        _getRules: (context, done) => {
           state += "2";
           done(null, []);
         },
-        onValidationSuccess: (context, done) => {
+        _onValidationSuccess: (context, done) => {
           state += "3";
           done();
         }
       }
-      var command = new Command(callbacks);
+      var command = new Command(functions);
       command.execute(() => {});
       expect(state).toEqual("123");
     });
@@ -102,13 +102,13 @@ describe("Command", function() {
       describe("when no rules configured", () => {
         it("returns the expected validation result", () => {
           var returnValue = { id: 5, data: "abc" };
-          var callbacks = {
-            onValidationSuccess: (context, done) => {
+          var functions = {
+            _onValidationSuccess: (context, done) => {
               done(null, returnValue);
             }
           }
 
-          var command = new Command(callbacks);
+          var command = new Command(functions);
           command.execute((err, result) => {
             expect(result.success).toEqual(true);
             expect(result.value).toEqual(returnValue);
@@ -120,16 +120,16 @@ describe("Command", function() {
       describe("when one rule configured", () => {
         it("supports single object literal argument as input to getRules callback", () => {
           var returnValue = { id: 5, data: "abc" };
-          var callbacks = {
-            getRules: (context, done) => {
+          var functions = {
+            _getRules: (context, done) => {
               done(null, new TrueRule());
             },
-            onValidationSuccess: (context, done) => {
+            _onValidationSuccess: (context, done) => {
               done(null, returnValue);
             }
           }
 
-          var command = new Command(callbacks);
+          var command = new Command(functions);
           command.execute((err, result) => {
             expect(result.success).toEqual(true);
             expect(result.value).toEqual(returnValue);
@@ -140,16 +140,16 @@ describe("Command", function() {
         describe("when validation succeeds", () => {
           it("returns the expected validation result", () => {
             var returnValue = { id: 5, data: "abc" };
-            var callbacks = {
-              getRules: (context, done) => {
+            var functions = {
+              _getRules: (context, done) => {
                 done(null, [new TrueRule()]);
               },
-              onValidationSuccess: (context, done) => {
+              _onValidationSuccess: (context, done) => {
                 done(null, returnValue);
               }
             }
 
-            var command = new Command(callbacks);
+            var command = new Command(functions);
             command.execute((err, result) => {
               expect(result.success).toEqual(true);
               expect(result.value).toEqual(returnValue);
@@ -161,16 +161,16 @@ describe("Command", function() {
         describe("when validation fails", () => {
           it("returns the expected validation result", () => {
             var returnValue = { id: 5, data: "abc" };
-            var callbacks = {
-              getRules: (context, done) => {
+            var functions = {
+              _getRules: (context, done) => {
                 done(null, [new FalseRule("a")]);
               },
-              onValidationSuccess: (context, done) => {
+              _onValidationSuccess: (context, done) => {
                 done(null, returnValue);
               }
             }
 
-            var command = new Command(callbacks);
+            var command = new Command(functions);
             command.execute((err, result) => {
               expect(result.success).toEqual(false);
               expect(result.value).toBeNull();
@@ -182,8 +182,8 @@ describe("Command", function() {
 
       describe("when multiple rules configured", () => {
         it("validates each rule", () => {
-          var callbacks = {
-            getRules: (context, done) => {
+          var functions = {
+            _getRules: (context, done) => {
               done(null, [
                 new FalseRule("a"),
                 new TrueRule(),
@@ -192,12 +192,12 @@ describe("Command", function() {
                 new FalseRule("c")
               ]);
             },
-            onValidationSuccess: (context, done) => {
+            _onValidationSuccess: (context, done) => {
               done();
             }
           }
 
-          var command = new Command(callbacks);
+          var command = new Command(functions);
           command.execute((err, result) => {
             expect(result.success).toEqual(false);
             expect(result.value).toBeNull();
@@ -213,13 +213,13 @@ describe("Command", function() {
       describe("when an error happens", () => {
         describe("when the error is an instance of ServiceException", () => {
           it("returns the expected validation result", () => {
-            var callbacks = {
-              onValidationSuccess: (context, done) => {
+            var functions = {
+              _onValidationSuccess: (context, done) => {
                 throw new ServiceException("name not supplied");
               }
             }
 
-            var command = new Command(callbacks);
+            var command = new Command(functions);
             command.execute((err, result) => {
               expect(result.success).toEqual(false);
               expect(result.value).toBeNull();
@@ -231,13 +231,13 @@ describe("Command", function() {
 
         describe("when the error is anything other than ServiceException", () => {
           it("returns the error in the callback", () => {
-            var callbacks = {
-              onValidationSuccess: (context, done) => {
+            var functions = {
+              _onValidationSuccess: (context, done) => {
                 throw new Error("something unexpected happened");
               }
             }
 
-            var command = new Command(callbacks);
+            var command = new Command(functions);
             command.execute((err, result) => {
               expect(err.message).toEqual("something unexpected happened");
             });
