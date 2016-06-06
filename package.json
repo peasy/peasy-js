@@ -1,6 +1,6 @@
 {
   "name": "peasy-js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A middle tier framework for javascript",
   "main": "src/peasy.js",
   "scripts": {
@@ -29,7 +29,7 @@
   "bugs": {
     "url": "https://github.com/peasy/peasy-js/issues"
   },
-  "homepage": "https://www.dropbox.com/s/gpdoiby1lo7wlop/peasy-js.html?dl=://www.dropbox.com/s/gpdoiby1lo7wlop/peasy-js.html?dl=0&raw=1",
+  "homepage": "https://www.dropbox.com/s/gpdoiby1lo7wlop/peasy-js.html?dl=0&raw=1",
   "devDependencies": {
     "jasmine": "2.4.1",
     "jshint": "2.9.2",
