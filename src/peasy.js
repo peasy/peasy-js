@@ -459,7 +459,7 @@
     var Extended = function() {
       var self = this;
       self.arguments = arguments;
-      Rule.call(self, { association: options.association});
+      Rule.call(self, { association: options.association });
       options.params.forEach(function(field, index) {
         self[field] = self.arguments[index];
       });
