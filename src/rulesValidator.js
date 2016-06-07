@@ -13,12 +13,16 @@ var RulesValidator = (function() {
   RulesValidator.prototype.validate = function(done) {
     var self = this;
     var counter = self.rules.length;
+    var errors = [];
 
     function onRuleValidated(err) {
-      if(err) return done(err);
+      if(err) errors.push(err);
       counter--;
       if (counter === 0) {
-        done();
+        if (errors.length === 0) {
+          return done();
+        }
+        done(errors);
       }
     }
 
