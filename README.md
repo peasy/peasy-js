@@ -18,13 +18,14 @@ A middle tier framework is code that facilitates creating business logic in a re
 - [Multiple deployment scenario support](https://github.com/peasy/peasy-js/wiki/Data-Proxy#multiple-deployment-scenarios)
 - [Easy testability](https://github.com/peasy/peasy-js/wiki/Testing)
 - [AMD](https://en.wikipedia.org/wiki/Asynchronous_module_definition), Browser, and [CommonJS](https://en.wikipedia.org/wiki/CommonJS) support
-- No dependencies
+- Zero dependencies
 
 #Where can I get it?
 
 - [Download the latest release](https://github.com/peasy/peasy-js/archive/master.zip).
 - Clone the repo: ```git clone https://github.com/peasy/peasy-js.git```.
 - Install with npm: ```npm install peasy-js```.
+- Install with bower: `bower install peasy-js`.
 
 You can also download and add the [peasy.js](https://github.com/peasy/peasy-js/blob/master/src/peasy.js) file to your project and reference it accordingly.
 
