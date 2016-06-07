@@ -18,6 +18,7 @@ A middle tier framework is code that facilitates creating business logic in a re
 - [Multiple deployment scenario support](https://github.com/peasy/peasy-js/wiki/Data-Proxy#multiple-deployment-scenarios)
 - [Easy testability](https://github.com/peasy/peasy-js/wiki/Testing)
 - [AMD](https://en.wikipedia.org/wiki/Asynchronous_module_definition), Browser, and [CommonJS](https://en.wikipedia.org/wiki/CommonJS) support
+- No dependencies
 
 #Where can I get it?
 
