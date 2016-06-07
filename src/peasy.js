@@ -360,7 +360,7 @@
       params.forEach(function(param, index) {
         self[param] = self.arguments[index];
       });
-    }
+    };
 
     Extended.prototype = new Command();
 
@@ -377,7 +377,7 @@
     };
 
     return Extended;
-  }
+  };
 
   // RULES VALIDATOR
   var RulesValidator = function(rules) {

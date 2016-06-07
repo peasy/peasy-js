@@ -99,7 +99,7 @@ var Command = (function() {
       params.forEach(function(param, index) {
         self[param] = self.arguments[index];
       });
-    }
+    };
 
     Extended.prototype = new Command();
 
@@ -116,7 +116,7 @@ var Command = (function() {
     };
 
     return Extended;
-  }
+  };
 
   return Command;
 
