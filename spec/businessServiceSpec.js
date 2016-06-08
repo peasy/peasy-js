@@ -260,7 +260,7 @@ describe("BusinessService", function() {
       describe("_getRulesForGetAll", () => {
         it("returns an empty array", () => {
           var callbackValue;
-          service._getRulesForGetAll({}, (err, result) => callbackValue = result);
+          service._getRulesForGetAllCommand({}, (err, result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -280,7 +280,7 @@ describe("BusinessService", function() {
             context.foo = "";
             done();
           };
-          TestService.prototype._getRulesForGetAll = (context, done) => {
+          TestService.prototype._getRulesForGetAllCommand = (context, done) => {
             context.bar = "";
             done(null, []);
           };
@@ -320,7 +320,7 @@ describe("BusinessService", function() {
         it("returns an empty array", () => {
           var callbackValue;
           var id = 1;
-          service._getRulesForGetById(id, {}, (err, result) => callbackValue = result);
+          service._getRulesForGetByIdCommand({}, (err, result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -336,15 +336,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onGetByIdCommandInitialization = (id, context, done) => {
+          TestService.prototype._onGetByIdCommandInitialization = (context, done) => {
             context.ids = 1;
             done();
           };
-          TestService.prototype._getRulesForGetById = (id, context, done) => {
+          TestService.prototype._getRulesForGetByIdCommand = (context, done) => {
             context.ids++;
             done(null, []);
           };
-          TestService.prototype._getById = (id, context, done) => {
+          TestService.prototype._getById = (context, done) => {
             context.ids++;
             sharedContext = context;
             done();
@@ -381,7 +381,7 @@ describe("BusinessService", function() {
       describe("_getRulesForInsert", () => {
         it("returns an empty array", () => {
           var callbackValue;
-          service._getRulesForInsert(state, {}, (err, result) => callbackValue = result);
+          service._getRulesForInsertCommand({}, (err, result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -397,15 +397,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onInsertCommandInitialization = (state, context, done) => {
+          TestService.prototype._onInsertCommandInitialization = (context, done) => {
             context.foo = state.foo;
             done();
           };
-          TestService.prototype._getRulesForInsert = (state, context, done) => {
+          TestService.prototype._getRulesForInsertCommand = (context, done) => {
             context.bar = state.bar;
             done(null, []);
           };
-          TestService.prototype._insert = (state, context, done) => {
+          TestService.prototype._insert = (context, done) => {
             context.meh = state.meh;
             sharedContext = context;
             done();
@@ -442,7 +442,7 @@ describe("BusinessService", function() {
       describe("_getRulesForUpdate", () => {
         it("returns an empty array", () => {
           var callbackValue;
-          service._getRulesForUpdate(state, {}, (err, result) => callbackValue = result);
+          service._getRulesForUpdateCommand({}, (err, result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -458,15 +458,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onUpdateCommandInitialization = (state, context, done) => {
+          TestService.prototype._onUpdateCommandInitialization = (context, done) => {
             context.foo = state.foo;
             done();
           };
-          TestService.prototype._getRulesForUpdate = (state, context, done) => {
+          TestService.prototype._getRulesForUpdateCommand = (context, done) => {
             context.bar = state.bar;
             done(null, []);
           };
-          TestService.prototype._update = (state, context, done) => {
+          TestService.prototype._update = (context, done) => {
             context.meh = state.meh;
             sharedContext = context;
             done();
@@ -504,7 +504,7 @@ describe("BusinessService", function() {
         it("returns an empty array", () => {
           var callbackValue;
           var id = 1;
-          service._getRulesForDestroy(id, {}, (err, result) => callbackValue = result);
+          service._getRulesForDestroyCommand({}, (err, result) => callbackValue = result);
           expect(callbackValue).toEqual([]);
         });
       });
@@ -520,15 +520,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onDestroyCommandInitialization = (id, context, done) => {
+          TestService.prototype._onDestroyCommandInitialization = (context, done) => {
             context.ids = 1;
             done();
           };
-          TestService.prototype._getRulesForDestroy = (id, context, done) => {
+          TestService.prototype._getRulesForDestroyCommand = (context, done) => {
             context.ids++;
             done(null, []);
           };
-          TestService.prototype._destroy = (id, context, done) => {
+          TestService.prototype._destroy = (context, done) => {
             context.ids++;
             sharedContext = context;
             done();
