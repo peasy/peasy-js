@@ -98,7 +98,7 @@ var CustomerService = BusinessService
   .extend({
     params: ['dataProxy', 'rolesService'],
     functions: {
-      _getRulesForInsert: getRulesForInsert,
+      _getRulesForInsertCommand: getRulesForInsert,
       _getAll: function(context, done) {
         this.dataProxy.getAll(function(err, data) {
           data.forEach(function(customer) {
@@ -107,7 +107,7 @@ var CustomerService = BusinessService
           done(err, data);
         });
       },
-      _getById: function(id, context, done) {
+      _getById: function(context, done) {
         this.dataProxy.getById(function(err, data) {
           delete data.nsd; // remove confidential data
           done(err, data);
@@ -137,7 +137,7 @@ var CustomerService = BusinessService
   })
   .service;
 
-function getRulesForInsert(customer, context, done) {
+function getRulesForInsert(context, done) {
 
   // see https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules for more details
 
@@ -149,13 +149,13 @@ function getRulesForInsert(customer, context, done) {
   //]);
 
   // chained rules - rules will only execute upon successful validation of predecessor
-  done(null, new AgeRule(customer.age)
+  done(null, new AgeRule(this.data.age)
              .ifValidThenExecute(() => console.log("Age succeeded"))
              .ifInvalidThenExecute(() => console.log("Age failed"))
-             .ifValidThenValidate(new NameRule(customer.name)
+             .ifValidThenValidate(new NameRule(this.data.name)
                                         .ifValidThenExecute(() => console.log("Name succeeded"))
                                         .ifInvalidThenExecute(() => console.log("Name failed"))
-                                        .ifValidThenValidate(new FieldRequiredRule("address", customer)
+                                        .ifValidThenValidate(new FieldRequiredRule("address", this.data)
                                                                    .ifValidThenExecute(() => console.log("Address succeeded"))
                                                                    .ifInvalidThenExecute(() => console.log("Address failed"))
                                                              )));

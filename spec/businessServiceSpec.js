@@ -36,7 +36,7 @@ describe("BusinessService", function() {
         functions: {
           _getAll: getAll,
           _getById: getById,
-          _getRulesForInsert: getRulesForInsert
+          _getRulesForInsertCommand: getRulesForInsert
         }
       }).service;
 
@@ -47,7 +47,268 @@ describe("BusinessService", function() {
       var service = new Service();
       expect(service._getAll).toEqual(getAll);
       expect(service._getById).toEqual(getById);
-      expect(service._getRulesForInsert).toEqual(getRulesForInsert);
+      expect(service._getRulesForInsertCommand).toEqual(getRulesForInsert);
+    });
+
+    describe("function overrides", () => {
+      describe("insertCommand", () => {
+
+        var TestService = BusinessService.extend({
+          params: ['anotherArg', 'dataProxy'],
+          functions: {
+            _onInsertCommandInitialization: function(context, done) {
+              context.value = 5;
+              done();
+            },
+            _getRulesForInsertCommand: function(context, done) {
+              context.value++;
+              done(null, []);
+            },
+            _insert: function(context, done) {
+              done(null, {
+                contextValue: context.value,
+                data: this.data + 2,
+                serviceArg: this.anotherArg,
+                dataProxy: this.dataProxy
+              });
+            }
+          }
+        }).service;
+
+        var dataProxy = {
+          insert: function(data, done) {
+            data.id = 1;
+            done(data);
+          }
+        };
+
+        it("passes a context between functions", () => {
+          var service = new TestService("hello", dataProxy);
+          service.insertCommand(2).execute((err, result) => {
+            expect(result.value.contextValue).toEqual(6);
+          });
+        });
+
+        it("provides accessibility to command method arguments", () => {
+          var service = new TestService("hello", dataProxy);
+          service.insertCommand(2).execute((err, result) => {
+            expect(result.value.data).toEqual(4);
+          });
+        });
+
+        it("provides accessibility to containing service constructor arguments", () => {
+          var service = new TestService("hello", dataProxy);
+          service.insertCommand(2).execute((err, result) => {
+            expect(result.value.dataProxy).toEqual(dataProxy);
+            expect(result.value.serviceArg).toEqual("hello");
+          });
+        });
+      });
+
+      describe("updateCommand", () => {
+
+        var TestService = BusinessService.extend({
+          params: ['anotherArg', 'dataProxy'],
+          functions: {
+            _onUpdateCommandInitialization: function(context, done) {
+              context.value = 5;
+              done();
+            },
+            _getRulesForUpdateCommand: function(context, done) {
+              context.value++;
+              done(null, []);
+            },
+            _update: function(context, done) {
+              done(null, {
+                contextValue: context.value,
+                data: this.data + 2,
+                serviceArg: this.anotherArg,
+                dataProxy: this.dataProxy
+              });
+            }
+          }
+        }).service;
+
+        var dataProxy = {
+          update: function(data, done) {
+            done(data);
+          }
+        };
+
+        it("passes a context between functions", () => {
+          var service = new TestService("hello", dataProxy);
+          service.updateCommand(2).execute((err, result) => {
+            expect(result.value.contextValue).toEqual(6);
+          });
+        });
+
+        it("provides accessibility to command method arguments", () => {
+          var service = new TestService("hello", dataProxy);
+          service.updateCommand(2).execute((err, result) => {
+            expect(result.value.data).toEqual(4);
+          });
+        });
+
+        it("provides accessibility to containing service constructor arguments", () => {
+          var service = new TestService("hello", dataProxy);
+          service.updateCommand(2).execute((err, result) => {
+            expect(result.value.dataProxy).toEqual(dataProxy);
+            expect(result.value.serviceArg).toEqual("hello");
+          });
+        });
+      });
+
+      describe("getByIdCommand", () => {
+
+        var TestService = BusinessService.extend({
+          params: ['anotherArg', 'dataProxy'],
+          functions: {
+            _onGetByIdCommandInitialization: function(context, done) {
+              context.value = 5;
+              done();
+            },
+            _getRulesForGetByIdCommand: function(context, done) {
+              context.value++;
+              done(null, []);
+            },
+            _getById: function(context, done) {
+              done(null, {
+                contextValue: context.value,
+                id: this.id + 2,
+                serviceArg: this.anotherArg,
+                dataProxy: this.dataProxy
+              });
+            }
+          }
+        }).service;
+
+        var dataProxy = {
+          getById: function(id, done) {
+            done({});
+          }
+        };
+
+        it("passes a context between functions", () => {
+          var service = new TestService("hello", dataProxy);
+          service.getByIdCommand(2).execute((err, result) => {
+            expect(result.value.contextValue).toEqual(6);
+          });
+        });
+
+        it("provides accessibility to command method arguments", () => {
+          var service = new TestService("hello", dataProxy);
+          service.getByIdCommand(2).execute((err, result) => {
+            expect(result.value.id).toEqual(4);
+          });
+        });
+
+        it("provides accessibility to containing service constructor arguments", () => {
+          var service = new TestService("hello", dataProxy);
+          service.getByIdCommand(2).execute((err, result) => {
+            expect(result.value.dataProxy).toEqual(dataProxy);
+            expect(result.value.serviceArg).toEqual("hello");
+          });
+        });
+      });
+
+      describe("getAllCommand", () => {
+
+        var TestService = BusinessService.extend({
+          params: ['anotherArg', 'dataProxy'],
+          functions: {
+            _onGetAllCommandInitialization: function(context, done) {
+              context.value = 5;
+              done();
+            },
+            _getRulesForGetAllCommand: function(context, done) {
+              context.value++;
+              done(null, []);
+            },
+            _getAll: function(context, done) {
+              done(null, {
+                contextValue: context.value,
+                serviceArg: this.anotherArg,
+                dataProxy: this.dataProxy
+              });
+            }
+          }
+        }).service;
+
+        var dataProxy = {
+          getAll: function(done) {
+            done({});
+          }
+        };
+
+        it("passes a context between functions", () => {
+          var service = new TestService("hello", dataProxy);
+          service.getAllCommand(2).execute((err, result) => {
+            expect(result.value.contextValue).toEqual(6);
+          });
+        });
+
+        it("provides accessibility to containing service constructor arguments", () => {
+          var service = new TestService("hello", dataProxy);
+          service.getAllCommand(2).execute((err, result) => {
+            expect(result.value.dataProxy).toEqual(dataProxy);
+            expect(result.value.serviceArg).toEqual("hello");
+          });
+        });
+      })
+
+      describe("destroyCommand", () => {
+
+        var TestService = BusinessService.extend({
+          params: ['anotherArg', 'dataProxy'],
+          functions: {
+            _onDestroyCommandInitialization: function(context, done) {
+              context.value = 5;
+              done();
+            },
+            _getRulesForDestroyCommand: function(context, done) {
+              context.value++;
+              done(null, []);
+            },
+            _destroy: function(context, done) {
+              done(null, {
+                contextValue: context.value,
+                id: this.id + 2,
+                serviceArg: this.anotherArg,
+                dataProxy: this.dataProxy
+              });
+            }
+          }
+        }).service;
+
+        var dataProxy = {
+          destroy: function(id, done) {
+            done({});
+          }
+        };
+
+        it("passes a context between functions", () => {
+          var service = new TestService("hello", dataProxy);
+          service.destroyCommand(2).execute((err, result) => {
+            expect(result.value.contextValue).toEqual(6);
+          });
+        });
+
+        it("provides accessibility to command method arguments", () => {
+          var service = new TestService("hello", dataProxy);
+          service.destroyCommand(2).execute((err, result) => {
+            expect(result.value.id).toEqual(4);
+          });
+        });
+
+        it("provides accessibility to containing service constructor arguments", () => {
+          var service = new TestService("hello", dataProxy);
+          service.destroyCommand(2).execute((err, result) => {
+            expect(result.value.dataProxy).toEqual(dataProxy);
+            expect(result.value.serviceArg).toEqual("hello");
+          });
+        });
+      });
+
     });
 
     it("logs a console.warn when a supplied function name does not exist on BusinessService", () => {
@@ -208,35 +469,40 @@ describe("BusinessService", function() {
           });
         });
 
+        describe("invoking multiple command instances", () => {
+          it("executes with the proper state", () => {
+            var x = new BusinessService({ insert: function(data, done) {
+              done(null, "hello" + data);
+            }});
+
+            var commands = [
+              x.insertCommand("abc"),
+              x.insertCommand("def"),
+              x.insertCommand("ghi"),
+              x.insertCommand("jkl"),
+              x.insertCommand("lmn")
+            ];
+
+            var results = [];
+            commands.forEach((command, index) => {
+              command.execute((err, result) => {
+                results.push(result);
+                if (index === commands.length - 1) {
+                  expect(results[0].value).toEqual("helloabc");
+                  expect(results[1].value).toEqual("hellodef");
+                  expect(results[2].value).toEqual("helloghi");
+                  expect(results[3].value).toEqual("hellojkl");
+                  expect(results[4].value).toEqual("hellolmn");
+                }
+              })
+            });
+
+
+          });
+        });
+
       });
     });
-
-    //describe("arguments on execution", () => {
-      //it("instance members are created and assigned the appropriate argument values", () => {
-      //var params = [];
-      //var Service = BusinessService.extend()
-                                   //.createCommand('testCommand', {
-                                     //onInitialization: function(context, done) {
-                                       //params.push(args[0]);
-                                       //done();
-                                     //},
-                                     //getRules: function(context, done) {
-                                       //params.push(args[1]);
-                                       //done([]);
-                                     //},
-                                     //onValidationSuccess: function(context, done) {
-                                       //params.push(args[2]);
-                                       //done();
-                                     //}
-                                   //})
-                                   //.service;
-
-        //var command = new Service({}).testCommand('value1', 'value2', 'value3');
-        //command.execute(() => {
-          //expect(params).toEqual(['value1', 'value2', 'value3']);
-        //});
-      //});
-    //});
 
   });
 
@@ -257,7 +523,7 @@ describe("BusinessService", function() {
         });
       });
 
-      describe("_getRulesForGetAll", () => {
+      describe("_getRulesForGetAllCommand", () => {
         it("returns an empty array", () => {
           var callbackValue;
           service._getRulesForGetAllCommand({}, (err, result) => callbackValue = result);
@@ -316,7 +582,7 @@ describe("BusinessService", function() {
         });
       });
 
-      describe("_getRulesForGetById", () => {
+      describe("_getRulesForGetByIdCommand", () => {
         it("returns an empty array", () => {
           var callbackValue;
           var id = 1;
@@ -378,7 +644,7 @@ describe("BusinessService", function() {
         });
       });
 
-      describe("_getRulesForInsert", () => {
+      describe("_getRulesForInsertCommand", () => {
         it("returns an empty array", () => {
           var callbackValue;
           service._getRulesForInsertCommand({}, (err, result) => callbackValue = result);

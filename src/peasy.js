@@ -20,144 +20,6 @@
     }
   };
 
-  BusinessService.prototype = {
-
-    getAllCommand: function() {
-      var service = this;
-      return new Command({
-        _onInitialization: function(context, done) {
-          service._onGetAllCommandInitialization(context, done);
-        },
-        _getRules: function(context, done) {
-          return service._getRulesForGetAll(context, done);
-        },
-        _onValidationSuccess: function(context, done) {
-          return service._getAll(context, done);
-        }
-      });
-    },
-
-    getByIdCommand: function(id) {
-      var service = this;
-      return new Command({
-        _onInitialization: function(context, done) {
-          service._onGetByIdCommandInitialization(id, context, done);
-        },
-        _getRules: function(context, done) {
-          return service._getRulesForGetById(id, context, done);
-        },
-        _onValidationSuccess: function(context, done) {
-          return service._getById(id, context, done);
-        }
-      });
-    },
-
-    insertCommand: function(data) {
-      var service = this;
-      return new Command({
-        _onInitialization: function(context, done) {
-          service._onInsertCommandInitialization(data, context, done);
-        },
-        _getRules: function(context, done) {
-          return service._getRulesForInsert(data, context, done);
-        },
-        _onValidationSuccess: function(context, done) {
-          return service._insert(data, context, done);
-        }
-      });
-    },
-
-    updateCommand: function(data) {
-      var service = this;
-      return new Command({
-        _onInitialization: function(context, done) {
-          service._onUpdateCommandInitialization(data, context, done);
-        },
-        _getRules: function(context, done) {
-          return service._getRulesForUpdate(data, context, done);
-        },
-        _onValidationSuccess: function(context, done) {
-          return service._update(data, context, done);
-        }
-      });
-    },
-
-    destroyCommand: function(id) {
-      var service = this;
-      return new Command({
-        _onInitialization: function(context, done) {
-          service._onDestroyCommandInitialization(id, context, done);
-        },
-        _getRules: function(context, done) {
-          return service._getRulesForDestroy(id, context, done);
-        },
-        _onValidationSuccess: function(context, done) {
-          return service._destroy(id, context, done);
-        }
-      });
-    },
-
-    _getAll: function(context, done) {
-      this.dataProxy.getAll(done);
-    },
-
-    _getRulesForGetAll: function(context, done) {
-      done(null, []);
-    },
-
-    _onGetAllCommandInitialization: function(context, done) {
-      done();
-    },
-
-    _getById: function(id, context, done) {
-      this.dataProxy.getById(id, done);
-    },
-
-    _getRulesForGetById: function(id, context, done) {
-      done(null, []);
-    },
-
-    _onGetByIdCommandInitialization: function(id, context, done) {
-      done();
-    },
-
-    _insert: function(data, context, done) {
-      this.dataProxy.insert(data, done);
-    },
-
-    _getRulesForInsert: function(data, context, done) {
-      done(null, []);
-    },
-
-    _onInsertCommandInitialization: function(data, context, done) {
-      done();
-    },
-
-    _update: function(data, context, done) {
-      this.dataProxy.update(data, done);
-    },
-
-    _getRulesForUpdate: function(data, context, done) {
-      done(null, []);
-    },
-
-    _onUpdateCommandInitialization: function(data, context, done) {
-      done();
-    },
-
-    _destroy: function(id, context, done) {
-      this.dataProxy.destroy(id, done);
-    },
-
-    _getRulesForDestroy: function(id, context, done) {
-      done(null, []);
-    },
-
-    _onDestroyCommandInitialization: function(id, context, done) {
-      done();
-    }
-  };
-
   BusinessService.extend = function(options) {
 
     options = options || {};
@@ -165,8 +27,8 @@
     options.functions = options.functions || {};
 
     var Extended = function() {
-      this.arguments = arguments;
       var self = this;
+      self.arguments = arguments;
       BusinessService.call(this);
       options.params.forEach(function(field, index) {
         self[field] = self.arguments[index];
@@ -237,24 +99,28 @@
     service.prototype[commandParams] = options.params || [];
 
     service.prototype[name] = function() {
-      var self = this;
-      self.arguments = arguments;
+      var serviceInstance = this;
 
-      self[commandParams].forEach(function(param, index) {
-        self[param] = self.arguments[index];
-      });
-
-      return new Command({
+      var command = new Command({
         _onInitialization: function(context, done) {
-          self[onInitialization].call(self, context, done);
+          serviceInstance[onInitialization].call(this, context, done);
         },
         _getRules: function(context, done) {
-          return self[getRules].call(self, context, done);
+          return serviceInstance[getRules].call(this, context, done);
         },
         _onValidationSuccess: function(context, done) {
-          return self[onValidationSuccess].call(self, context, done);
+          return serviceInstance[onValidationSuccess].call(this, context, done);
         }
       });
+
+      var args = arguments;
+      serviceInstance[commandParams].forEach(function(param, index) {
+        command[param] = args[index];
+      });
+      Object.keys(serviceInstance).forEach((key) => {
+        command[key] = serviceInstance[key];
+      })
+      return command;
     };
 
     return service;
@@ -263,6 +129,60 @@
   Object.defineProperty(BusinessService.prototype, "constructor", {
     enumerable: false,
     value: BusinessService
+  });
+
+  BusinessService.createCommand({
+    name: "getByIdCommand",
+    service: BusinessService,
+    params: ["id"],
+    functions: {
+      _onValidationSuccess: function(context, done) {
+        this.dataProxy.getById(this.id, done);
+      }
+    }
+  });
+
+  BusinessService.createCommand({
+    name: "getAllCommand",
+    service: BusinessService,
+    functions: {
+      _onValidationSuccess: function(context, done) {
+        this.dataProxy.getAll();
+      }
+    }
+  });
+
+  BusinessService.createCommand({
+    name: "insertCommand",
+    service: BusinessService,
+    params: ["data"],
+    functions: {
+      _onValidationSuccess: function(context, done) {
+        this.dataProxy.insert(this.data, done);
+      }
+    }
+  });
+
+  BusinessService.createCommand({
+    name: "updateCommand",
+    service: BusinessService,
+    params: ["data"],
+    functions: {
+      _onValidationSuccess: function(context, done) {
+        this.dataProxy.update(this.data, done);
+      }
+    }
+  });
+
+  BusinessService.createCommand({
+    name: "destroyCommand",
+    service: BusinessService,
+    params: ["id"],
+    functions: {
+      _onValidationSuccess: function(context, done) {
+        this.dataProxy.destroy(this.id, done);
+      }
+    }
   });
 
   // COMMAND

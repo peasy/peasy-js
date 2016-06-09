@@ -179,40 +179,6 @@ var BusinessService = (function() {
     }
   });
 
-  var x = new BusinessService({ insert: function(data, done) {
-    done(null, "hello" + data);
-  }});
-
-  var commands = [
-  x.insertCommand("abc"),
-  x.insertCommand("def"),
-  x.insertCommand("ghi"),
-  x.insertCommand("jkl"),
-  x.insertCommand("lmn")
-];
-
-  commands.forEach((command) => {
-    debugger;
-    command.execute((err, result) => {
-      console.log("EXECUTION RESULT", result);
-    })
-  });
-
-  var Foo = BusinessService.extend({
-    functions: {
-      _onInsertCommandInitialization(context, done) {
-        console.log("AWWW FUCK YEAH");
-        done();
-      }
-    }
-  }).service;
-
-
-  var y = new Foo({ insert: function(data, done) {
-    done(null, "hello from foo insert");
-  }});
-  y.insertCommand("xyz").execute((err, result) => { console.log("RESULT Y", result)});
-
   return BusinessService;
 
 })();
