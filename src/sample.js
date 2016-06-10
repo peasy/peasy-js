@@ -141,6 +141,7 @@ function getRulesForInsert(context, done) {
 
   // see https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules for more details
 
+  var customer = this.data;
   // these will all execute
   //done([
       //new AgeRule(customer.age),
@@ -149,13 +150,13 @@ function getRulesForInsert(context, done) {
   //]);
 
   // chained rules - rules will only execute upon successful validation of predecessor
-  done(null, new AgeRule(this.data.age)
+  done(null, new AgeRule(customer.age)
              .ifValidThenExecute(() => console.log("Age succeeded"))
              .ifInvalidThenExecute(() => console.log("Age failed"))
-             .ifValidThenValidate(new NameRule(this.data.name)
+             .ifValidThenValidate(new NameRule(customer.name)
                                         .ifValidThenExecute(() => console.log("Name succeeded"))
                                         .ifInvalidThenExecute(() => console.log("Name failed"))
-                                        .ifValidThenValidate(new FieldRequiredRule("address", this.data)
+                                        .ifValidThenValidate(new FieldRequiredRule("address", customer)
                                                                    .ifValidThenExecute(() => console.log("Address succeeded"))
                                                                    .ifInvalidThenExecute(() => console.log("Address failed"))
                                                              )));
