@@ -242,14 +242,14 @@ describe("BusinessService", function() {
 
         it("passes a context between functions", () => {
           var service = new TestService("hello", dataProxy);
-          service.getAllCommand(2).execute((err, result) => {
+          service.getAllCommand().execute((err, result) => {
             expect(result.value.contextValue).toEqual(6);
           });
         });
 
         it("provides accessibility to containing service constructor arguments", () => {
           var service = new TestService("hello", dataProxy);
-          service.getAllCommand(2).execute((err, result) => {
+          service.getAllCommand().execute((err, result) => {
             expect(result.value.dataProxy).toEqual(dataProxy);
             expect(result.value.serviceArg).toEqual("hello");
           });
@@ -519,7 +519,7 @@ describe("BusinessService", function() {
       describe("_getAll", () => {
         it("invokes dataProxy.getAll", () => {
           command.execute(() => {});
-          expect(dataProxy.getAll).toHaveBeenCalled();
+          expect(dataProxy.getAll).toHaveBeenCalledWith(jasmine.any(Function));
         });
       });
 

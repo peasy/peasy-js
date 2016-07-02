@@ -143,7 +143,7 @@ var BusinessService = (function() {
     service: BusinessService,
     functions: {
       _onValidationSuccess: function(context, done) {
-        this.dataProxy.getAll();
+        this.dataProxy.getAll(done);
       }
     }
   });
