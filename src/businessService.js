@@ -107,13 +107,15 @@ var BusinessService = (function() {
         }
       });
 
-      var args = arguments;
+      var constructorArgs = arguments;
       serviceInstance[commandParams].forEach(function(param, index) {
-        command[param] = args[index];
+        command[param] = constructorArgs[index];
       });
+
       Object.keys(serviceInstance).forEach((key) => {
         command[key] = serviceInstance[key];
       })
+
       return command;
     };
 

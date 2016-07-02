@@ -1,6 +1,115 @@
 describe("Rule", function() {
   var Rule = require("../src/rule");
 
+  describe("ifAllValid", () => {
+    var TestRule = Rule.extend({
+      params: ['value'],
+      functions: {
+        _onValidate: function(done) {
+          if (!this.value) {
+            this._invalidate("NOPE");
+          }
+          //var time = Math.floor((Math.random() * 10000) + 1);
+          //setTimeout(() => done(), 500);
+          done();
+        }
+      }
+    });
+
+    describe("valid parent rule set", () => {
+      it('invokes the next set of rules', (callback) => {
+        var rule = Rule.ifAllValid([
+          new TestRule(true),
+          new TestRule(true)
+        ])
+        .thenGetRules(function(done) {
+          done(null, [
+            new TestRule(false),
+            new TestRule(false)
+          ]);
+        });
+
+        rule.validate(() => {
+          expect(rule.errors.length).toEqual(2);
+          callback();
+        });
+      });
+
+      describe("containing chains n-levels deep", () => {
+        it('invokes the next set of rules', (callback) => {
+          var rule = Rule.ifAllValid([
+            new TestRule(true),
+            new TestRule(true)
+          ])
+          .thenGetRules(function(done) {
+            done(null, [
+              new TestRule(false),
+              Rule.ifAllValid([new TestRule(true)])
+                  .thenGetRules(function(done) {
+                    done(null, [
+                      new TestRule(false),
+                      new TestRule(false)
+                    ])
+                  })
+            ]);
+          });
+
+          rule.validate(() => {
+            expect(rule.errors.length).toEqual(3);
+            callback();
+          });
+        });
+      });
+    });
+
+    describe("invalid parent rule set", () => {
+      it("does not invoke the next set of rules", (callback) => {
+        var rule = Rule.ifAllValid([
+          new TestRule(true),
+          new TestRule(false)
+        ])
+        .thenGetRules(function(done) {
+          done(null, [
+            new TestRule(false),
+            new TestRule(false)
+          ]);
+        });
+
+        rule.validate(() => {
+          expect(rule.errors.length).toEqual(1);
+          callback();
+        });
+      });
+
+      describe("containing chains n-levels deep", () => {
+        it('does not invoke the next set of rules', (callback) => {
+          var rule = Rule.ifAllValid([
+            new TestRule(true),
+            new TestRule(true)
+          ])
+          .thenGetRules(function(done) {
+            done(null, [
+              new TestRule(false),
+              Rule.ifAllValid([new TestRule(false)])
+                  .thenGetRules(function(done) {
+                    done(null, [
+                      new TestRule(false),
+                      new TestRule(false)
+                    ])
+                  })
+            ]);
+          });
+
+          rule.validate(() => {
+            expect(rule.errors.length).toEqual(2);
+            callback();
+          });
+        });
+      });
+    });
+
+  });
+
   describe("extend", () => {
     it("throws an exception when _onValidate is not supplied", () => {
       expect(Rule.extend).toThrowError();
@@ -31,7 +140,7 @@ describe("Rule", function() {
           this._invalidate("too few characters");
         }
         //var time = Math.floor((Math.random() * 2000) + 1);
-        //setTimeout(() => done(), time);
+        //setTimeout(() => done(), 500);
         done();
       }
     }
@@ -50,10 +159,10 @@ describe("Rule", function() {
       this._invalidate("too few characters");
     }
     //var time = Math.floor((Math.random() * 2000) + 1);
-    //setTimeout(() => done(this), time);
+    //setTimeout(() => done(), 500);
     done();
   };
-  
+
   runTests();
 
   function runTests() {
@@ -87,6 +196,17 @@ describe("Rule", function() {
           var rule = new LengthRule("");
           var callback = jasmine.createSpy();
           rule.ifValidThenExecute(callback);
+
+          rule.validate(() => {
+            expect(callback).not.toHaveBeenCalled();
+            done();
+          });
+        });
+
+        it("does not invoke the 'ifValidThenGetRules' callback", function(done) {
+          var rule = new LengthRule("");
+          var callback = jasmine.createSpy();
+          rule.ifValidThenGetRules(callback);
 
           rule.validate(() => {
             expect(callback).not.toHaveBeenCalled();
@@ -149,6 +269,17 @@ describe("Rule", function() {
             done();
           });
         });
+
+        //it("invokes the 'ifValidThenGetRules' callback", function(done) {
+          //var rule = new LengthRule("blah");
+          //var callback = jasmine.createSpy();
+          //rule.ifValidThenGetRules(callback);
+
+          //rule.validate(() => {
+            //expect(callback).toHaveBeenCalled();
+            //done();
+          //});
+        //});
 
         it("does not invoke the 'ifInvalidThenExecute' callback if the validation passes", function(done) {
           var rule = new LengthRule("hello");
@@ -219,9 +350,9 @@ describe("Rule", function() {
           expect(rule.errors.length).toEqual(3);
           done();
         });
-      
+
       });
-  });
+    });
 
     describe("rule chaining", () => {
       describe("one level deep", () => {
@@ -377,6 +508,103 @@ describe("Rule", function() {
 
       });
     });
+
+    describe("ifValidThenGetRules", () => {
+      var TestRule = Rule.extend({
+        params: ['value'],
+        functions: {
+          _onValidate: function(done) {
+            if (!this.value) {
+              this._invalidate("NOPE");
+            }
+            //var time = Math.floor((Math.random() * 10000) + 1);
+            //setTimeout(() => done(), 500);
+            done();
+          }
+        }
+      });
+
+      describe("valid parent rule set", () => {
+        it('invokes the next set of rules', (callback) => {
+          var rule1 = new TestRule(true);
+          rule1.ifValidThenGetRules(function(done) {
+            done(null, [
+              new TestRule(false),
+              new TestRule(true),
+              new TestRule(false)
+            ]);
+          });
+
+          rule1.validate(() => {
+            expect(rule1.errors.length).toEqual(2);
+            callback();
+          });
+        });
+
+        describe("containing chains n-levels deep", () => {
+          it('invokes the next set of rules', (callback) => {
+            var rule1 = new TestRule(true);
+            rule1.ifValidThenGetRules(function(done) {
+              done(null, [
+                new TestRule(false),
+                new TestRule(true).ifValidThenGetRules((done) => {
+                  done(null, new TestRule(false))
+                }),
+                new TestRule(false)
+              ]);
+            });
+
+            rule1.validate(() => {
+              expect(rule1.errors.length).toEqual(3);
+              callback();
+            });
+          });
+        });
+      });
+
+      describe("invalid parent rule set", () => {
+        it("does not invoke the next set of rules", (callback) => {
+          var rule1 = new TestRule(false);
+          rule1.ifValidThenGetRules(function(done) {
+            done(null, [
+              new TestRule(false),
+              new TestRule(true),
+              new TestRule(false)
+            ]);
+          });
+
+          rule1.validate(() => {
+            expect(rule1.errors.length).toEqual(1);
+            callback();
+          });
+        });
+
+        describe("containing chains n-levels deep", () => {
+          it('does not invoke the next set of rules', (callback) => {
+            var rule1 = new TestRule(true);
+            rule1.ifValidThenGetRules(function(done) {
+              done(null, [
+                new TestRule(false),
+                new TestRule(false).ifValidThenGetRules((done) => {
+                  done(null, [
+                    new TestRule(false),
+                    new TestRule(false)
+                  ])
+                }),
+                new TestRule(false)
+              ]);
+            });
+
+            rule1.validate(() => {
+              expect(rule1.errors.length).toEqual(3);
+              callback();
+            });
+          });
+        });
+      });
+
+    });
+
   }
 
 });

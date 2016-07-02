@@ -356,13 +356,33 @@
       options = options || {};
       this.association = options.association || null;
       this.errors = [];
-      this.ifInvalidThenFunction = null;
-      this.ifValidThenFunction = null;
+      this.ifInvalidThenFn = null;
+      this.ifValidThenFn = null;
+      this.ifValidThenGetRulesFn = null;
       this.successors = [];
       this.valid = true;
     } else {
       return new Rule();
     }
+  };
+
+  Rule.ifAllValid = function(rules) {
+
+    function thenGetRules(func) {
+      var rule = new Rule();
+      rule._onValidate = function(done) {
+        done();
+      };
+
+      rule.successors = rules;
+      rule.ifValidThenGetRulesFn = func;
+      return rule;
+    }
+
+    return {
+      thenGetRules: thenGetRules
+    }
+
   };
 
   Rule.extend = function(options) {
@@ -420,28 +440,61 @@
       this._onValidate(function(err) {
         if (err) return done(err);
         if (self.valid) {
-          if (self.ifValidThenFunction) {
-            self.ifValidThenFunction();
+          if (self.ifValidThenFn) {
+            self.ifValidThenFn();
           }
           if (self.successors.length > 0) {
             new RulesValidator(self.successors).validate(function(err) {
               if (err) return done(err);
-              self.successors.filter(function(rule) { return !rule.valid; })
-                             .forEach(function(rule) {
-                               self._invalidate(rule.errors);
-                             });
-
+              invalidate(self).ifAnyInvalid(self.successors);
+              if (self.ifValidThenGetRulesFn) {
+                return invokeNextRules(self, self.successors, done);
+              }
               done();
             });
             return;
+          } else {
+            if (self.ifValidThenGetRulesFn) {
+              return invokeNextRules(self, self.successors, done);
+            }
           }
         } else {
-          if (self.ifInvalidThenFunction) {
-            self.ifInvalidThenFunction();
+          if (self.ifInvalidThenFn) {
+            self.ifInvalidThenFn();
           }
         }
         done();
       });
+
+      function invokeNextRules(rule, rules, done) {
+        var failedRules = rules.filter(function(rule) { return !rule.valid; });
+        if (failedRules.length === 0) {
+          rule.ifValidThenGetRulesFn(function(err, result) {
+            if (!Array.isArray(result)) {
+              result = [result];
+            }
+            new RulesValidator(result).validate(function(err) {
+              if (err) return done(err);
+              invalidate(rule).ifAnyInvalid(result)
+              done();
+            });
+          });
+        } else {
+          done();
+        }
+      }
+
+      function invalidate(rule) {
+
+        function ifAnyInvalid(rules) {
+          rules.filter(function(r) { return !r.valid; })
+               .forEach(function(r) {
+                 rule._invalidate(r.errors);
+               });
+        }
+
+        return { ifAnyInvalid: ifAnyInvalid };
+      }
     },
 
     ifValidThenValidate: function(rules) {
@@ -453,12 +506,17 @@
     },
 
     ifValidThenExecute: function(funcToExecute) {
-      this.ifValidThenFunction = funcToExecute;
+      this.ifValidThenFn = funcToExecute;
       return this;
     },
 
     ifInvalidThenExecute: function(funcToExecute) {
-      this.ifInvalidThenFunction = funcToExecute;
+      this.ifInvalidThenFn = funcToExecute;
+      return this;
+    },
+
+    ifValidThenGetRules: function(funcToExecute) {
+      this.ifValidThenGetRulesFn = funcToExecute;
       return this;
     }
 
