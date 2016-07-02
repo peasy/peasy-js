@@ -89,7 +89,7 @@ var Command = (function() {
   };
 
   Command.extend = function(options) {
-    var options = options || {};
+    options = options || {};
     var params = options.params || [];
     var functions = options.functions || {};
 

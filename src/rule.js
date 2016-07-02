@@ -34,7 +34,7 @@ var Rule = (function() {
 
     return {
       thenGetRules: thenGetRules
-    }
+    };
 
   };
 
@@ -128,7 +128,7 @@ var Rule = (function() {
             }
             new RulesValidator(result).validate(function(err) {
               if (err) return done(err);
-              invalidate(rule).ifAnyInvalid(result)
+              invalidate(rule).ifAnyInvalid(result);
               done();
             });
           });

@@ -119,7 +119,7 @@
       });
       Object.keys(serviceInstance).forEach((key) => {
         command[key] = serviceInstance[key];
-      })
+      });
       return command;
     };
 
@@ -270,7 +270,7 @@
   };
 
   Command.extend = function(options) {
-    var options = options || {};
+    options = options || {};
     var params = options.params || [];
     var functions = options.functions || {};
 
@@ -381,7 +381,7 @@
 
     return {
       thenGetRules: thenGetRules
-    }
+    };
 
   };
 
@@ -475,7 +475,7 @@
             }
             new RulesValidator(result).validate(function(err) {
               if (err) return done(err);
-              invalidate(rule).ifAnyInvalid(result)
+              invalidate(rule).ifAnyInvalid(result);
               done();
             });
           });

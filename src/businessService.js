@@ -114,7 +114,7 @@ var BusinessService = (function() {
 
       Object.keys(serviceInstance).forEach((key) => {
         command[key] = serviceInstance[key];
-      })
+      });
 
       return command;
     };
