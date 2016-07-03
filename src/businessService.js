@@ -14,13 +14,18 @@ var BusinessService = (function() {
     }
   };
 
+  BusinessService.extendService = function(service, options) {
+    options.service = service;
+    return BusinessService.extend(options);
+  }
+
   BusinessService.extend = function(options) {
 
     options = options || {};
     options.params = options.params || ['dataProxy'];
     options.functions = options.functions || {};
 
-    var Extended = function() {
+    var Extended = options.service || function() {
       var self = this;
       self.arguments = arguments;
       BusinessService.call(this);
@@ -29,7 +34,8 @@ var BusinessService = (function() {
       });
     };
 
-    Extended.prototype = new BusinessService();
+    var service = options.service || BusinessService;
+    Extended.prototype = new service();
     var keys = Object.keys(BusinessService.prototype);
     Object.keys(options.functions).forEach(function(key) {
       if (keys.indexOf(key) === -1) {

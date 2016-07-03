@@ -15,6 +15,64 @@ describe("BusinessService", function() {
     });
   });
 
+  describe("extendService", () => {
+    var returnObject = { name: "Mark Knopfler" };
+    var MyBaseService = BusinessService.extend({
+      params: ['dataProxy'],
+      functions: {
+        _update: function(context, done) {
+          done(null, returnObject);
+        }
+      }
+    }).service;
+
+    it("inherits members", () => {
+      var CustomerService = BusinessService.extendService(MyBaseService, {
+      }).service;
+      var customerService = new CustomerService();
+      customerService.updateCommand({}).execute(function(err, result) {
+        expect(result.value).toEqual(returnObject);
+      });
+    });
+
+    it("allows overriding inherited members", () => {
+      var returnObject = { name: "Frank Zappa" };
+      var CustomerService = BusinessService.extendService(MyBaseService, {
+        functions: {
+          _update: function(context, done) {
+            done(null, returnObject);
+          }
+        }
+      }).service;
+      var customerService = new CustomerService();
+      customerService.updateCommand({}).execute(function(err, result) {
+        expect(result.value).toEqual(returnObject);
+      });
+    })
+
+    it("allows access to constructor arguments as expected", () => {
+      var returnObject = { name: "Dickey Betts" };
+      var dataProxy = {
+        getById: function(id, done) {
+          done(null, returnObject);
+        }
+      };
+      var CustomerService = BusinessService.extendService(MyBaseService, {
+        functions: {
+          _getById: function(context, done) {
+            this.dataProxy.getById(1, function(err, result) {
+              done(null, result);
+            });
+          }
+        }
+      }).service;
+      var customerService = new CustomerService(dataProxy);
+      customerService.getByIdCommand(1).execute(function(err, result) {
+        expect(result.value).toEqual(returnObject);
+      });
+    });
+  });
+
   describe("extend", () => {
     it("creates a default param of dataProxy when no option params are supplied", () => {
       var Service = BusinessService.extend().service;
