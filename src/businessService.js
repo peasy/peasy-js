@@ -25,7 +25,7 @@ var BusinessService = (function() {
     options.params = options.params || ['dataProxy'];
     options.functions = options.functions || {};
 
-    var Extended = options.service || function() {
+    var Extended = function() {
       var self = this;
       self.arguments = arguments;
       BusinessService.call(this);
