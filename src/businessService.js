@@ -17,7 +17,7 @@ var BusinessService = (function() {
   BusinessService.extendService = function(service, options) {
     options.service = service;
     return BusinessService.extend(options);
-  }
+  };
 
   BusinessService.extend = function(options) {
 
@@ -34,8 +34,8 @@ var BusinessService = (function() {
       });
     };
 
-    var service = options.service || BusinessService;
-    Extended.prototype = new service();
+    var Service = options.service || BusinessService;
+    Extended.prototype = new Service();
     var keys = Object.keys(BusinessService.prototype);
     Object.keys(options.functions).forEach(function(key) {
       if (keys.indexOf(key) === -1) {
