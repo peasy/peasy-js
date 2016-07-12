@@ -373,7 +373,6 @@
   };
 
   Rule.getAllRulesFrom = function(commands, done) {
-
     var count = commands.length;
     var current = 0;
     var context = {};
@@ -381,12 +380,16 @@
     var commands = commands;
 
     commands.forEach(command => {
-      command._getRules(context, ruleFetched);
+      command._getRules(context, onComplete);
     });
 
-    function ruleFetched(err, rule) {
+    function onComplete(err, rule) {
       if (err) { return done(err, rules); }
-      rules.push(rule);
+      if (Array.isArray(rule)) {
+        rule.forEach(function(r) { rules.push(r) });
+      } else {
+        rules.push(rule);
+      }
       current++;
       if (current === count) {
         done(null, rules);
