@@ -386,7 +386,6 @@
 
     function ruleFetched(err, rule) {
       if (err) { return done(err, rules); }
-      console.log("RULE PUSHED", rule);
       rules.push(rule);
       current++;
       if (current === count) {
