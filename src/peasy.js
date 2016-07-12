@@ -305,6 +305,33 @@
     return Extended;
   };
 
+  Command.executeAll = function(commands, done) {
+
+    if (!Array.isArray(commands)) {
+      commands = [commands];
+    }
+
+    var count = commands.length;
+
+    if (count < 1) { return done(); }
+
+    var current = 0;
+    var results = [];
+
+    commands.forEach(function(command) {
+      command.execute(onComplete);
+    });
+
+    function onComplete(err, result) {
+      if (err) { return done(err, results); }
+      current++;
+      results.push(result);
+      if (current === count) {
+        done(null, results);
+      }
+    }
+  };
+
   // RULES VALIDATOR
   var RulesValidator = function(rules) {
     if (this instanceof RulesValidator) {
@@ -373,11 +400,18 @@
   };
 
   Rule.getAllRulesFrom = function(commands, done) {
+
+    if (!Array.isArray(commands)) {
+      commands = [commands];
+    }
+
     var count = commands.length;
+
+    if (count < 1) return done(null, []);
+
     var current = 0;
     var context = {};
     var rules = [];
-    var commands = commands;
 
     commands.forEach(command => {
       command._getRules(context, onComplete);

@@ -3,6 +3,12 @@ describe("Rule", function() {
   var Command = require("../src/command");
 
   describe("getAllRulesFrom", () => {
+    it("invokes callback immediately if passed empty array", () => {
+      Rule.getAllRulesFrom([], (err, rules) => {
+        expect(rules.length).toEqual(0);
+      })
+    });
+
     it("retrieves all rules from supplied commands", () => {
       var Rule1 = Rule.extend({
         functions: {
@@ -32,6 +38,9 @@ describe("Rule", function() {
       var commands = [new Command1(), new Command2()];
       Rule.getAllRulesFrom(commands, (err, rules) => {
         expect(rules.length).toEqual(3);
+        expect(rules[0] instanceof Rule1).toBe(true);
+        expect(rules[1] instanceof Rule2).toBe(true);
+        expect(rules[2] instanceof Rule2).toBe(true);
       });
     });
   });

@@ -118,6 +118,33 @@ var Command = (function() {
     return Extended;
   };
 
+  Command.executeAll = function(commands, done) {
+
+    if (!Array.isArray(commands)) {
+      commands = [commands];
+    }
+
+    var count = commands.length;
+
+    if (count < 1) { return done(); }
+
+    var current = 0;
+    var results = [];
+
+    commands.forEach(function(command) {
+      command.execute(onComplete);
+    });
+
+    function onComplete(err, result) {
+      if (err) { return done(err, results); }
+      current++;
+      results.push(result);
+      if (current === count) {
+        done(null, results);
+      }
+    }
+  };
+
   return Command;
 
 })();

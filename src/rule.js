@@ -20,11 +20,18 @@ var Rule = (function() {
   };
 
   Rule.getAllRulesFrom = function(commands, done) {
+
+    if (!Array.isArray(commands)) {
+      commands = [commands];
+    }
+
     var count = commands.length;
+
+    if (count < 1) return done(null, []);
+
     var current = 0;
     var context = {};
     var rules = [];
-    var commands = commands;
 
     commands.forEach(command => {
       command._getRules(context, onComplete);

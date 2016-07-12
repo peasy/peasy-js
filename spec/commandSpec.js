@@ -320,4 +320,36 @@ describe("Command", function() {
     });
 
   });
+
+  describe("executeAll", () => {
+
+    it("invokes callback immediately if passed empty array", () => {
+      Command.executeAll([], (err, result) => {
+        expect(result).toBe(undefined);
+      })
+    });
+
+    it("invokes all commands", () => {
+      var TestCommand = Command.extend({
+        params: ['val'],
+        functions: {
+          _onValidationSuccess: function(context, done) {
+            done(null, this.val);
+          }
+        }
+      });
+
+      var commands = [
+        new TestCommand(4),
+        new TestCommand(2)
+      ];
+
+      Command.executeAll(commands, (err, results) => {
+        expect(results[0].value).toEqual(4);
+        expect(results[1].value).toEqual(2);
+      });
+
+    });
+  });
+
 });
