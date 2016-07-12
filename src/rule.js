@@ -19,6 +19,31 @@ var Rule = (function() {
     }
   };
 
+  Rule.getAllRulesFrom = function(commands, done) {
+    var count = commands.length;
+    var current = 0;
+    var context = {};
+    var rules = [];
+    var commands = commands;
+
+    commands.forEach(command => {
+      command._getRules(context, onComplete);
+    });
+
+    function onComplete(err, rule) {
+      if (err) { return done(err, rules); }
+      if (Array.isArray(rule)) {
+        rule.forEach(function(r) { rules.push(r) });
+      } else {
+        rules.push(rule);
+      }
+      current++;
+      if (current === count) {
+        done(null, rules);
+      }
+    }
+  };
+
   Rule.ifAllValid = function(rules) {
 
     function thenGetRules(func) {

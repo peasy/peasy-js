@@ -372,6 +372,29 @@
     }
   };
 
+  Rule.getAllRulesFrom = function(commands, done) {
+
+    var count = commands.length;
+    var current = 0;
+    var context = {};
+    var rules = [];
+    var commands = commands;
+
+    commands.forEach(command => {
+      command._getRules(context, ruleFetched);
+    });
+
+    function ruleFetched(err, rule) {
+      if (err) { return done(err, rules); }
+      console.log("RULE PUSHED", rule);
+      rules.push(rule);
+      current++;
+      if (current === count) {
+        done(null, rules);
+      }
+    }
+  };
+
   Rule.ifAllValid = function(rules) {
 
     function thenGetRules(func) {

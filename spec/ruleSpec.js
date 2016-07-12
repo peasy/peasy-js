@@ -1,5 +1,40 @@
 describe("Rule", function() {
   var Rule = require("../src/rule");
+  var Command = require("../src/command");
+
+  describe("getAllRulesFrom", () => {
+    it("retrieves all rules from supplied commands", () => {
+      var Rule1 = Rule.extend({
+        functions: {
+          _onValidate: (done) => done()
+        }
+      });
+      var Rule2 = Rule.extend({
+        functions: {
+          _onValidate: (done) => done()
+        }
+      });
+      var Command1 = Command.extend({
+        functions: {
+          _getRules: function(context, done) {
+            done(null, [new Rule1(), new Rule2()]);
+          }
+        }
+      });
+      var Command2 = Command.extend({
+        functions: {
+          _getRules: function(context, done) {
+            done(null, new Rule2());
+          }
+        }
+      });
+
+      var commands = [new Command1(), new Command2()];
+      Rule.getAllRulesFrom(commands, (err, rules) => {
+        expect(rules.length).toEqual(3);
+      });
+    });
+  });
 
   describe("ifAllValid", () => {
     var TestRule = Rule.extend({
