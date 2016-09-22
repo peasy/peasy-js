@@ -20,6 +20,14 @@ A middle tier framework is code that facilitates creating business logic in a re
 - [AMD](https://en.wikipedia.org/wiki/Asynchronous_module_definition), Browser, and [CommonJS](https://en.wikipedia.org/wiki/CommonJS) support
 - Zero dependencies
 
+#Why peasy-js?
+
+Because the javascript ecosystem changes at a pace much more rapid than your business logic.  UI frameworks change: Backbone one day, Angular the next day, React the following...  Backend frameworks change: Express one day, Koa the next day, Hapi the next... Data frameworks and ORMS change...  
+
+Why couple your code with technologies that are hot today and gone tomorrow?  Why not focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both, and by any UI or backend framework? 
+
+peasy-js makes it trivial to whimsically swap out UI, backend, and data frameworks in your applications by creating your business logic in a composable, reusable, scalable, and testable manner.
+
 #Where can I get it?
 
 - [Download the latest release](https://github.com/peasy/peasy-js/archive/master.zip).
@@ -41,14 +49,6 @@ An additional sample can be viewed [here](https://github.com/peasy/peasy-js/blob
 An entire middle-tier implementation using peasy-js can be viewed [here](https://github.com/peasy/peasy-js-samples).  This sample application is a ficticious order entry / inventory management system web api.
 
 For additional help, be sure to checkout the [wiki](https://github.com/peasy/peasy-js/wiki) as it covers in-depth how-to's, general framework design, and usage scenarios.
-
-#Why peasy-js?
-
-Because the javascript ecosystem changes at a pace much more rapid than your business logic.  UI frameworks change: Backbone one day, Angular the next day, React the following...  Backend frameworks change: Express one day, Koa the next day, Hapi the next... Data frameworks and ORMS change...  
-
-Why couple your code with technologies that are hot today and gone tomorrow?  Why not focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both, and by any UI or backend framework? 
-
-peasy-js makes it trivial to whimsically swap out UI, backend, and data frameworks in your applications by creating your business logic in a composable, reusable, scalable, and testable manner.
 
 #Contributing
 
