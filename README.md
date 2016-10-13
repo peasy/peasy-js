@@ -35,7 +35,7 @@ peasy-js makes it trivial to whimsically swap out UI, backend, and data framewor
 - Install with npm: ```npm install peasy-js```.
 - Install with bower: `bower install peasy-js`.
 
-You can also download and add the [peasy.js](https://github.com/peasy/peasy-js/blob/master/src/peasy.js) file to your project and reference it accordingly.
+You can also download and add the [peasy.js](https://github.com/peasy/peasy-js/blob/master/lib/peasy.js) file to your project and reference it accordingly.
 
 #Getting started
 
