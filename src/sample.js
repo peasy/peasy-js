@@ -6,7 +6,7 @@
 
 "use strict";
 
-var peasy = require('./peasy');
+var peasy = require('./../lib/peasy');
 var Rule = peasy.Rule;
 var BusinessService = peasy.BusinessService;
 var Command = peasy.Command;
