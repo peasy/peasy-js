@@ -71,16 +71,17 @@ var Command = (function() {
 
             try {
               self._onValidationSuccess(context, function(err, result) {
-                if(err) return done(err);
+                if(err) {
+                  if (err instanceof ServiceException) {
+                    return done(null, new ExecutionResult(false, null, err.errors));
+                  }
+                  return done(err);
+                };
                 done(null, new ExecutionResult(true, result, null));
               });
             }
             catch(ex) {
-              if (ex instanceof ServiceException) {
-                done(null, new ExecutionResult(false, null, [{ association: ex.association, message: ex.message }]));
-              } else {
-                done(ex);
-              }
+              done(ex);
             }
           });
         });

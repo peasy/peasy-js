@@ -210,12 +210,14 @@ describe("Command", function() {
 
       });
 
-      describe("when an error happens", () => {
+      describe("when an error is received", () => {
         describe("when the error is an instance of ServiceException", () => {
           it("returns the expected validation result", () => {
             var functions = {
               _onValidationSuccess: (context, done) => {
-                throw new ServiceException("name not supplied");
+                var ex = new ServiceException("404");
+                ex.errors.push({ association: "name", message: "name not supplied"});
+                done(ex);
               }
             }
 
@@ -233,7 +235,7 @@ describe("Command", function() {
           it("returns the error in the callback", () => {
             var functions = {
               _onValidationSuccess: (context, done) => {
-                throw new Error("something unexpected happened");
+                done(new Error("something unexpected happened"));
               }
             }
 
@@ -245,6 +247,24 @@ describe("Command", function() {
           });
         });
 
+      });
+
+      describe("when an unhandled exception occurs", () => {
+        it("returns the error in the callback", () => {
+          var callbackInvoked = false;
+          var functions = {
+            _onValidationSuccess: (context, done) => {
+              throw new Error("something unexpected happened");
+            }
+          }
+
+          var command = new Command(functions);
+          command.execute((err, result) => {
+            callbackInvoked = true;
+            expect(err.message).toEqual("something unexpected happened");
+          });
+          expect(callbackInvoked).toBe(true);
+        });
       });
     });
   });
