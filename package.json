@@ -1,6 +1,6 @@
 {
   "name": "peasy-js",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "A middle tier framework for javascript",
   "main": "lib/peasy.js",
   "scripts": {
