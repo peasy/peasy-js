@@ -46,7 +46,7 @@ You can get started by reviewing the walk throughs below.
 
 An additional sample can be viewed [here](https://github.com/peasy/peasy-js/blob/master/src/sample.js) that showcases creating a [business service](), custom [command](), [business rules](), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, run: ```node src/sample.js``` from a command line.
 
-An entire middle-tier implementation using peasy-js can be viewed [here](https://github.com/peasy/peasy-js-samples).  This sample application is a ficticious order entry / inventory management system web api.
+An entire middle-tier implementation using peasy-js can be viewed [here](https://github.com/peasy/peasy-js-samples).  This sample application is a ficticious order entry / inventory management system.
 
 For additional help, be sure to checkout the [wiki](https://github.com/peasy/peasy-js/wiki) as it covers in-depth how-to's, general framework design, and usage scenarios.
 
