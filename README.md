@@ -4,10 +4,16 @@
 A middle tier framework for javascript
 ```
 <p align="center">
-	<a href="https://www.npmjs.com/package/peasy-js" target="_blank">
-		<img src="https://badge.fury.io/js/peasy-js.svg" alt="npm version">
-	</a>
-<a href="https://travis-ci.org/peasy/peasy-js"><img src="https://travis-ci.org/peasy/peasy-js.svg?branch=master" alt="travis"></a></p>
+<a href="https://gitter.im/peasy" target="_blank">
+	<img src="https://badges.gitter.im/gitterHQ/gitter.svg" alt="Gitter">
+</a>
+<a href="https://www.npmjs.com/package/peasy-js" target="_blank">
+	<img src="https://badge.fury.io/js/peasy-js.svg" alt="npm version">
+</a>
+<a href="https://travis-ci.org/peasy/peasy-js">
+	<img src="https://travis-ci.org/peasy/peasy-js.svg?branch=master" alt="travis">
+</a>
+</p>
 
 # What's a middle tier framework?
 
