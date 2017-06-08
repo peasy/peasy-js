@@ -5,7 +5,7 @@ A middle tier framework for javascript
 ```
 
 <p>
-<a href="ttps://gitter.im/peasy/peasy-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" target="_blank">
+<a href="https://gitter.im/peasy/peasy-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" target="_blank">
 	<img src="https://badges.gitter.im/peasy/peasy-js.svg" alt="Gitter">
 </a>
 <a href="https://www.npmjs.com/package/peasy-js" target="_blank">
