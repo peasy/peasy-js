@@ -1,6 +1,6 @@
 var RulesValidator = require('./rulesValidator');
 
-var Rule = (function() {
+var Rule = function () {
 
   "use strict";
 
@@ -11,8 +11,8 @@ var Rule = (function() {
       this.errors = [];
       this.ifInvalidThenFn = null;
       this.ifValidThenFn = null;
-      this.ifValidThenGetRulesFn = null;
-      this.successors = [];
+      this.validSuccessors = [];
+      this.invalidSuccessors = [];
       this.valid = true;
     } else {
       return new Rule();
@@ -59,7 +59,7 @@ var Rule = (function() {
         done();
       };
 
-      rule.successors = rules;
+      rule.validSuccessors = rules;
       rule.ifValidThenGetRulesFn = func;
       return rule;
     }
@@ -115,8 +115,18 @@ var Rule = (function() {
       });
     },
 
-    _onValidate: function(done) {
+    /**
+     * This set a invalid Rule to valid again.
+     * which is used for the ifInvalidThenValidate Functionality.
+     * @private
+     */
+    _unInvalidate: function () {
+      var self = this;
+      this.valid = true;
+      self.errors = [];
     },
+
+    _onValidate: function (done) {},
 
     validate: function(done) {
       var self = this;
@@ -128,24 +138,41 @@ var Rule = (function() {
           if (self.ifValidThenFn) {
             self.ifValidThenFn();
           }
-          if (self.successors.length > 0) {
-            new RulesValidator(self.successors).validate(function(err) {
+          if (self.validSuccessors.length > 0) {
+            new RulesValidator(self.validSuccessors).validate(function (err) {
               if (err) return done(err);
-              invalidate(self).ifAnyInvalid(self.successors);
+              invalidate(self).ifAnyInvalid(self.validSuccessors);
               if (self.ifValidThenGetRulesFn) {
-                return invokeNextRules(self, self.successors, done);
+                return invokeNextRules(self, self.validSuccessors, done);
               }
               done();
             });
             return;
           } else {
             if (self.ifValidThenGetRulesFn) {
-              return invokeNextRules(self, self.successors, done);
+              return invokeNextRules(self, self.validSuccessors, done);
             }
           }
         } else {
           if (self.ifInvalidThenFn) {
             self.ifInvalidThenFn();
+          }
+          /*
+           * As in the Valid case,
+           * if rules are chained by .ifInvalidThenValidate all
+           * successors should be checked.
+           *
+           * The rule is then validate if ALL successors are validate.
+           * This provides a logical-OR behaviour. So the rule itself doesn't need to be validate,
+           * but all it's alternatives.
+           */
+          if (self.invalidSuccessors.length > 0) {
+            new RulesValidator(self.invalidSuccessors).validate(function (err) {
+              if (err) return done(err);
+              invalidate(self).ifAnyInvalid(self.invalidSuccessors);
+              done();
+            });
+            return;
           }
         }
         done();
@@ -172,10 +199,20 @@ var Rule = (function() {
       function invalidate(rule) {
 
         function ifAnyInvalid(rules) {
-          rules.filter(function(r) { return !r.valid; })
-               .forEach(function(r) {
-                 rule._invalidate(r.errors);
-               });
+          const invalidRules = rules.filter(function (r) {
+            return !r.valid;
+          });
+          // set the invalid-status if there are invalid rules
+          if(invalidRules.length > 0) {
+            invalidRules.forEach(function (r) {
+              rule._invalidate(r.errors);
+            });
+          }
+          // otherwise set it valid
+          else {
+            rule._unInvalidate();
+          }
+
         }
 
         return { ifAnyInvalid: ifAnyInvalid };
@@ -186,12 +223,31 @@ var Rule = (function() {
       if (!Array.isArray(rules)) {
         rules = [rules];
       }
-      this.successors = rules;
+      this.validSuccessors = rules;
       return this;
     },
 
     ifValidThenExecute: function(funcToExecute) {
       this.ifValidThenFn = funcToExecute;
+      return this;
+    },
+
+    /**
+     * If a rule is invalid then this function adds an alternative.
+     * if the alternative is true, also the rule is.
+     *
+     * A special case apply by using an array of rules as alternative,
+     * in this case, all rules in the array will be joined by an AND by default,
+     * so that the alternative is valid, if ALL rules of the alternative are valid
+     *
+     * @param {Rule|Array<Rule>} rules the alternative rule(s) that should be checked when the rule is invalid
+     * @return {Rule}
+     */
+    ifInvalidThenValidate: function (rules) {
+      if (!Array.isArray(rules)) {
+        rules = [rules];
+      }
+      this.invalidSuccessors = rules;
       return this;
     },
 
@@ -208,7 +264,6 @@ var Rule = (function() {
   };
 
   return Rule;
-
-})();
+}();
 
 module.exports = Rule;
