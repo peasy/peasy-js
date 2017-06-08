@@ -11,6 +11,7 @@ var Rule = function () {
       this.errors = [];
       this.ifInvalidThenFn = null;
       this.ifValidThenFn = null;
+      this.ifValidThenGetRulesFn = null;
       this.validSuccessors = [];
       this.invalidSuccessors = [];
       this.valid = true;
