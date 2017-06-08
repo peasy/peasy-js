@@ -3,9 +3,10 @@
 ```javascript
 A middle tier framework for javascript
 ```
-<p align="center">
-<a href="https://gitter.im/peasy" target="_blank">
-	<img src="https://badges.gitter.im/gitterHQ/gitter.svg" alt="Gitter">
+
+<p>
+<a href="ttps://gitter.im/peasy/peasy-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" target="_blank">
+	<img src="https://badges.gitter.im/peasy/peasy-js.svg" alt="Gitter">
 </a>
 <a href="https://www.npmjs.com/package/peasy-js" target="_blank">
 	<img src="https://badge.fury.io/js/peasy-js.svg" alt="npm version">
@@ -17,7 +18,6 @@ A middle tier framework for javascript
 
 # What's a middle tier framework?
 
-[![Join the chat at https://gitter.im/peasy/peasy-js](https://badges.gitter.im/peasy/peasy-js.svg)](https://gitter.im/peasy/peasy-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 A middle tier framework is code that facilitates creating business logic in a reusable, extensible, maintainable, and testable manner.   It promotes creating business logic that is completely decoupled from its consuming technologies and helps to ensure that separation of concerns ([SoC](https://en.wikipedia.org/wiki/Separation_of_concerns)) are adhered to.
 
