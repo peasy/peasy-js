@@ -604,6 +604,23 @@ describe("Rule", function() {
             });
           });
         });
+
+        it('invokes not invalidSuccessors', (callback) => {
+          var rule1 = new TestRule(true);
+          var rule2 = new TestRule(true);
+
+          var childCallback =jasmine.createSpy();
+
+          rule2._onValidate = function(done) {childCallback(); done()} ;
+
+          rule1.ifInvalidThenValidate(rule2);
+
+          rule1.validate(() => {
+            expect(rule1.valid).toEqual(true);
+            expect(childCallback).not.toHaveBeenCalled();
+            callback();
+          });
+        });
       });
 
       describe("invalid parent rule set", () => {
@@ -641,6 +658,52 @@ describe("Rule", function() {
 
             rule1.validate(() => {
               expect(rule1.errors.length).toEqual(3);
+              callback();
+            });
+          });
+        });
+
+
+        describe("logical-Or functionality", () => {
+          it('A or B should be valid if A is invalid but B', (callback) => {
+            var rule1 = new TestRule(false);
+            rule1.ifInvalidThenValidate(new TestRule(true));
+
+            rule1.validate(() => {
+              expect(rule1.errors.length).toEqual(0);
+              expect(rule1.valid).toEqual(true);
+              callback();
+            });
+          });
+        });
+
+        describe("containing chains n-levels deep", () => {
+          it('is valid if all invalid successors are deeply valid', (callback) => {
+            var rule1 = new TestRule(false);
+            rule1.ifInvalidThenValidate([
+                new TestRule(true),
+                new TestRule(false).ifInvalidThenValidate(new TestRule(true)),
+                new TestRule(true)
+              ]);
+
+            rule1.validate(() => {
+              expect(rule1.errors.length).toEqual(0);
+              expect(rule1.valid).toEqual(true);
+              callback();
+            });
+          });
+
+          it('is invalid if all one successors are deeply invalid', (callback) => {
+            var rule1 = new TestRule(false);
+            rule1.ifInvalidThenValidate([
+              new TestRule(true),
+              new TestRule(false).ifInvalidThenValidate(new TestRule(false)),
+              new TestRule(true)
+            ]);
+
+            rule1.validate(() => {
+              expect(rule1.errors.length).toEqual(3);
+              expect(rule1.valid).toEqual(false);
               callback();
             });
           });
