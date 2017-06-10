@@ -23,15 +23,12 @@ A middle tier framework is code that facilitates creating business logic in a re
 
 ##### peasy-js offers/addresses the following:
 
-- Easy to use [business and validation rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) engine
-- [Scalability](https://github.com/peasy/peasy-js/wiki/Data-Proxy#scalability)
-- Reusability (decouples business and validation logic from consuming code and frameworks)
-- [Swappable](https://github.com/peasy/peasy-js/wiki/Data-Proxy#swappable-data-proxies) [data proxies](https://github.com/peasy/peasy-js/wiki/Data-Proxy)
+- [Business and validation rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) engine
 - [Multiple client support](https://github.com/peasy/peasy-js/wiki/Multiple-Client-Support)
 - [Multiple deployment scenario support](https://github.com/peasy/peasy-js/wiki/Data-Proxy#multiple-deployment-scenarios)
-- [Easy testability](https://github.com/peasy/peasy-js/wiki/Testing)
-- [AMD](https://en.wikipedia.org/wiki/Asynchronous_module_definition), Browser, and [CommonJS](https://en.wikipedia.org/wiki/CommonJS) support
-- Zero dependencies
+- Reusability (decouples business and validation logic from consuming code and frameworks)
+- [Scalability](https://github.com/peasy/peasy-js/wiki/Data-Proxy#scalability)
+- [Testability](https://github.com/peasy/peasy-js/wiki/Testing)
 
 # Why peasy-js?
 
