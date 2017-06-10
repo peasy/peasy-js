@@ -1,7 +1,7 @@
 ![peasy-js](https://www.dropbox.com/s/2yajr2x9yevvzbm/peasy3.png?dl=0&raw=1)
 
 ```javascript
-A middle tier framework for javascript
+A middle tier micro-framework for javascript
 ```
 
 <p>
