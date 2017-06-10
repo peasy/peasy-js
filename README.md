@@ -41,6 +41,20 @@ Why couple your code with technologies that are hot today and gone tomorrow?  Wh
 
 peasy-js makes it trivial to whimsically swap out UI, backend, and data frameworks in your applications by creating your business logic in a composable, reusable, scalable, and testable manner.
 
+# The main actors
+
+### Business Service
+A [business service](https://github.com/peasy/peasy-js/wiki/BusinessService) implementation represents an entity (e.g. users, or projects) and is responsible for exposing business functionality via commands. These commands encapsulate CRUD and other business related logic.
+
+### Command
+The [command](https://github.com/peasy/peasy-js/wiki/Command) is responsible for orchestrating the execution of initialization logic, business and validation rule execution, and other logic (data proxy invocations, workflow logic, etc.), respectively, via the command execution pipeline.
+
+### Rule
+A [rule](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) can be created to represent a business rule (authorization, price validity, etc.) or a validation rule (field length, required, etc.). Rules are consumed by commands and can be chained, configured to execute based on a previous rule’s execution, etc. Rules can also be configured to invoke code based on the result of their execution.
+
+### Data Proxy
+The [data proxy](https://github.com/peasy/peasy-js/wiki/Data-Proxy) is responsible for data storage and retrieval, and serves as an abstraction layer for data stores (database, web services, cache, etc.).
+
 # Where can I get it?
 
 - [Download the latest release](https://github.com/peasy/peasy-js/archive/master.zip).
