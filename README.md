@@ -54,10 +54,10 @@ A [business service](https://github.com/peasy/peasy-js/wiki/BusinessService) imp
 
 # Where can I get it?
 
-- [Download the latest release](https://github.com/peasy/peasy-js/archive/master.zip).
-- Clone the repo: ```git clone https://github.com/peasy/peasy-js.git```.
-- Install with **npm**: ```npm install peasy-js```.
-- Install with **yarn**: ```yarn add peasy-js```.
+- [Download the latest release](https://github.com/peasy/peasy-js/archive/master.zip)
+- Clone the repo: ```git clone https://github.com/peasy/peasy-js.git```
+- Install with **npm**: ```npm install peasy-js```
+- Install with **yarn**: ```yarn add peasy-js```
 
 You can also download and add the [peasy.js](https://github.com/peasy/peasy-js/blob/master/lib/peasy.js) file to your project and reference it accordingly.
 
