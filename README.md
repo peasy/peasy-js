@@ -56,8 +56,8 @@ A [business service](https://github.com/peasy/peasy-js/wiki/BusinessService) imp
 
 - [Download the latest release](https://github.com/peasy/peasy-js/archive/master.zip).
 - Clone the repo: ```git clone https://github.com/peasy/peasy-js.git```.
-- Install with npm: ```npm install peasy-js```.
-- Install with yarn: ```yarn add peasy-js```.
+- Install with **npm**: ```npm install peasy-js```.
+- Install with **yarn**: ```yarn add peasy-js```.
 
 You can also download and add the [peasy.js](https://github.com/peasy/peasy-js/blob/master/lib/peasy.js) file to your project and reference it accordingly.
 
