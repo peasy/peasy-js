@@ -150,18 +150,18 @@ var Rule = function () {
 
       if (!done) {
         var func = (rule, successors) => {
-          return invokeSuccessorsP(rule, successors)
+          return invokeSuccessors(rule, successors)
             .then(() => {
               if (rule.ifValidThenGetRulesFn) {
-                return invokeNextRulesP(rule, successors, invokeSuccessorsP);
+                return invokeNextRulesP(rule, successors, invokeSuccessors);
               }
           });
         }
         var func2 = (rule, successors) => {
-          return invokeNextRulesP(rule, successors, invokeSuccessorsP);
+          return invokeNextRulesP(rule, successors, invokeSuccessors);
         }
         var func3 = (rule, successors) => {
-          return invokeSuccessorsP(rule, successors);
+          return invokeSuccessors(rule, successors);
         }
         return this._onValidate()
           .then(() => { return validationComplete(func, func2, func3) });
@@ -211,14 +211,14 @@ var Rule = function () {
       }
 
       function invokeSuccessors(parent, rules, onComplete) {
-        new RulesValidator(rules).validate(function (err) {
-          if (err) return onComplete(err);
-          invalidate(parent).ifAnyInvalid(rules);
-          onComplete();
-        });
-      }
+        if (onComplete) {
+          return new RulesValidator(rules).validate(function (err) {
+            if (err) return onComplete(err);
+            invalidate(parent).ifAnyInvalid(rules);
+            onComplete();
+          });
+        }
 
-      function invokeSuccessorsP(parent, rules) {
         return new RulesValidator(rules).validate()
           .then(() => invalidate(parent).ifAnyInvalid(rules));
       }
