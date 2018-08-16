@@ -11,9 +11,25 @@ var RulesValidator = (function() {
   };
 
   RulesValidator.prototype.validate = function(done) {
+
     var self = this;
     var counter = self.rules.length;
     var errors = [];
+
+    if (!done) {
+      if (self.rules.length > 0) {
+        return Promise.all(self.rules.map(rule => rule.validate()));
+      }
+      return Promise.resolve();
+    }
+
+    if (self.rules.length > 0) {
+      self.rules.forEach(function(rule) {
+        rule.validate(onRuleValidated);
+      });
+    } else {
+      done();
+    }
 
     function onRuleValidated(err) {
       if(err) errors.push(err);
@@ -26,13 +42,6 @@ var RulesValidator = (function() {
       }
     }
 
-    if (self.rules.length > 0) {
-      self.rules.forEach(function(rule) {
-        rule.validate(onRuleValidated);
-      });
-    } else {
-      done();
-    }
   };
 
   return RulesValidator;

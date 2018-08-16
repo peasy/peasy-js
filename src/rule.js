@@ -133,24 +133,28 @@ var Rule = function () {
       var self = this;
       self.errors = [];
 
-      this._onValidate(function(err) {
+      this._onValidate((err) => {
         if (err) return done(err);
+        validationComplete();
+      });
+
+      function validationComplete() {
         if (self.valid) {
           if (self.ifValidThenFn) {
             self.ifValidThenFn();
           }
           if (self.validSuccessors.length > 0) {
-            new RulesValidator(self.validSuccessors).validate(function (err) {
-              if (err) return done(err);
-              invalidate(self).ifAnyInvalid(self.validSuccessors);
+            // async
+            return invokeSuccessors(self, self.validSuccessors, () => {
+              // async
               if (self.ifValidThenGetRulesFn) {
                 return invokeNextRules(self, self.validSuccessors, done);
               }
               done();
             });
-            return;
           } else {
             if (self.ifValidThenGetRulesFn) {
+              // async
               return invokeNextRules(self, self.validSuccessors, done);
             }
           }
@@ -158,39 +162,32 @@ var Rule = function () {
           if (self.ifInvalidThenFn) {
             self.ifInvalidThenFn();
           }
-          /*
-           * As in the Valid case,
-           * if rules are chained by .ifInvalidThenValidate all
-           * successors should be checked.
-           *
-           * The rule is then validate if ALL successors are validate.
-           * This provides a logical-OR behaviour. So the rule itself doesn't need to be validate,
-           * but all it's alternatives.
+          /* * As in the Valid case, * if rules are chained by .ifInvalidThenValidate all * successors should be checked. * * The rule is then validate if ALL successors are validate. * This provides a logical-OR behaviour. So the rule itself doesn't need to be validate, * but all it's alternatives.
            */
           if (self.invalidSuccessors.length > 0) {
-            new RulesValidator(self.invalidSuccessors).validate(function (err) {
-              if (err) return done(err);
-              invalidate(self).ifAnyInvalid(self.invalidSuccessors);
-              done();
-            });
-            return;
+            // async
+            return invokeSuccessors(self, self.invalidSuccessors, done);
           }
         }
         done();
-      });
+      }
+
+      function invokeSuccessors(parent, rules, onComplete) {
+        new RulesValidator(rules).validate(function (err) {
+          if (err) return onComplete(err);
+          invalidate(parent).ifAnyInvalid(rules);
+          onComplete();
+        });
+      }
 
       function invokeNextRules(rule, rules, done) {
         var failedRules = rules.filter(function(rule) { return !rule.valid; });
         if (failedRules.length === 0) {
-          rule.ifValidThenGetRulesFn(function(err, result) {
-            if (!Array.isArray(result)) {
-              result = [result];
+          rule.ifValidThenGetRulesFn(function(err, rules) {
+            if (!Array.isArray(rules)) {
+              rules = [rules];
             }
-            new RulesValidator(result).validate(function(err) {
-              if (err) return done(err);
-              invalidate(rule).ifAnyInvalid(result);
-              done();
-            });
+            invokeSuccessors(rule, rules, done);
           });
         } else {
           done();
