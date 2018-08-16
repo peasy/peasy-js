@@ -133,43 +133,73 @@ var Rule = function () {
       var self = this;
       self.errors = [];
 
+      if (!done) {
+        var func = (rule, successors) => {
+          return new Promise((resolve, reject) => {
+            return invokeSuccessorsP(rule, successors)
+              .then(() => {
+                if (rule.ifValidThenGetRulesFn) {
+                  return invokeNextRules(rule, successors, resolve);
+                }
+                resolve();
+            });
+          })
+        }
+        var func2 = (rule, successors) => {
+          return new Promise((resolve, reject) => {
+            return invokeNextRules(rule, successors, resolve);
+          })
+        }
+        var func3 = (rule, successors) => {
+          return new Promise((resolve, reject) => {
+            return invokeSuccessors(rule, successors, resolve);
+          });
+        }
+        return this._onValidate()
+          .then(() => validationComplete(func, func2, func3));
+      }
+
       this._onValidate((err) => {
         if (err) return done(err);
-        validationComplete();
+        var func = (rule, successors, onComplete) => {
+          return invokeSuccessors(rule, successors, () => {
+            // async
+            if (rule.ifValidThenGetRulesFn) {
+              return invokeNextRules(rule, successors, onComplete);
+            }
+            done();
+          });
+        }
+        var func2 = (rule, successors, onComplete) => {
+          return invokeNextRules(rule, successors, onComplete);
+        }
+        var func3 = (rule, successors, onComplete) => {
+          return invokeSuccessors(rule, successors, onComplete);
+        }
+        validationComplete(func, func2, func3);
       });
 
-      function validationComplete() {
+      function validationComplete(f, f2, f3) {
         if (self.valid) {
           if (self.ifValidThenFn) {
             self.ifValidThenFn();
           }
           if (self.validSuccessors.length > 0) {
-            // async
-            return invokeSuccessors(self, self.validSuccessors, () => {
-              // async
-              if (self.ifValidThenGetRulesFn) {
-                return invokeNextRules(self, self.validSuccessors, done);
-              }
-              done();
-            });
+            return f(self, self.validSuccessors, done);
           } else {
             if (self.ifValidThenGetRulesFn) {
-              // async
-              return invokeNextRules(self, self.validSuccessors, done);
+              return f2(self, self.validSuccessors, done);
             }
           }
         } else {
           if (self.ifInvalidThenFn) {
             self.ifInvalidThenFn();
           }
-          /* * As in the Valid case, * if rules are chained by .ifInvalidThenValidate all * successors should be checked. * * The rule is then validate if ALL successors are validate. * This provides a logical-OR behaviour. So the rule itself doesn't need to be validate, * but all it's alternatives.
-           */
           if (self.invalidSuccessors.length > 0) {
-            // async
-            return invokeSuccessors(self, self.invalidSuccessors, done);
+            return f3(self, self.invalidSuccessors, done);
           }
         }
-        done();
+        if (done) done();
       }
 
       function invokeSuccessors(parent, rules, onComplete) {
@@ -178,6 +208,11 @@ var Rule = function () {
           invalidate(parent).ifAnyInvalid(rules);
           onComplete();
         });
+      }
+
+      function invokeSuccessorsP(parent, rules) {
+        return new RulesValidator(rules).validate()
+          .then(() => invalidate(parent).ifAnyInvalid(rules));
       }
 
       function invokeNextRules(rule, rules, done) {
