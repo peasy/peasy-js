@@ -63,7 +63,7 @@ describe("Rule", function() {
     describe("valid parent rule set", () => {
       it('invokes the next set of rules', (callback) => {
         var rule = Rule.ifAllValid([
-          new TestRule(true),
+          // new TestRule(true),
           new TestRule(true)
         ])
         .thenGetRules(function(done) {

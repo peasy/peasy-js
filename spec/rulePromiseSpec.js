@@ -12,31 +12,31 @@ describe("Rule", function() {
     it("retrieves all rules from supplied commands", () => {
       var Rule1 = Rule.extend({
         functions: {
-          _onValidate: (done) => done()
+          _onValidate: () => Promise.resolve()
         }
       });
       var Rule2 = Rule.extend({
         functions: {
-          _onValidate: (done) => done()
+          _onValidate: () => Promise.resolve()
         }
       });
       var Command1 = Command.extend({
         functions: {
-          _getRules: function(context, done) {
-            done(null, [new Rule1(), new Rule2()]);
+          _getRules: function(context) {
+            return Promise.resolve([new Rule1(), new Rule2()]);
           }
         }
       });
       var Command2 = Command.extend({
         functions: {
-          _getRules: function(context, done) {
-            done(null, new Rule2());
+          _getRules: function(context) {
+            return Promise.resolve(new Rule2());
           }
         }
       });
 
       var commands = [new Command1(), new Command2()];
-      Rule.getAllRulesFrom(commands, (err, rules) => {
+      Rule.getAllRulesFrom(commands).then(rules => {
         expect(rules.length).toEqual(3);
         expect(rules[0] instanceof Rule1).toBe(true);
         expect(rules[1] instanceof Rule2).toBe(true);
@@ -49,13 +49,11 @@ describe("Rule", function() {
     var TestRule = Rule.extend({
       params: ['value'],
       functions: {
-        _onValidate: function(done) {
+        _onValidate: function() {
           if (!this.value) {
             this._invalidate("NOPE");
           }
-          //var time = Math.floor((Math.random() * 10000) + 1);
-          //setTimeout(() => done(), 500);
-          done();
+          return Promise.resolve();
         }
       }
     });
@@ -66,14 +64,14 @@ describe("Rule", function() {
           new TestRule(true),
           new TestRule(true)
         ])
-        .thenGetRules(function(done) {
-          done(null, [
+        .thenGetRules(() => {
+          return Promise.resolve([
             new TestRule(false),
             new TestRule(false)
           ]);
         });
 
-        rule.validate(() => {
+        rule.validate().then(() => {
           expect(rule.errors.length).toEqual(2);
           callback();
         });
@@ -85,12 +83,12 @@ describe("Rule", function() {
             new TestRule(true),
             new TestRule(true)
           ])
-          .thenGetRules(function(done) {
-            done(null, [
+          .thenGetRules(() => {
+            return Promise.resolve([
               new TestRule(false),
               Rule.ifAllValid([new TestRule(true)])
-                  .thenGetRules(function(done) {
-                    done(null, [
+                  .thenGetRules(() => {
+                    return Promise.resolve([
                       new TestRule(false),
                       new TestRule(false)
                     ])
@@ -98,7 +96,7 @@ describe("Rule", function() {
             ]);
           });
 
-          rule.validate(() => {
+          rule.validate().then(() => {
             expect(rule.errors.length).toEqual(3);
             callback();
           });
@@ -112,14 +110,14 @@ describe("Rule", function() {
           new TestRule(true),
           new TestRule(false)
         ])
-        .thenGetRules(function(done) {
-          done(null, [
+        .thenGetRules(() => {
+          return Promise.resolve([
             new TestRule(false),
             new TestRule(false)
           ]);
         });
 
-        rule.validate(() => {
+        rule.validate().then(() => {
           expect(rule.errors.length).toEqual(1);
           callback();
         });
@@ -131,12 +129,12 @@ describe("Rule", function() {
             new TestRule(true),
             new TestRule(true)
           ])
-          .thenGetRules(function(done) {
-            done(null, [
+          .thenGetRules(() => {
+            return Promise.resolve([
               new TestRule(false),
               Rule.ifAllValid([new TestRule(false)])
-                  .thenGetRules(function(done) {
-                    done(null, [
+                  .thenGetRules(() => {
+                    return Promise.resolve([
                       new TestRule(false),
                       new TestRule(false)
                     ])
@@ -144,7 +142,7 @@ describe("Rule", function() {
             ]);
           });
 
-          rule.validate(() => {
+          rule.validate().then(() => {
             expect(rule.errors.length).toEqual(2);
             callback();
           });
@@ -159,18 +157,18 @@ describe("Rule", function() {
       expect(Rule.extend).toThrowError();
     });
 
-    it("matches params to supplied function arguments", () => {
+    it("matches params to supplied function arguments", (done) => {
       var TestRule = Rule.extend({
         params: ['word', 'bar'],
         functions: {
-          _onValidate: function(done) {
+          _onValidate: function() {
             expect(this.word).toEqual('yes');
             expect(this.bar).toEqual('no');
-            done();
+            return Promise.resolve();
           }
         }
       })
-      new TestRule('yes', 'no').validate(() => {});
+      new TestRule('yes', 'no').validate().then(done);
     })
   });
 
@@ -183,8 +181,6 @@ describe("Rule", function() {
         if (this.word.length < 1) {
           this._invalidate("too few characters");
         }
-        //var time = Math.floor((Math.random() * 2000) + 1);
-        //setTimeout(() => done(), 500);
         return Promise.resolve();
       }
     }
@@ -202,18 +198,16 @@ describe("Rule", function() {
     if (this.word.length < 1) {
       this._invalidate("too few characters");
     }
-    //var time = Math.floor((Math.random() * 2000) + 1);
-    //setTimeout(() => done(), 500);
     return Promise.resolve();
   };
 
-  // runTests();
+  runTests();
 
   function runTests() {
 
-    fdescribe("validate", function() {
+    describe("validate", function() {
 
-      fit("clears errors on every invocation", function() {
+      it("clears errors on every invocation", function() {
         var rule = new LengthRule("");
 
         rule.validate().then(() => {
@@ -227,7 +221,7 @@ describe("Rule", function() {
       });
 
       describe("failed validation", function() {
-        fit("contains an error", function(done) {
+        it("contains an error", function(done) {
           var rule = new LengthRule("");
 
           rule.validate().then(() => {
@@ -239,7 +233,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("does not invoke the 'ifValidThenExecute' callback", function(done) {
+        it("does not invoke the 'ifValidThenExecute' callback", function(done) {
           var rule = new LengthRule("");
           var callback = jasmine.createSpy();
           rule.ifValidThenExecute(callback);
@@ -250,7 +244,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("does not invoke the 'ifValidThenGetRules' callback", function(done) {
+        it("does not invoke the 'ifValidThenGetRules' callback", function(done) {
           var rule = new LengthRule("");
           var callback = jasmine.createSpy();
           rule.ifValidThenGetRules(callback);
@@ -261,7 +255,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("invokes the 'ifInvalidThenExecute' callback", function(done) {
+        it("invokes the 'ifInvalidThenExecute' callback", function(done) {
           var rule = new LengthRule("");
           var callback = jasmine.createSpy();
           rule.ifInvalidThenExecute(callback);
@@ -272,7 +266,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("sets the error on the parent when child validation fails", function(done) {
+        it("sets the error on the parent when child validation fails", function(done) {
           var parent = new LengthRule("hello");
           var child = new LengthRule("");
           parent.ifValidThenValidate(child);
@@ -283,7 +277,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("does not validate the child rule if the parent validation fails", function(done) {
+        it("does not validate the child rule if the parent validation fails", function(done) {
           var parent = new LengthRule("");
           var child = new LengthRule("");
           parent.ifValidThenValidate(child);
@@ -297,7 +291,7 @@ describe("Rule", function() {
       });
 
       describe("successful validation", function() {
-        fit("does not contain errors", (done) => {
+        it("does not contain errors", (done) => {
           var rule = new LengthRule("blah");
 
           rule.validate().then(() => {
@@ -306,7 +300,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("invokes the 'ifValidThenExecute' callback", function(done) {
+        it("invokes the 'ifValidThenExecute' callback", function(done) {
           var rule = new LengthRule("blah");
           var callback = jasmine.createSpy();
           rule.ifValidThenExecute(callback);
@@ -328,7 +322,7 @@ describe("Rule", function() {
           //});
         //});
 
-        fit("does not invoke the 'ifInvalidThenExecute' callback if the validation passes", function(done) {
+        it("does not invoke the 'ifInvalidThenExecute' callback if the validation passes", function(done) {
           var rule = new LengthRule("hello");
           var callback = jasmine.createSpy();
           rule.ifInvalidThenExecute(callback);
@@ -339,7 +333,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("validates the child rule if the parent validation succeeds", function(done) {
+        it("validates the child rule if the parent validation succeeds", function(done) {
           var parent = new LengthRule("hello");
           var child = new LengthRule("");
           parent.ifValidThenValidate(child);
@@ -354,7 +348,7 @@ describe("Rule", function() {
     });
 
     describe("multiple rules", () => {
-      fit("pass as expected", (done) => {
+      it("pass as expected", (done) => {
         var rules = [
           new LengthRule("a"),
           new LengthRule("b"),
@@ -369,7 +363,7 @@ describe("Rule", function() {
         });
       });
 
-      fit("parent rule fails if one child fails", (done) => {
+      it("parent rule fails if one child fails", (done) => {
         var rules = [
           new LengthRule("a"),
           new LengthRule(""),
@@ -384,7 +378,7 @@ describe("Rule", function() {
         });
       });
 
-      fit("failing children sets errors on parent", (done) => {
+      it("failing children sets errors on parent", (done) => {
         var rules = [
           new LengthRule(""),
           new LengthRule(""),
@@ -403,7 +397,7 @@ describe("Rule", function() {
 
     describe("rule chaining", () => {
       describe("one level deep", () => {
-        fit("invokes valid callbacks", (done) => {
+        it("invokes valid callbacks", (done) => {
           var parent = new LengthRule("a");
           var child = new LengthRule("b");
           var parentCallback = jasmine.createSpy();
@@ -419,7 +413,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("does not invoke child valid callback", (done) => {
+        it("does not invoke child valid callback", (done) => {
           var parent = new LengthRule("a");
           var child = new LengthRule("");
           var callback = jasmine.createSpy();
@@ -432,7 +426,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("invokes child invalid callback", (done) => {
+        it("invokes child invalid callback", (done) => {
           var parent = new LengthRule("a");
           var child = new LengthRule("");
           var callback = jasmine.createSpy();
@@ -445,7 +439,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("does not invoke child invalid callback", (done) => {
+        it("does not invoke child invalid callback", (done) => {
           var parent = new LengthRule("a");
           var child = new LengthRule("b");
           var callback = jasmine.createSpy();
@@ -460,7 +454,7 @@ describe("Rule", function() {
       });
 
       describe("two levels deep", () => {
-        fit("invokes valid callbacks", (done) => {
+        it("invokes valid callbacks", (done) => {
           var parent = new LengthRule("a");
           var child = new LengthRule("b");
           var grandchild = new LengthRule("c");
@@ -483,7 +477,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("does not invoke grandchild valid callback", (done) => {
+        it("does not invoke grandchild valid callback", (done) => {
           var parent = new LengthRule("a");
           var child = new LengthRule("");
           var grandchild = new LengthRule("c");
@@ -506,7 +500,7 @@ describe("Rule", function() {
           });
         });
 
-        fit("invokes grandchild invalid callback", (done) => {
+        it("invokes grandchild invalid callback", (done) => {
           var parent = new LengthRule("a");
           var child = new LengthRule("b");
           var grandchild = new LengthRule("");
@@ -530,7 +524,7 @@ describe("Rule", function() {
 
         });
 
-        fit("does not invoke grandchild invalid callback", (done) => {
+        it("does not invoke grandchild invalid callback", (done) => {
           var parent = new LengthRule("a");
           var child = new LengthRule("b");
           var grandchild = new LengthRule("c");
@@ -560,13 +554,13 @@ describe("Rule", function() {
       var TestRule = Rule.extend({
         params: ['value'],
         functions: {
-          _onValidate: function(done) {
+          _onValidate: function() {
             if (!this.value) {
               this._invalidate("NOPE");
             }
             //var time = Math.floor((Math.random() * 10000) + 1);
             //setTimeout(() => done(), 500);
-            done();
+            return Promise.resolve();
           }
         }
       });
@@ -574,15 +568,15 @@ describe("Rule", function() {
       describe("valid parent rule set", () => {
         it('invokes the next set of rules', (callback) => {
           var rule1 = new TestRule(true);
-          rule1.ifValidThenGetRules(function(done) {
-            done(null, [
+          rule1.ifValidThenGetRules(() => {
+            return Promise.resolve([
               new TestRule(false),
               new TestRule(true),
               new TestRule(false)
             ]);
           });
 
-          rule1.validate(() => {
+          rule1.validate().then(() => {
             expect(rule1.errors.length).toEqual(2);
             callback();
           });
@@ -591,17 +585,17 @@ describe("Rule", function() {
         describe("containing chains n-levels deep", () => {
           it('invokes the next set of rules', (callback) => {
             var rule1 = new TestRule(true);
-            rule1.ifValidThenGetRules(function(done) {
-              done(null, [
+            rule1.ifValidThenGetRules(() => {
+              return Promise.resolve([
                 new TestRule(false),
-                new TestRule(true).ifValidThenGetRules((done) => {
-                  done(null, new TestRule(false))
+                new TestRule(true).ifValidThenGetRules(() => {
+                  return Promise.resolve(new TestRule(false));
                 }),
                 new TestRule(false)
               ]);
             });
 
-            rule1.validate(() => {
+            rule1.validate().then(() => {
               expect(rule1.errors.length).toEqual(3);
               callback();
             });
@@ -612,13 +606,16 @@ describe("Rule", function() {
           var rule1 = new TestRule(true);
           var rule2 = new TestRule(true);
 
-          var childCallback =jasmine.createSpy();
+          var childCallback = jasmine.createSpy();
 
-          rule2._onValidate = function(done) {childCallback(); done()} ;
+          rule2._onValidate = () => {
+            childCallback();
+            return Promise.resolve();
+          };
 
           rule1.ifInvalidThenValidate(rule2);
 
-          rule1.validate(() => {
+          rule1.validate().then(() => {
             expect(rule1.valid).toEqual(true);
             expect(childCallback).not.toHaveBeenCalled();
             callback();
@@ -629,15 +626,15 @@ describe("Rule", function() {
       describe("invalid parent rule set", () => {
         it("does not invoke the next set of rules", (callback) => {
           var rule1 = new TestRule(false);
-          rule1.ifValidThenGetRules(function(done) {
-            done(null, [
+          rule1.ifValidThenGetRules(() => {
+            return Promise.resolve([
               new TestRule(false),
               new TestRule(true),
               new TestRule(false)
             ]);
           });
 
-          rule1.validate(() => {
+          rule1.validate().then(() => {
             expect(rule1.errors.length).toEqual(1);
             callback();
           });
@@ -646,11 +643,11 @@ describe("Rule", function() {
         describe("containing chains n-levels deep", () => {
           it('does not invoke the next set of rules', (callback) => {
             var rule1 = new TestRule(true);
-            rule1.ifValidThenGetRules(function(done) {
-              done(null, [
+            rule1.ifValidThenGetRules(() => {
+              return Promise.resolve([
                 new TestRule(false),
-                new TestRule(false).ifValidThenGetRules((done) => {
-                  done(null, [
+                new TestRule(false).ifValidThenGetRules(() => {
+                  return Promise.resolve([
                     new TestRule(false),
                     new TestRule(false)
                   ])
@@ -659,7 +656,7 @@ describe("Rule", function() {
               ]);
             });
 
-            rule1.validate(() => {
+            rule1.validate().then(() => {
               expect(rule1.errors.length).toEqual(3);
               callback();
             });
@@ -672,7 +669,7 @@ describe("Rule", function() {
             var rule1 = new TestRule(false);
             rule1.ifInvalidThenValidate(new TestRule(true));
 
-            rule1.validate(() => {
+            rule1.validate().then(() => {
               expect(rule1.errors.length).toEqual(0);
               expect(rule1.valid).toEqual(true);
               callback();
@@ -684,12 +681,12 @@ describe("Rule", function() {
           it('is valid if all invalid successors are deeply valid', (callback) => {
             var rule1 = new TestRule(false);
             rule1.ifInvalidThenValidate([
-                new TestRule(true),
-                new TestRule(false).ifInvalidThenValidate(new TestRule(true)),
-                new TestRule(true)
-              ]);
+              new TestRule(true),
+              new TestRule(false).ifInvalidThenValidate(new TestRule(true)),
+              new TestRule(true)
+            ]);
 
-            rule1.validate(() => {
+            rule1.validate().then(() => {
               expect(rule1.errors.length).toEqual(0);
               expect(rule1.valid).toEqual(true);
               callback();
@@ -704,7 +701,7 @@ describe("Rule", function() {
               new TestRule(true)
             ]);
 
-            rule1.validate(() => {
+            rule1.validate().then(() => {
               expect(rule1.errors.length).toEqual(3);
               expect(rule1.valid).toEqual(false);
               callback();

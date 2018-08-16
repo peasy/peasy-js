@@ -22,32 +22,46 @@ var Rule = function () {
 
   Rule.getAllRulesFrom = function(commands, done) {
 
-    if (!Array.isArray(commands)) {
-      commands = [commands];
-    }
+    if (done) return(doWork(commands, done));
 
-    var count = commands.length;
+    return new Promise((resolve, reject) => {
+      doWork(commands, (err, result) => {
+        if (err) return reject(err);
+        return resolve(result);
+      });
+    })
 
-    if (count < 1) return done(null, []);
+    function doWork(commands, done) {
 
-    var current = 0;
-    var context = {};
-    var rules = [];
-
-    commands.forEach(command => {
-      command._getRules(context, onComplete);
-    });
-
-    function onComplete(err, rule) {
-      if (err) { return done(err, rules); }
-      if (Array.isArray(rule)) {
-        rule.forEach(function(r) { rules.push(r) });
-      } else {
-        rules.push(rule);
+      if (!Array.isArray(commands)) {
+        commands = [commands];
       }
-      current++;
-      if (current === count) {
-        done(null, rules);
+
+      var count = commands.length;
+
+      if (count < 1) {
+        if (done) return done(null, []);
+      };
+
+      var current = 0;
+      var context = {};
+      var rules = [];
+
+      commands.forEach(command => {
+        command._getRules(context, onComplete);
+      });
+
+      function onComplete(err, rule) {
+        if (err) { return done(err, rules); }
+        if (Array.isArray(rule)) {
+          rule.forEach(function(r) { rules.push(r) });
+        } else {
+          rules.push(rule);
+        }
+        current++;
+        if (current === count) {
+          done(null, rules);
+        }
       }
     }
   };
@@ -57,7 +71,8 @@ var Rule = function () {
     function thenGetRules(func) {
       var rule = new Rule();
       rule._onValidate = function(done) {
-        done();
+        if (done) return done();
+        return Promise.resolve();
       };
 
       rule.validSuccessors = rules;
@@ -135,28 +150,21 @@ var Rule = function () {
 
       if (!done) {
         var func = (rule, successors) => {
-          return new Promise((resolve, reject) => {
-            return invokeSuccessorsP(rule, successors)
-              .then(() => {
-                if (rule.ifValidThenGetRulesFn) {
-                  return invokeNextRules(rule, successors, resolve);
-                }
-                resolve();
-            });
-          })
-        }
-        var func2 = (rule, successors) => {
-          return new Promise((resolve, reject) => {
-            return invokeNextRules(rule, successors, resolve);
-          })
-        }
-        var func3 = (rule, successors) => {
-          return new Promise((resolve, reject) => {
-            return invokeSuccessors(rule, successors, resolve);
+          return invokeSuccessorsP(rule, successors)
+            .then(() => {
+              if (rule.ifValidThenGetRulesFn) {
+                return invokeNextRulesP(rule, successors, invokeSuccessorsP);
+              }
           });
         }
+        var func2 = (rule, successors) => {
+          return invokeNextRulesP(rule, successors, invokeSuccessorsP);
+        }
+        var func3 = (rule, successors) => {
+          return invokeSuccessorsP(rule, successors);
+        }
         return this._onValidate()
-          .then(() => validationComplete(func, func2, func3));
+          .then(() => { return validationComplete(func, func2, func3) });
       }
 
       this._onValidate((err) => {
@@ -165,13 +173,13 @@ var Rule = function () {
           return invokeSuccessors(rule, successors, () => {
             // async
             if (rule.ifValidThenGetRulesFn) {
-              return invokeNextRules(rule, successors, onComplete);
+              return invokeNextRules(rule, successors, invokeSuccessors, onComplete);
             }
             done();
           });
         }
         var func2 = (rule, successors, onComplete) => {
-          return invokeNextRules(rule, successors, onComplete);
+          return invokeNextRules(rule, successors, invokeSuccessors, onComplete);
         }
         var func3 = (rule, successors, onComplete) => {
           return invokeSuccessors(rule, successors, onComplete);
@@ -215,17 +223,32 @@ var Rule = function () {
           .then(() => invalidate(parent).ifAnyInvalid(rules));
       }
 
-      function invokeNextRules(rule, rules, done) {
+      function invokeNextRules(rule, rules, a, done) {
         var failedRules = rules.filter(function(rule) { return !rule.valid; });
         if (failedRules.length === 0) {
           rule.ifValidThenGetRulesFn(function(err, rules) {
             if (!Array.isArray(rules)) {
               rules = [rules];
             }
-            invokeSuccessors(rule, rules, done);
+            return a(rule, rules, done);
           });
         } else {
           done();
+        }
+      }
+
+      function invokeNextRulesP(rule, rules, a) {
+        var failedRules = rules.filter(function(rule) { return !rule.valid; });
+        if (failedRules.length === 0) {
+          return rule.ifValidThenGetRulesFn()
+            .then((rulesToValidate) => {
+              if (!Array.isArray(rulesToValidate)) {
+                rulesToValidate = [rulesToValidate];
+              }
+              return a(rule, rulesToValidate, done);
+            });
+        } else {
+          return Promise.resolve();
         }
       }
 
