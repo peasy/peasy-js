@@ -10,7 +10,7 @@
             "name": "JasmineIndividualTest",
             "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
             "args": [
-                "spec/ruleSpec.js"
+                "spec/commandPromiseSpec.js"
             ],
             "env": {
                 "NODE_PATH": "."

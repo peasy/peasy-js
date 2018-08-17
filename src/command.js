@@ -12,19 +12,22 @@ var Command = (function() {
 
       if (!this._onInitialization) { // allow for inheritance (ES6)
         this._onInitialization = callbacks._onInitialization || function(context, done) {
-          done();
+          if (done) return done();
+          return Promise.resolve();
         };
       }
 
       if (!this._getRules) { // allow for inheritance (ES6)
         this._getRules = callbacks._getRules || function(context, done) {
-          done(null, []);
+          if (done) return done(null, []);
+          return Promise.resolve([]);
         };
       }
 
       if (!this._onValidationSuccess) { // allow for inheritance (ES6)
         this._onValidationSuccess = callbacks._onValidationSuccess || function(context, done) {
-          done();
+          if (done) return done();
+          return Promise.resolve();
         };
       }
 
@@ -44,6 +47,49 @@ var Command = (function() {
     execute: function(done) {
       var self = this;
       var context = {};
+
+      if (!done) {
+        return self._onInitialization(context)
+          .then(() => self._getRules(context))
+          .then(rules => {
+            if (!Array.isArray(rules)) {
+              rules = [rules];
+            }
+            return rules;
+          })
+          .then(rules => new RulesValidator(rules).validate())
+          .then(rules => {
+            var errors = rules.filter(function(rule) { return !rule.valid; })
+                              .map(function(rule) { return rule.errors; });
+
+            errors = [].concat.apply([], errors); // flatten array
+
+            if (errors.length > 0)
+              return Promise.resolve(new ExecutionResult(false, null, errors));
+
+            try {
+              return self._onValidationSuccess(context)
+                .then((result) => {
+                  return Promise.resolve(new ExecutionResult(true, result, null));
+                })
+                .catch(err => {
+                  if (err) {
+                    if (err instanceof ServiceException) {
+                      return Promise.resolve(new ExecutionResult(false, null, err.errors));
+                    }
+                    return Promise.reject(err);
+                  };
+                });
+            } catch(err) {
+              if (err) {
+                if (err instanceof ServiceException) {
+                  return Promise.resolve(new ExecutionResult(false, null, err.errors));
+                }
+                return Promise.reject(err);
+              };
+            }
+          });
+      }
 
       self._onInitialization(context, function(err) {
 
@@ -105,15 +151,18 @@ var Command = (function() {
     Extended.prototype = new Command();
 
     Extended.prototype._onInitialization = functions._onInitialization || function(context, done) {
-      done();
+      if (done) return done();
+      return Promise.resolve();
     };
 
     Extended.prototype._getRules = functions._getRules || function(context, done) {
-      done(null, []);
+      if (done) return done(null, []);
+      return Promise.resolve([]);
     };
 
     Extended.prototype._onValidationSuccess = functions._onValidationSuccess || function(context, done) {
-      done();
+      if (done) return done();
+      return Promise.resolve();
     };
 
     return Extended;
@@ -127,7 +176,14 @@ var Command = (function() {
 
     var count = commands.length;
 
-    if (count < 1) { return done(); }
+    if (count < 1) {
+      if (done) return done();
+      return Promise.resolve();
+    }
+
+    if (!done) {
+      return Promise.all(commands.map(c => c.execute()));
+    }
 
     var current = 0;
     var results = [];

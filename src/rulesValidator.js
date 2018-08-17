@@ -18,9 +18,10 @@ var RulesValidator = (function() {
 
     if (!done) {
       if (self.rules.length > 0) {
-        return Promise.all(self.rules.map(rule => rule.validate()));
+        return Promise.all(self.rules.map(rule => rule.validate()))
+          .then(() => self.rules);
       }
-      return Promise.resolve();
+      return Promise.resolve([]);
     }
 
     if (self.rules.length > 0) {
