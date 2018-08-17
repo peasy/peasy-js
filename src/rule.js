@@ -148,55 +148,25 @@ var Rule = function () {
       var self = this;
       self.errors = [];
 
-      if (!done) {
-        var func = (rule, successors) => {
-          return invokeSuccessors(rule, successors)
-            .then(() => {
-              if (rule.ifValidThenGetRulesFn) {
-                return invokeNextRulesP(rule, successors, invokeSuccessors);
-              }
-          });
-        }
-        var func2 = (rule, successors) => {
-          return invokeNextRulesP(rule, successors, invokeSuccessors);
-        }
-        var func3 = (rule, successors) => {
-          return invokeSuccessors(rule, successors);
-        }
-        return this._onValidate()
-          .then(() => { return validationComplete(func, func2, func3) });
+      if (done) {
+        return this._onValidate((err) => {
+          if (err) return done(err);
+          validationComplete(done);
+        });
       }
 
-      this._onValidate((err) => {
-        if (err) return done(err);
-        var func = (rule, successors, onComplete) => {
-          return invokeSuccessors(rule, successors, () => {
-            // async
-            if (rule.ifValidThenGetRulesFn) {
-              return invokeNextRules(rule, successors, invokeSuccessors, onComplete);
-            }
-            done();
-          });
-        }
-        var func2 = (rule, successors, onComplete) => {
-          return invokeNextRules(rule, successors, invokeSuccessors, onComplete);
-        }
-        var func3 = (rule, successors, onComplete) => {
-          return invokeSuccessors(rule, successors, onComplete);
-        }
-        validationComplete(func, func2, func3);
-      });
+      return this._onValidate().then(validationComplete);
 
-      function validationComplete(f, f2, f3) {
+      function validationComplete(onComplete) {
         if (self.valid) {
           if (self.ifValidThenFn) {
             self.ifValidThenFn();
           }
           if (self.validSuccessors.length > 0) {
-            return f(self, self.validSuccessors, done);
+            return shnizBurgers(self, self.validSuccessors, onComplete);
           } else {
             if (self.ifValidThenGetRulesFn) {
-              return f2(self, self.validSuccessors, done);
+              return invokeNextRules(self, self.validSuccessors, onComplete);
             }
           }
         } else {
@@ -204,10 +174,27 @@ var Rule = function () {
             self.ifInvalidThenFn();
           }
           if (self.invalidSuccessors.length > 0) {
-            return f3(self, self.invalidSuccessors, done);
+            return invokeSuccessors(self, self.invalidSuccessors, onComplete);
           }
         }
-        if (done) done();
+        if (onComplete) onComplete();
+      }
+
+      function shnizBurgers(rule, successors, onComplete) {
+        if (onComplete) {
+          return invokeSuccessors(rule, successors, () => {
+            if (rule.ifValidThenGetRulesFn) {
+              return invokeNextRules(rule, successors, onComplete);
+            }
+            onComplete();
+          });
+        }
+
+        return invokeSuccessors(rule, successors).then(() => {
+          if (rule.ifValidThenGetRulesFn) {
+            return invokeNextRules(rule, successors);
+          }
+        });
       }
 
       function invokeSuccessors(parent, rules, onComplete) {
@@ -223,33 +210,30 @@ var Rule = function () {
           .then(() => invalidate(parent).ifAnyInvalid(rules));
       }
 
-      function invokeNextRules(rule, rules, a, done) {
+      function invokeNextRules(rule, rules, onComplete) {
         var failedRules = rules.filter(function(rule) { return !rule.valid; });
-        if (failedRules.length === 0) {
-          rule.ifValidThenGetRulesFn(function(err, rules) {
-            if (!Array.isArray(rules)) {
-              rules = [rules];
-            }
-            return a(rule, rules, done);
-          });
-        } else {
-          done();
-        }
-      }
 
-      function invokeNextRulesP(rule, rules, a) {
-        var failedRules = rules.filter(function(rule) { return !rule.valid; });
-        if (failedRules.length === 0) {
-          return rule.ifValidThenGetRulesFn()
-            .then((rulesToValidate) => {
-              if (!Array.isArray(rulesToValidate)) {
-                rulesToValidate = [rulesToValidate];
-              }
-              return a(rule, rulesToValidate, done);
-            });
-        } else {
+        if (failedRules.length > 0) {
+          if (onComplete) return onComplete();
           return Promise.resolve();
         }
+
+        if (onComplete) {
+          return rule.ifValidThenGetRulesFn(function(err, successors) {
+            if (!Array.isArray(successors)) {
+              successors = [successors];
+            }
+            return invokeSuccessors(rule, successors, onComplete);
+          });
+        }
+
+        return rule.ifValidThenGetRulesFn().then(rules => {
+          if (!Array.isArray(rules)) {
+            rules = [rules];
+          }
+          return invokeSuccessors(rule, rules);
+        });
+
       }
 
       function invalidate(rule) {
@@ -259,7 +243,7 @@ var Rule = function () {
             return !r.valid;
           });
           // set the invalid-status if there are invalid rules
-          if(invalidRules.length > 0) {
+          if (invalidRules.length > 0) {
             invalidRules.forEach(function (r) {
               rule._invalidate(r.errors);
             });
