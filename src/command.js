@@ -49,46 +49,58 @@ var Command = (function() {
       var context = {};
 
       if (!done) {
+        return performInitialization()
+          .then(getRules)
+          .then(validateRules)
+          .then(parseErrorsFromRules)
+          .then(createExecutionResult);
+      }
+
+      function performInitialization() {
         return self._onInitialization(context)
-          .then(() => self._getRules(context))
+      }
+
+      function createExecutionResult(errors) {
+        if (errors.length > 0)
+          return Promise.resolve(new ExecutionResult(false, null, errors));
+
+        try {
+          return self._onValidationSuccess(context)
+            .then((result) => {
+              return Promise.resolve(new ExecutionResult(true, result, null));
+            })
+            .catch(handleError);
+        } catch(err) {
+          return handleError(err);
+        }
+      }
+
+      function getRules() {
+        return self._getRules(context)
           .then(rules => {
             if (!Array.isArray(rules)) {
               rules = [rules];
             }
             return rules;
-          })
-          .then(rules => new RulesValidator(rules).validate())
-          .then(rules => {
-            var errors = rules.filter(function(rule) { return !rule.valid; })
-                              .map(function(rule) { return rule.errors; });
-
-            errors = [].concat.apply([], errors); // flatten array
-
-            if (errors.length > 0)
-              return Promise.resolve(new ExecutionResult(false, null, errors));
-
-            try {
-              return self._onValidationSuccess(context)
-                .then((result) => {
-                  return Promise.resolve(new ExecutionResult(true, result, null));
-                })
-                .catch(err => {
-                  if (err) {
-                    if (err instanceof ServiceException) {
-                      return Promise.resolve(new ExecutionResult(false, null, err.errors));
-                    }
-                    return Promise.reject(err);
-                  };
-                });
-            } catch(err) {
-              if (err) {
-                if (err instanceof ServiceException) {
-                  return Promise.resolve(new ExecutionResult(false, null, err.errors));
-                }
-                return Promise.reject(err);
-              };
-            }
           });
+      }
+
+      function validateRules(rules) {
+        return new RulesValidator(rules).validate();
+      }
+
+      function parseErrorsFromRules(rules) {
+        var errors = rules.filter(function(rule) { return !rule.valid; })
+                          .map(function(rule) { return rule.errors; });
+
+        return [].concat.apply([], errors); // flatten array
+      }
+
+      function handleError(err) {
+        if (err instanceof ServiceException) {
+          return Promise.resolve(new ExecutionResult(false, null, err.errors));
+        }
+        return Promise.reject(err);
       }
 
       self._onInitialization(context, function(err) {
@@ -107,10 +119,7 @@ var Command = (function() {
 
             if (err) return done(err);
 
-            var errors = rules.filter(function(rule) { return !rule.valid; })
-                              .map(function(rule) { return rule.errors; });
-
-            errors = [].concat.apply([], errors); // flatten array
+            var errors = parseErrorsFromRules(rules);
 
             if (errors.length > 0)
               return done(null, new ExecutionResult(false, null, errors));
