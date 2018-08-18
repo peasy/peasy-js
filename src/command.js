@@ -49,14 +49,14 @@ var Command = (function() {
       var context = {};
 
       if (!done) {
-        return performInitialization()
+        return performInitialization(done)
           .then(getRules)
           .then(validateRules)
           .then(parseErrorsFromRules)
           .then(createExecutionResult);
       }
 
-      function performInitialization() {
+      function performInitialization(done) {
         return self._onInitialization(context)
       }
 
