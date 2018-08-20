@@ -48,35 +48,79 @@ var Command = (function() {
       var self = this;
       var context = {};
 
-      if (!done) {
-        return performInitialization(done)
-          .then(getRules)
-          .then(validateRules)
-          .then(parseErrorsFromRules)
-          .then(createExecutionResult);
+      var initialization = self._onInitialization.bind(self);
+      var rulesFunc = self._getRules.bind(self);
+      var validationSuccessFunc = self._onValidationSuccess.bind(self);
+      var validateRulesFunc = function(rules) {
+        return new RulesValidator(rules).validate();
       }
+      var executionFailureFunc = function(errors) {
+        return Promise.resolve(new ExecutionResult(false, null, errors));
+      };
 
-      function performInitialization(done) {
-        return self._onInitialization(context)
-      }
-
-      function createExecutionResult(errors) {
-        if (errors.length > 0)
-          return Promise.resolve(new ExecutionResult(false, null, errors));
-
-        try {
-          return self._onValidationSuccess(context)
-            .then((result) => {
-              return Promise.resolve(new ExecutionResult(true, result, null));
-            })
-            .catch(handleError);
-        } catch(err) {
-          return handleError(err);
+      if (done) {
+        initialization = function(context) {
+          return new Promise((resolve, reject) => {
+            self._onInitialization(context, function(err) {
+              if (err) return reject(err);
+              resolve();
+            });
+          });
         }
+        rulesFunc = function(context) {
+          return new Promise((resolve, reject) => {
+            self._getRules(context, function(err, rules) {
+              if (err) return reject(err);
+              resolve(rules);
+            });
+          });
+        }
+        validationSuccessFunc = function(context) {
+          return new Promise((resolve, reject) => {
+            self._onValidationSuccess(context, function(err, result) {
+              if (err) return reject(err);
+              resolve(result);
+            });
+          });
+        }
+        validateRulesFunc = function(rules) {
+          return new Promise((resolve, reject) => {
+            new RulesValidator(rules).validate(function(err) {
+              if (err) return reject(err);
+              resolve(rules);
+            });
+          });
+        }
+        executionFailureFunc = function(errors) {
+          return Promise.resolve(new ExecutionResult(false, null, errors));
+        };
+      }
+
+      // if (!done) {
+      var x = performInitialization()
+        .then(getRules)
+        .then(validateRules)
+        .then(parseErrorsFromRules)
+        .then(createExecutionResult)
+        .then(function(result) {
+          if (done) return done(null, result);
+          return result;
+        })
+        .catch(function(e) {
+          if (done) return done(e);
+          return Promise.reject(e);
+        });
+      // }
+
+      if (!done) return x;
+
+
+      function performInitialization(func) {
+        return initialization(context);
       }
 
       function getRules() {
-        return self._getRules(context)
+        return rulesFunc(context)
           .then(rules => {
             if (!Array.isArray(rules)) {
               rules = [rules];
@@ -86,7 +130,7 @@ var Command = (function() {
       }
 
       function validateRules(rules) {
-        return new RulesValidator(rules).validate();
+        return validateRulesFunc(rules);
       }
 
       function parseErrorsFromRules(rules) {
@@ -96,6 +140,21 @@ var Command = (function() {
         return [].concat.apply([], errors); // flatten array
       }
 
+      function createExecutionResult(errors) {
+        if (errors.length > 0)
+          return executionFailureFunc(errors);
+
+        try {
+          return validationSuccessFunc(context)
+            .then(result => {
+              return Promise.resolve(new ExecutionResult(true, result, null));
+            })
+            .catch(handleError);
+        } catch(err) {
+          return handleError(err);
+        }
+      }
+
       function handleError(err) {
         if (err instanceof ServiceException) {
           return Promise.resolve(new ExecutionResult(false, null, err.errors));
@@ -103,44 +162,44 @@ var Command = (function() {
         return Promise.reject(err);
       }
 
-      self._onInitialization(context, function(err) {
+      // self._onInitialization(context, function(err) {
 
-        if(err) return done(err);
+      //   if(err) return done(err);
 
-        self._getRules(context, function(err, rules) {
+      //   self._getRules(context, function(err, rules) {
 
-          if(err) return done(err);
+      //     if(err) return done(err);
 
-          if (!Array.isArray(rules)) {
-            rules = [rules];
-          }
+      //     if (!Array.isArray(rules)) {
+      //       rules = [rules];
+      //     }
 
-          new RulesValidator(rules).validate(function(err) {
+      //     new RulesValidator(rules).validate(function(err) {
 
-            if (err) return done(err);
+      //       if (err) return done(err);
 
-            var errors = parseErrorsFromRules(rules);
+      //       var errors = parseErrorsFromRules(rules);
 
-            if (errors.length > 0)
-              return done(null, new ExecutionResult(false, null, errors));
+      //       if (errors.length > 0)
+      //         return done(null, new ExecutionResult(false, null, errors));
 
-            try {
-              self._onValidationSuccess(context, function(err, result) {
-                if(err) {
-                  if (err instanceof ServiceException) {
-                    return done(null, new ExecutionResult(false, null, err.errors));
-                  }
-                  return done(err);
-                };
-                done(null, new ExecutionResult(true, result, null));
-              });
-            }
-            catch(ex) {
-              done(ex);
-            }
-          });
-        });
-      });
+      //       try {
+      //         self._onValidationSuccess(context, function(err, result) {
+      //           if(err) {
+      //             if (err instanceof ServiceException) {
+      //               return done(null, new ExecutionResult(false, null, err.errors));
+      //             }
+      //             return done(err);
+      //           };
+      //           done(null, new ExecutionResult(true, result, null));
+      //         });
+      //       }
+      //       catch(ex) {
+      //         done(ex);
+      //       }
+      //     });
+      //   });
+      // });
     }
   };
 

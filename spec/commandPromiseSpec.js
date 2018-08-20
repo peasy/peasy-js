@@ -380,10 +380,27 @@ describe("Command", function() {
     });
 
     it("invokes all commands", (done) => {
+      // class TestCommand extends Command {
+
+      //   constructor(val) {
+      //     super();
+      //     this.val = val
+      //   }
+
+      //   _onValidationSuccess(context) {
+      //     return Promise.resolve(this.val);
+      //   }
+      // };
+
       var TestCommand = Command.extend({
         params: ['val'],
         functions: {
+          _onInitialization: function(context) {
+            // console.log('this', this);
+            return Promise.resolve();
+          },
           _onValidationSuccess: function(context) {
+            // console.log('this', this);
             return Promise.resolve(this.val);
           }
         }

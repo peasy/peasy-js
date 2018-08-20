@@ -50,8 +50,9 @@ describe("Command", function() {
         }
       }
       var command = new MyCommand();
-      command.execute(() => { });
-      expect(val).toEqual(3);
+      command.execute((e, r) => {
+        expect(val).toEqual(3);
+      });
     });
   });
 
@@ -73,8 +74,9 @@ describe("Command", function() {
         }
       }
       var command = new Command(functions);
-      command.execute(() => {});
-      expect(state).toEqual("123");
+      command.execute((e, r) => {
+        expect(state).toEqual("123");
+      });
     });
 
     describe("execution results", () => {
@@ -250,8 +252,7 @@ describe("Command", function() {
       });
 
       describe("when an unhandled exception occurs", () => {
-        it("returns the error in the callback", () => {
-          var callbackInvoked = false;
+        it("returns the error in the callback", (done) => {
           var functions = {
             _onValidationSuccess: (context, done) => {
               throw new Error("something unexpected happened");
@@ -262,8 +263,8 @@ describe("Command", function() {
           command.execute((err, result) => {
             callbackInvoked = true;
             expect(err.message).toEqual("something unexpected happened");
+            done();
           });
-          expect(callbackInvoked).toBe(true);
         });
       });
     });

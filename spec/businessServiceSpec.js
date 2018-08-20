@@ -1,6 +1,7 @@
 describe("BusinessService", function() {
   var Command = require('../src/command');
   var BusinessService = require('../src/businessService');
+  var ExecutionResult = require('../src/executionResult');
   var service, command, dataProxy;
 
   describe("constructor", () => {
@@ -26,16 +27,16 @@ describe("BusinessService", function() {
       }
     }).service;
 
-    it("inherits members", () => {
-      var CustomerService = BusinessService.extendService(MyBaseService, {
-      }).service;
+    it("inherits members", (onComplete) => {
+      var CustomerService = BusinessService.extendService(MyBaseService, {}).service;
       var customerService = new CustomerService();
       customerService.updateCommand({}).execute(function(err, result) {
         expect(result.value).toEqual(returnObject);
+        onComplete();
       });
     });
 
-    it("allows overriding inherited members", () => {
+    it("allows overriding inherited members", (onComplete) => {
       var returnObject = { name: "Frank Zappa" };
       var CustomerService = BusinessService.extendService(MyBaseService, {
         functions: {
@@ -47,20 +48,22 @@ describe("BusinessService", function() {
       var customerService = new CustomerService();
       customerService.updateCommand({}).execute(function(err, result) {
         expect(result.value).toEqual(returnObject);
+        onComplete();
       });
     })
 
-    it("allows access to constructor arguments as expected", () => {
+    it("allows access to constructor arguments as expected", (onComplete) => {
       var returnObject = { name: "Dickey Betts" };
       var dataProxy = {
         getById: function(id, done) {
+          returnObject.id = id;
           done(null, returnObject);
         }
       };
       var CustomerService = BusinessService.extendService(MyBaseService, {
         functions: {
           _getById: function(context, done) {
-            this.dataProxy.getById(1, function(err, result) {
+            this.dataProxy.getById(this.id, function(err, result) {
               done(null, result);
             });
           }
@@ -68,7 +71,11 @@ describe("BusinessService", function() {
       }).service;
       var customerService = new CustomerService(dataProxy);
       customerService.getByIdCommand(1).execute(function(err, result) {
-        expect(result.value).toEqual(returnObject);
+        expect(result.value).toEqual({
+          id: 1,
+          name: "Dickey Betts"
+        });
+        onComplete();
       });
     });
   });
@@ -124,7 +131,7 @@ describe("BusinessService", function() {
             },
             _insert: function(context, done) {
               done(null, {
-                contextValue: context.value,
+                contextValue: context.value + 1,
                 data: this.data + 2,
                 serviceArg: this.anotherArg,
                 dataProxy: this.dataProxy
@@ -140,25 +147,28 @@ describe("BusinessService", function() {
           }
         };
 
-        it("passes a context between functions", () => {
+        it("passes a context between functions", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.insertCommand(2).execute((err, result) => {
-            expect(result.value.contextValue).toEqual(6);
+            expect(result.value.contextValue).toEqual(7);
+            onComplete();
           });
         });
 
-        it("provides accessibility to command method arguments", () => {
+        it("provides accessibility to command method arguments", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.insertCommand(2).execute((err, result) => {
             expect(result.value.data).toEqual(4);
+            onComplete();
           });
         });
 
-        it("provides accessibility to containing service constructor arguments", () => {
+        it("provides accessibility to containing service constructor arguments", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.insertCommand(2).execute((err, result) => {
             expect(result.value.dataProxy).toEqual(dataProxy);
             expect(result.value.serviceArg).toEqual("hello");
+            onComplete();
           });
         });
       });
@@ -193,25 +203,28 @@ describe("BusinessService", function() {
           }
         };
 
-        it("passes a context between functions", () => {
+        it("passes a context between functions", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.updateCommand(2).execute((err, result) => {
             expect(result.value.contextValue).toEqual(6);
+            onComplete();
           });
         });
 
-        it("provides accessibility to command method arguments", () => {
+        it("provides accessibility to command method arguments", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.updateCommand(2).execute((err, result) => {
             expect(result.value.data).toEqual(4);
+            onComplete();
           });
         });
 
-        it("provides accessibility to containing service constructor arguments", () => {
+        it("provides accessibility to containing service constructor arguments", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.updateCommand(2).execute((err, result) => {
             expect(result.value.dataProxy).toEqual(dataProxy);
             expect(result.value.serviceArg).toEqual("hello");
+            onComplete();
           });
         });
       });
@@ -246,25 +259,28 @@ describe("BusinessService", function() {
           }
         };
 
-        it("passes a context between functions", () => {
+        it("passes a context between functions", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.getByIdCommand(2).execute((err, result) => {
             expect(result.value.contextValue).toEqual(6);
+            onComplete();
           });
         });
 
-        it("provides accessibility to command method arguments", () => {
+        it("provides accessibility to command method arguments", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.getByIdCommand(2).execute((err, result) => {
             expect(result.value.id).toEqual(4);
+            onComplete();
           });
         });
 
-        it("provides accessibility to containing service constructor arguments", () => {
+        it("provides accessibility to containing service constructor arguments", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.getByIdCommand(2).execute((err, result) => {
             expect(result.value.dataProxy).toEqual(dataProxy);
             expect(result.value.serviceArg).toEqual("hello");
+            onComplete();
           });
         });
       });
@@ -298,18 +314,20 @@ describe("BusinessService", function() {
           }
         };
 
-        it("passes a context between functions", () => {
+        it("passes a context between functions", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.getAllCommand().execute((err, result) => {
             expect(result.value.contextValue).toEqual(6);
+            onComplete();
           });
         });
 
-        it("provides accessibility to containing service constructor arguments", () => {
+        it("provides accessibility to containing service constructor arguments", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.getAllCommand().execute((err, result) => {
             expect(result.value.dataProxy).toEqual(dataProxy);
             expect(result.value.serviceArg).toEqual("hello");
+            onComplete();
           });
         });
       })
@@ -344,25 +362,28 @@ describe("BusinessService", function() {
           }
         };
 
-        it("passes a context between functions", () => {
+        it("passes a context between functions", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.destroyCommand(2).execute((err, result) => {
             expect(result.value.contextValue).toEqual(6);
+            onComplete();
           });
         });
 
-        it("provides accessibility to command method arguments", () => {
+        it("provides accessibility to command method arguments", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.destroyCommand(2).execute((err, result) => {
             expect(result.value.id).toEqual(4);
+            onComplete();
           });
         });
 
-        it("provides accessibility to containing service constructor arguments", () => {
+        it("provides accessibility to containing service constructor arguments", (onComplete) => {
           var service = new TestService("hello", dataProxy);
           service.destroyCommand(2).execute((err, result) => {
             expect(result.value.dataProxy).toEqual(dataProxy);
             expect(result.value.serviceArg).toEqual("hello");
+            onComplete();
           });
         });
       });
@@ -392,7 +413,7 @@ describe("BusinessService", function() {
       describe("createCommand function", () => {
         it("returns an object literal containing the service function and a createCommand function", () => {
           var result = BusinessService.extend()
-                                      .createCommand({ name: 'testCommand' });
+            .createCommand({ name: 'testCommand' });
 
           expect(result.createCommand).toBeDefined()
           expect(result.service).toBeDefined()
@@ -400,8 +421,8 @@ describe("BusinessService", function() {
 
         it("creates a command function exposed by the service", () => {
           var Service = BusinessService.extend()
-                                       .createCommand({ name: 'testCommand' })
-                                       .service;
+            .createCommand({ name: 'testCommand' })
+            .service;
 
           var service = new Service();
           expect(service.testCommand).toBeDefined();
@@ -410,9 +431,9 @@ describe("BusinessService", function() {
         describe("chaining", () => {
           it("creates the appropriate prototype methods", () => {
             var Service = BusinessService.extend()
-                                         .createCommand({ name: 'test1Command' })
-                                         .createCommand({ name: 'test2Command' })
-                                         .service;
+              .createCommand({ name: 'test1Command' })
+              .createCommand({ name: 'test2Command' })
+              .service;
 
             expect(Service.prototype.test1Command).toBeDefined()
             expect(Service.prototype._onTest1CommandInitialization).toBeDefined();
@@ -426,9 +447,9 @@ describe("BusinessService", function() {
 
           it("the created methods reference the prototype methods", () => {
             var Service = BusinessService.extend()
-                                         .createCommand({ name: 'test1Command' })
-                                         .createCommand({ name: 'test2Command' })
-                                         .service;
+              .createCommand({ name: 'test1Command' })
+              .createCommand({ name: 'test2Command' })
+              .service;
 
             var service = new Service();
             expect(service.test1Command).toEqual(Service.prototype.test1Command);
@@ -456,7 +477,7 @@ describe("BusinessService", function() {
 
       describe("arguments", () => {
         describe("when 'functions' supplied", () => {
-          it("creates a command that executes the pipeline as expected", () => {
+          it("creates a command that executes the pipeline as expected", (onComplete) => {
             var Service = BusinessService.extend().service;
             var sharedContext = null
 
@@ -482,30 +503,31 @@ describe("BusinessService", function() {
             var service = new Service();
             service.testCommand().execute((err, result) => {
               expect(result.value).toEqual({ data: 'abc' });
+              expect(sharedContext.testValue).toEqual("12");
+              onComplete();
             });
-            expect(sharedContext.testValue).toEqual("12");
           });
         });
 
         describe("when 'functions' not supplied", () => {
-          it("creates a command that successfully executes", () => {
+          it("creates a command that successfully executes", (onComplete) => {
             var Service = BusinessService.extend().service;
-            var testValue = null
+
             BusinessService.createCommand({
               name: 'testCommand',
               service: Service
             });
 
             var service = new Service();
-            service.testCommand().execute(() => {
-              testValue = "done";
+            service.testCommand().execute((err, result) => {
+              expect(result).toEqual(new ExecutionResult(true, undefined, null));
+              onComplete();
             });
-            expect(testValue).toBe("done");
           });
         });
 
         describe("when 'params' are supplied", () => {
-          it("instance members are created and assigned the appropriate argument values", () => {
+          it("instance members are created and assigned the appropriate argument values", (onComplete) => {
             var params = [];
             var Service = BusinessService.extend().service;
             BusinessService.createCommand({
@@ -520,15 +542,16 @@ describe("BusinessService", function() {
               },
               params: ['firstName', 'lastName']
             });
-            var command = new Service({}).testCommand('value1', 'value2');
-            command.execute(() => {
-              expect(params).toEqual(['value1', 'value2']);
+            var command = new Service({}).testCommand('Jimmy', 'Page');
+            command.execute((err, result) => {
+              expect(params).toEqual(['Jimmy', 'Page']);
+              onComplete();
             });
           });
         });
 
         describe("invoking multiple command instances", () => {
-          it("executes with the proper state", () => {
+          it("executes with the proper state", (onComplete) => {
             var x = new BusinessService({ insert: function(data, done) {
               done(null, "hello" + data);
             }});
@@ -551,6 +574,7 @@ describe("BusinessService", function() {
                   expect(results[2].value).toEqual("helloghi");
                   expect(results[3].value).toEqual("hellojkl");
                   expect(results[4].value).toEqual("hellolmn");
+                  onComplete();
                 }
               })
             });
@@ -567,17 +591,19 @@ describe("BusinessService", function() {
   describe("getAllCommand and associated methods", function() {
 
     beforeAll(() => {
-      dataProxy = { getAll: function() {} };
+      dataProxy = { getAll: function(done) { done(null, []) } };
       service = new BusinessService(dataProxy);
       command = service.getAllCommand();
-      spyOn(dataProxy, "getAll");
+      spyOn(dataProxy, "getAll").and.callThrough();
     });
 
     describe("instance methods", () => {
       describe("_getAll", () => {
-        it("invokes dataProxy.getAll", () => {
-          command.execute(() => {});
-          expect(dataProxy.getAll).toHaveBeenCalledWith(jasmine.any(Function));
+        it("invokes dataProxy.getAll", (onComplete) => {
+          command.execute((err, result) => {
+            expect(dataProxy.getAll).toHaveBeenCalledWith(jasmine.any(Function));
+            onComplete();
+          });
         });
       });
 
@@ -596,7 +622,7 @@ describe("BusinessService", function() {
       });
 
       describe("on execution", () => {
-        it("passes shared context to all getAll pipeline methods", () => {
+        it("passes shared context to all getAll pipeline methods", (onComplete) => {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
@@ -613,9 +639,11 @@ describe("BusinessService", function() {
             done();
           }
           var command = new TestService(dataProxy).getAllCommand();
-          command.execute(() => { });
-          expect(sharedContext.foo).not.toBeUndefined();
-          expect(sharedContext.bar).not.toBeUndefined();
+          command.execute((err, result) => {
+            expect(sharedContext.foo).not.toBeUndefined();
+            expect(sharedContext.bar).not.toBeUndefined();
+            onComplete();
+          });
         });
       });
     });
@@ -626,17 +654,19 @@ describe("BusinessService", function() {
     var id = 1;
 
     beforeAll(() => {
-      dataProxy = { getById: function(id) {} };
+      dataProxy = { getById: function(id, done) { done('the data') } };
       service = new BusinessService(dataProxy);
       command = service.getByIdCommand(id);
-      spyOn(dataProxy, "getById");
+      spyOn(dataProxy, "getById").and.callThrough();
     });
 
     describe("instance methods", () => {
       describe("_getById", () => {
-        it("invokes dataProxy.getById", () => {
-          command.execute(() => {});
-          expect(dataProxy.getById).toHaveBeenCalledWith(id, jasmine.any(Function));
+        it("invokes dataProxy.getById", (onComplete) => {
+          command.execute((err, result) => {
+            expect(dataProxy.getById).toHaveBeenCalledWith(id, jasmine.any(Function));
+            onComplete();
+          });
         });
       });
 
@@ -656,7 +686,7 @@ describe("BusinessService", function() {
       });
 
       describe("on execution", () => {
-        it("passes shared context and id to all getById pipeline methods", () => {
+        it("passes shared context and id to all getById pipeline methods", (onComplete) => {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
@@ -675,9 +705,11 @@ describe("BusinessService", function() {
           }
           var id = 1;
           var command = new TestService(dataProxy).getByIdCommand(1);
-          command.execute(() => { });
-          expect(sharedContext.ids).not.toBeUndefined();
-          expect(sharedContext.ids).toEqual(3);
+          command.execute((err, result) => {
+            expect(sharedContext.ids).not.toBeUndefined();
+            expect(sharedContext.ids).toEqual(3);
+            onComplete();
+          });
         });
       });
     });
@@ -688,17 +720,19 @@ describe("BusinessService", function() {
     var state = { foo: "a", bar: "b", meh: "c" };
 
     beforeAll(() => {
-      dataProxy = { insert: function(id) {} };
+      dataProxy = { insert: function(id, done) { done({ id: 1})} };
       service = new BusinessService(dataProxy);
       command = service.insertCommand(state);
-      spyOn(dataProxy, "insert");
+      spyOn(dataProxy, "insert").and.callThrough();
     });
 
     describe("instance methods", () => {
       describe("_insert", () => {
-        it("invokes dataProxy.insert", () => {
-          command.execute(() => {});
-          expect(dataProxy.insert).toHaveBeenCalledWith(state, jasmine.any(Function));
+        it("invokes dataProxy.insert", (onComplete) => {
+          command.execute((err, result) => {
+            expect(dataProxy.insert).toHaveBeenCalledWith(state, jasmine.any(Function));
+            onComplete();
+          });
         });
       });
 
@@ -717,7 +751,7 @@ describe("BusinessService", function() {
       });
 
       describe("on execution", () => {
-        it("passes shared context and data to all insert pipeline methods", () => {
+        it("passes shared context and data to all insert pipeline methods", (onComplete) => {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
@@ -735,10 +769,12 @@ describe("BusinessService", function() {
             done();
           }
           var command = new TestService(dataProxy).insertCommand(state);
-          command.execute(() => { });
-          expect(sharedContext.foo).toEqual("a");
-          expect(sharedContext.bar).toEqual("b");
-          expect(sharedContext.meh).toEqual("c");
+          command.execute((err, result) => {
+            expect(sharedContext.foo).toEqual("a");
+            expect(sharedContext.bar).toEqual("b");
+            expect(sharedContext.meh).toEqual("c");
+            onComplete();
+          });
         });
       });
     });
@@ -749,17 +785,19 @@ describe("BusinessService", function() {
     var state = { foo: "a", bar: "b", meh: "c" };
 
     beforeAll(() => {
-      dataProxy = { update: function(id) {} };
+      dataProxy = { update: function(id, done) { done(); } };
       service = new BusinessService(dataProxy);
       command = service.updateCommand(state);
-      spyOn(dataProxy, "update");
+      spyOn(dataProxy, "update").and.callThrough();
     });
 
     describe("instance methods", () => {
       describe("_update", () => {
-        it("invokes dataProxy.update", () => {
-          command.execute(() => {});
-          expect(dataProxy.update).toHaveBeenCalledWith(state, jasmine.any(Function));
+        it("invokes dataProxy.update", (onComplete) => {
+          command.execute(() => {
+            expect(dataProxy.update).toHaveBeenCalledWith(state, jasmine.any(Function));
+            onComplete();
+          });
         });
       });
 
@@ -778,7 +816,7 @@ describe("BusinessService", function() {
       });
 
       describe("on execution", () => {
-        it("passes shared context and data to all insert pipeline methods", () => {
+        it("passes shared context and data to all insert pipeline methods", (onComplete) => {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
@@ -796,10 +834,12 @@ describe("BusinessService", function() {
             done();
           }
           var command = new TestService(dataProxy).updateCommand(state);
-          command.execute(() => { });
-          expect(sharedContext.foo).toEqual("a");
-          expect(sharedContext.bar).toEqual("b");
-          expect(sharedContext.meh).toEqual("c");
+          command.execute((err, result) => {
+            expect(sharedContext.foo).toEqual("a");
+            expect(sharedContext.bar).toEqual("b");
+            expect(sharedContext.meh).toEqual("c");
+            onComplete();
+          });
         });
       });
     });
@@ -810,17 +850,19 @@ describe("BusinessService", function() {
     var id = 1;
 
     beforeAll(() => {
-      dataProxy = { destroy: function(id) {} };
+      dataProxy = { destroy: function(id, done) { done(); } };
       service = new BusinessService(dataProxy);
       command = service.destroyCommand(id);
-      spyOn(dataProxy, "destroy");
+      spyOn(dataProxy, "destroy").and.callThrough();
     });
 
     describe("instance methods", () => {
       describe("_destroy", () => {
-        it("invokes dataProxy.destroy", () => {
-          command.execute(() => {});
-          expect(dataProxy.destroy).toHaveBeenCalledWith(id, jasmine.any(Function));
+        it("invokes dataProxy.destroy", (onComplete) => {
+          command.execute((err, result) => {
+            expect(dataProxy.destroy).toHaveBeenCalledWith(id, jasmine.any(Function));
+            onComplete();
+          });
         });
       });
 
@@ -840,27 +882,29 @@ describe("BusinessService", function() {
       });
 
       describe("on execution", () => {
-        it("passes shared context and id to all destroy pipeline methods", () => {
+        it("passes shared context and id to all destroy pipeline methods", (onComplete) => {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
           TestService.prototype._onDestroyCommandInitialization = (context, done) => {
-            context.ids = 1;
+            context.ids = '1';
             done();
           };
           TestService.prototype._getRulesForDestroyCommand = (context, done) => {
-            context.ids++;
+            context.ids += '2';
             done(null, []);
           };
           TestService.prototype._destroy = (context, done) => {
-            context.ids++;
+            context.ids += '3';
             sharedContext = context;
             done();
           }
           var id = 1;
           var command = new TestService(dataProxy).destroyCommand(1);
-          command.execute(() => { });
-          expect(sharedContext.ids).toEqual(3);
+          command.execute((err, result) => {
+            expect(sharedContext.ids).toEqual('123');
+            onComplete()
+          });
         });
       });
     });
