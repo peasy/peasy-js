@@ -166,7 +166,7 @@ describe("Command", function() {
         });
 
         describe("when validation fails", () => {
-          it("returns the expected validation result", (done) => {
+          it("returns the expected validation result", (onComplete) => {
             var returnValue = { id: 5, data: "abc" };
             var functions = {
               _getRules: (context) => {
@@ -182,7 +182,8 @@ describe("Command", function() {
               expect(result.success).toEqual(false);
               expect(result.value).toBeNull();
               expect(result.errors.length).toEqual(1);
-              done();
+              expect(result.errors[0].message).toEqual("a");
+              onComplete();
             });
           });
         });

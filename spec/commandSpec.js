@@ -183,7 +183,7 @@ describe("Command", function() {
       });
 
       describe("when multiple rules configured", () => {
-        it("validates each rule", () => {
+        it("validates each rule", (onComplete) => {
           var functions = {
             _getRules: (context, done) => {
               done(null, [
@@ -207,6 +207,7 @@ describe("Command", function() {
             expect(result.errors[0].message).toEqual("a");
             expect(result.errors[1].message).toEqual("b");
             expect(result.errors[2].message).toEqual("c");
+            onComplete();
           });
         });
 
@@ -214,7 +215,7 @@ describe("Command", function() {
 
       describe("when an error is received", () => {
         describe("when the error is an instance of ServiceException", () => {
-          it("returns the expected validation result", () => {
+          it("returns the expected validation result", (onComplete) => {
             var functions = {
               _onValidationSuccess: (context, done) => {
                 var ex = new ServiceException("404");
@@ -229,6 +230,7 @@ describe("Command", function() {
               expect(result.value).toBeNull();
               expect(result.errors.length).toEqual(1);
               expect(result.errors[0].message).toEqual("name not supplied");
+              onComplete();
             });
           });
         });
@@ -252,7 +254,7 @@ describe("Command", function() {
       });
 
       describe("when an unhandled exception occurs", () => {
-        it("returns the error in the callback", (done) => {
+        it("returns the error in the callback", (onComplete) => {
           var functions = {
             _onValidationSuccess: (context, done) => {
               throw new Error("something unexpected happened");
@@ -261,9 +263,8 @@ describe("Command", function() {
 
           var command = new Command(functions);
           command.execute((err, result) => {
-            callbackInvoked = true;
             expect(err.message).toEqual("something unexpected happened");
-            done();
+            onComplete();
           });
         });
       });
@@ -350,7 +351,7 @@ describe("Command", function() {
       })
     });
 
-    it("invokes all commands", () => {
+    it("invokes all commands", (onComplete) => {
       var TestCommand = Command.extend({
         params: ['val'],
         functions: {
@@ -368,6 +369,7 @@ describe("Command", function() {
       Command.executeAll(commands, (err, results) => {
         expect(results[0].value).toEqual(4);
         expect(results[1].value).toEqual(2);
+        onComplete();
       });
 
     });

@@ -47,6 +47,7 @@ var Command = (function() {
     execute: function(done) {
       var self = this;
       var context = {};
+      var validator = new RulesValidator();
 
       var initialization = self._onInitialization.bind(self);
       var rulesFunc = self._getRules.bind(self);
@@ -59,30 +60,9 @@ var Command = (function() {
       };
 
       if (done) {
-        initialization = function(context) {
-          return new Promise((resolve, reject) => {
-            self._onInitialization(context, function(err) {
-              if (err) return reject(err);
-              resolve();
-            });
-          });
-        }
-        rulesFunc = function(context) {
-          return new Promise((resolve, reject) => {
-            self._getRules(context, function(err, rules) {
-              if (err) return reject(err);
-              resolve(rules);
-            });
-          });
-        }
-        validationSuccessFunc = function(context) {
-          return new Promise((resolve, reject) => {
-            self._onValidationSuccess(context, function(err, result) {
-              if (err) return reject(err);
-              resolve(result);
-            });
-          });
-        }
+        initialization = wrap(initialization);
+        rulesFunc = wrap(rulesFunc);
+        validationSuccessFunc = wrap(validationSuccessFunc);
         validateRulesFunc = function(rules) {
           return new Promise((resolve, reject) => {
             new RulesValidator(rules).validate(function(err) {
@@ -91,13 +71,9 @@ var Command = (function() {
             });
           });
         }
-        executionFailureFunc = function(errors) {
-          return Promise.resolve(new ExecutionResult(false, null, errors));
-        };
       }
 
-      // if (!done) {
-      var x = performInitialization()
+      var promise = performInitialization()
         .then(getRules)
         .then(validateRules)
         .then(parseErrorsFromRules)
@@ -110,10 +86,8 @@ var Command = (function() {
           if (done) return done(e);
           return Promise.reject(e);
         });
-      // }
 
-      if (!done) return x;
-
+      if (!done) return promise;
 
       function performInitialization(func) {
         return initialization(context);
@@ -162,44 +136,16 @@ var Command = (function() {
         return Promise.reject(err);
       }
 
-      // self._onInitialization(context, function(err) {
-
-      //   if(err) return done(err);
-
-      //   self._getRules(context, function(err, rules) {
-
-      //     if(err) return done(err);
-
-      //     if (!Array.isArray(rules)) {
-      //       rules = [rules];
-      //     }
-
-      //     new RulesValidator(rules).validate(function(err) {
-
-      //       if (err) return done(err);
-
-      //       var errors = parseErrorsFromRules(rules);
-
-      //       if (errors.length > 0)
-      //         return done(null, new ExecutionResult(false, null, errors));
-
-      //       try {
-      //         self._onValidationSuccess(context, function(err, result) {
-      //           if(err) {
-      //             if (err instanceof ServiceException) {
-      //               return done(null, new ExecutionResult(false, null, err.errors));
-      //             }
-      //             return done(err);
-      //           };
-      //           done(null, new ExecutionResult(true, result, null));
-      //         });
-      //       }
-      //       catch(ex) {
-      //         done(ex);
-      //       }
-      //     });
-      //   });
-      // });
+      function wrap(fn) {
+        return function(context) {
+          return new Promise((resolve, reject) => {
+            fn(context, function(err, result) {
+              if (err) return reject(err);
+              resolve(result);
+            });
+          });
+        }
+      }
     }
   };
 

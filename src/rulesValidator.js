@@ -11,7 +11,6 @@ var RulesValidator = (function() {
   };
 
   RulesValidator.prototype.validate = function(done) {
-
     var self = this;
     var counter = self.rules.length;
     var errors = [];
@@ -29,7 +28,7 @@ var RulesValidator = (function() {
         rule.validate(onRuleValidated);
       });
     } else {
-      done();
+      done(null, self.rules);
     }
 
     function onRuleValidated(err) {
@@ -37,7 +36,7 @@ var RulesValidator = (function() {
       counter--;
       if (counter === 0) {
         if (errors.length === 0) {
-          return done();
+          return done(null, self.rules);
         }
         done(errors);
       }
