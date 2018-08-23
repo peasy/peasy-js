@@ -85,15 +85,18 @@ var BusinessService = (function() {
     var service = options.service;
 
     service.prototype[onInitialization] = functions._onInitialization || function(context, done) {
-      done();
+      if (done) return done();
+      return Promise.resolve();
     };
 
     service.prototype[getRules] = functions._getRules || function(context, done) {
-      done(null, []);
+      if (done) return done(null, []);
+      return Promise.resolve([]);
     };
 
     service.prototype[onValidationSuccess] = functions._onValidationSuccess || function(context, done) {
-      done();
+      if (done) return done();
+      return Promise.resolve();
     };
 
     service.prototype[commandParams] = options.params || [];
@@ -103,7 +106,7 @@ var BusinessService = (function() {
 
       var command = new Command({
         _onInitialization: function(context, done) {
-          serviceInstance[onInitialization].call(this, context, done);
+          return serviceInstance[onInitialization].call(this, context, done);
         },
         _getRules: function(context, done) {
           return serviceInstance[getRules].call(this, context, done);
@@ -139,7 +142,8 @@ var BusinessService = (function() {
     params: ["id"],
     functions: {
       _onValidationSuccess: function(context, done) {
-        this.dataProxy.getById(this.id, done);
+        if (done) return this.dataProxy.getById(this.id, done);
+        return this.dataProxy.getById(this.id);
       }
     }
   });
@@ -149,7 +153,8 @@ var BusinessService = (function() {
     service: BusinessService,
     functions: {
       _onValidationSuccess: function(context, done) {
-        this.dataProxy.getAll(done);
+        if (done) return this.dataProxy.getAll(done);
+        return this.dataProxy.getAll(done);
       }
     }
   });
@@ -160,7 +165,8 @@ var BusinessService = (function() {
     params: ["data"],
     functions: {
       _onValidationSuccess: function(context, done) {
-        this.dataProxy.insert(this.data, done);
+        if (done) return this.dataProxy.insert(this.data, done);
+        return this.dataProxy.insert(this.data);
       }
     }
   });
@@ -171,7 +177,8 @@ var BusinessService = (function() {
     params: ["data"],
     functions: {
       _onValidationSuccess: function(context, done) {
-        this.dataProxy.update(this.data, done);
+        if (done) return this.dataProxy.update(this.data, done);
+        return this.dataProxy.update(this.data);
       }
     }
   });
@@ -182,7 +189,8 @@ var BusinessService = (function() {
     params: ["id"],
     functions: {
       _onValidationSuccess: function(context, done) {
-        this.dataProxy.destroy(this.id, done);
+        if (done) return this.dataProxy.destroy(this.id, done);
+        return this.dataProxy.destroy(this.id);
       }
     }
   });

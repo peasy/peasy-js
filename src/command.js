@@ -47,7 +47,6 @@ var Command = (function() {
     execute: function(done) {
       var self = this;
       var context = {};
-      var validator = new RulesValidator();
 
       var initialization = self._onInitialization.bind(self);
       var rulesFunc = self._getRules.bind(self);

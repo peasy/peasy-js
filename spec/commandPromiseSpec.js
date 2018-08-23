@@ -144,7 +144,7 @@ describe("Command", function() {
         });
 
         describe("when validation succeeds", () => {
-          it("returns the expected validation result", (done) => {
+          it("returns the expected validation result", (onComplete) => {
             var returnValue = { id: 5, data: "abc" };
             var functions = {
               _getRules: (context) => {
@@ -160,7 +160,7 @@ describe("Command", function() {
               expect(result.success).toEqual(true);
               expect(result.value).toEqual(returnValue);
               expect(result.errors).toBeNull();
-              done();
+              onComplete();
             });
           });
         });
@@ -381,27 +381,14 @@ describe("Command", function() {
     });
 
     it("invokes all commands", (done) => {
-      // class TestCommand extends Command {
-
-      //   constructor(val) {
-      //     super();
-      //     this.val = val
-      //   }
-
-      //   _onValidationSuccess(context) {
-      //     return Promise.resolve(this.val);
-      //   }
-      // };
 
       var TestCommand = Command.extend({
         params: ['val'],
         functions: {
           _onInitialization: function(context) {
-            // console.log('this', this);
             return Promise.resolve();
           },
           _onValidationSuccess: function(context) {
-            // console.log('this', this);
             return Promise.resolve(this.val);
           }
         }
