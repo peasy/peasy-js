@@ -29,7 +29,7 @@ describe("Command", function() {
       expect(typeof command._onValidationSuccess).toEqual('function');
     });
 
-    it("does not override existing functions if already exists (es6 inheritance support)", (done) => {
+    it("does not override existing functions if already exists (es6 inheritance support)", (onComplete) => {
       "use strict";
       var val = 0
       class MyCommand extends Command {
@@ -52,13 +52,13 @@ describe("Command", function() {
       var command = new MyCommand();
       command.execute().then((result) => {
         expect(val).toEqual(3);
-        done();
+        onComplete();
       });
     });
   });
 
   describe("execute", () => {
-    it("invokes the pipeline methods in the correct order", (done) => {
+    it("invokes the pipeline methods in the correct order", (onComplete) => {
       var state = "";
       var functions = {
         _onInitialization: (context) => {
@@ -77,7 +77,7 @@ describe("Command", function() {
       var command = new Command(functions);
       command.execute().then(result => {
         expect(state).toEqual("123");
-        done();
+        onComplete();
       });
     });
 
@@ -104,7 +104,7 @@ describe("Command", function() {
       });
 
       describe("when no rules configured", () => {
-        it("returns the expected validation result", (done) => {
+        it("returns the expected validation result", (onComplete) => {
           var returnValue = { id: 5, data: "abc" };
           var functions = {
             _onValidationSuccess: (context) => {
@@ -117,13 +117,13 @@ describe("Command", function() {
             expect(result.success).toEqual(true);
             expect(result.value).toEqual(returnValue);
             expect(result.errors).toBeNull();
-            done();
+            onComplete();
           });
         });
       });
 
       describe("when one rule configured", () => {
-        it("supports single object literal argument as input to getRules callback", (done) => {
+        it("supports single object literal argument as input to getRules callback", (onComplete) => {
           var returnValue = { id: 5, data: "abc" };
           var functions = {
             _getRules: (context) => {
@@ -139,7 +139,7 @@ describe("Command", function() {
             expect(result.success).toEqual(true);
             expect(result.value).toEqual(returnValue);
             expect(result.errors).toBeNull();
-            done();
+            onComplete();
           });
         });
 
@@ -190,7 +190,7 @@ describe("Command", function() {
       });
 
       describe("when multiple rules configured", () => {
-        it("validates each rule", (done) => {
+        it("validates each rule", (onComplete) => {
           var functions = {
             _getRules: (context) => {
               return Promise.resolve([
@@ -211,7 +211,7 @@ describe("Command", function() {
             expect(result.errors[0].message).toEqual("a");
             expect(result.errors[1].message).toEqual("b");
             expect(result.errors[2].message).toEqual("c");
-            done();
+            onComplete();
           });
         });
 
@@ -219,7 +219,7 @@ describe("Command", function() {
 
       describe("when a promise rejection is encountered", () => {
         describe("when the error is an instance of ServiceException", () => {
-          it("returns the expected validation result", (done) => {
+          it("returns the expected validation result", (onComplete) => {
             var functions = {
               _onValidationSuccess: (context) => {
                 var ex = new ServiceException("404");
@@ -234,13 +234,13 @@ describe("Command", function() {
               expect(result.value).toBeNull();
               expect(result.errors.length).toEqual(1);
               expect(result.errors[0].message).toEqual("name not supplied");
-              done();
+              onComplete();
             });
           });
         });
 
         describe("when the error is anything other than ServiceException", () => {
-          it("returns a promise rejection", (done) => {
+          it("returns a promise rejection", (onComplete) => {
             var functions = {
               _onValidationSuccess: (context) => {
                 return Promise.reject(new Error("something unexpected happened"));
@@ -250,7 +250,7 @@ describe("Command", function() {
             var command = new Command(functions);
             command.execute().catch(err => {
               expect(err.message).toEqual("something unexpected happened");
-              done();
+              onComplete();
             });
           });
         });
@@ -259,7 +259,7 @@ describe("Command", function() {
 
       describe("when an unhandled exception occurs", () => {
         describe("when the error is an instance of ServiceException", () => {
-          it("returns the expected validation result when an exception is handled", (done) => {
+          it("returns the expected validation result when an exception is handled", (onComplete) => {
             var functions = {
               _onValidationSuccess: (context) => {
                 var ex = new ServiceException("404");
@@ -274,13 +274,13 @@ describe("Command", function() {
               expect(result.value).toBeNull();
               expect(result.errors.length).toEqual(1);
               expect(result.errors[0].message).toEqual("name not supplied");
-              done();
+              onComplete();
             });
           });
         });
 
         describe("when the error is anything other than ServiceException", () => {
-          it("returns a promise rejection", (done) => {
+          it("returns a promise rejection", (onComplete) => {
             var functions = {
               _onValidationSuccess: (context) => {
                 throw new Error("something unexpected happened");
@@ -290,7 +290,7 @@ describe("Command", function() {
             var command = new Command(functions);
             command.execute().catch(err => {
               expect(err.message).toEqual("something unexpected happened");
-              done();
+              onComplete();
             });
           });
         });
@@ -373,14 +373,14 @@ describe("Command", function() {
 
   describe("executeAll", () => {
 
-    it("invokes callback immediately if passed empty array", (done) => {
+    it("invokes callback immediately if passed empty array", (onComplete) => {
       Command.executeAll([]).then(result => {
         expect(result).toBe(undefined);
-        done();
+        onComplete();
       })
     });
 
-    it("invokes all commands", (done) => {
+    it("invokes all commands", (onComplete) => {
 
       var TestCommand = Command.extend({
         params: ['val'],
@@ -402,7 +402,7 @@ describe("Command", function() {
       Command.executeAll(commands).then(results => {
         expect(results[0].value).toEqual(4);
         expect(results[1].value).toEqual(2);
-        done();
+        onComplete();
       });
 
     });

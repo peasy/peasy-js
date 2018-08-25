@@ -17,8 +17,7 @@ describe("RulesValidator", () => {
   describe("validate", () => {
     it("invokes done when all rules are complete", () => {
       var functions = {
-        completionFunction: function(done) {
-        }
+        completionFunction: function(done) { }
       }
       spyOn(functions, 'completionFunction');
       var TestRule = Rule.extend({
@@ -36,8 +35,7 @@ describe("RulesValidator", () => {
 
     it("sets err when a errors occur in rule validations", () => {
       var functions = {
-        completionFunction: function(done) {
-        }
+        completionFunction: function(done) { }
       }
       var err = new Error("nope!");
       spyOn(functions, 'completionFunction');
