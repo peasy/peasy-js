@@ -163,7 +163,7 @@ var Rule = function () {
             self.ifValidThenFn();
           }
           if (self.validSuccessors.length > 0) {
-            return shnizBurgers(self, self.validSuccessors, onComplete);
+            return invokeSuccessorsAndNextRules(self, self.validSuccessors, onComplete);
           } else {
             if (self.ifValidThenGetRulesFn) {
               return invokeNextRules(self, self.validSuccessors, onComplete);
@@ -180,7 +180,7 @@ var Rule = function () {
         if (onComplete) onComplete();
       }
 
-      function shnizBurgers(rule, successors, onComplete) {
+      function invokeSuccessorsAndNextRules(rule, successors, onComplete) {
         if (onComplete) {
           return invokeSuccessors(rule, successors, () => {
             if (rule.ifValidThenGetRulesFn) {
