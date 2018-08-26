@@ -34,9 +34,9 @@
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
     "babel-preset-env": "^1.7.0",
-    "jasmine": "2.4.1",
-    "jshint": "2.9.2",
-    "jshint-loader": "0.8.3",
+    "jasmine": "^3.2.0",
+    "jshint": "^2.9.6",
+    "jshint-loader": "^0.8.4",
     "strip-loader": "0.1.2"
   }
 }
