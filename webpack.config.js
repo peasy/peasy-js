@@ -10,20 +10,17 @@ module.exports = {
       // We want webpack to build a UMD wrapper for our module
       libraryTarget: "umd",
       // the destination file name
-      filename: "lib/peasy.js"
+      filename: "peasy.js"
    },
    module: {
-      loaders: [
-         // babel loader, testing for files that have a .js extension
-         // (except for files in our node_modules folder!).
-         {
-            test: /\.js$/,
-            exclude: /node_modules/,
-            loader: "babel-loader",
-            query: {
-               compact: false // because I want readable output
-            }
-         }
-      ]
-   }
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader"
+        }
+      }
+    ]
+  }
 };

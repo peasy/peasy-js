@@ -31,13 +31,12 @@
   },
   "homepage": "https://www.dropbox.com/s/gpdoiby1lo7wlop/peasy-js.html?dl=0&raw=1",
   "devDependencies": {
-    "babel-cli": "6.16.0",
-    "babel-core": "^6.24.1",
-    "babel-loader": "^6.2.5",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "babel-preset-env": "^1.7.0",
     "jasmine": "2.4.1",
     "jshint": "2.9.2",
     "jshint-loader": "0.8.3",
-    "strip-loader": "0.1.2",
-    "webpack": "^1.13.0"
+    "strip-loader": "0.1.2"
   }
 }
