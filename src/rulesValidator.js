@@ -12,36 +12,34 @@ var RulesValidator = (function() {
 
   RulesValidator.prototype.validate = function(done) {
     var self = this;
-    var counter = self.rules.length;
-    var errors = [];
 
-    if (!done) {
-      if (self.rules.length > 0) {
-        return Promise.all(self.rules.map(rule => rule.validate()))
-          .then(() => self.rules);
-      }
-      return Promise.resolve([]);
+    var validations = self.rules.map(r => r.validate.bind(r));
+    if (done) {
+      validations = validations.map(v => wrap(v));
     }
 
-    if (self.rules.length > 0) {
-      self.rules.forEach(function(rule) {
-        rule.validate(onRuleValidated);
+    var promise = Promise.all(validations.map(v => v()))
+      .then(() => {
+        if (done) return done(null, self.rules);
+        return Promise.resolve(self.rules);
+      })
+      .catch(e => {
+        if (done) return done(e);
+        return Promise.reject(e);
       });
-    } else {
-      done(null, self.rules);
-    }
 
-    function onRuleValidated(err) {
-      if(err) errors.push(err);
-      counter--;
-      if (counter === 0) {
-        if (errors.length === 0) {
-          return done(null, self.rules);
-        }
-        done(errors);
+    if (!done) return promise;
+
+    function wrap(fn) {
+      return function() {
+        return new Promise((resolve, reject) => {
+          fn(function(err, result) {
+            if (err) return reject(err);
+            resolve(result);
+          });
+        });
       }
     }
-
   };
 
   return RulesValidator;

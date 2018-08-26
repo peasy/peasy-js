@@ -14,12 +14,8 @@ describe("RulesValidator", () => {
     });
   });
 
-  describe("validate", () => {
-    it("invokes done when all rules are complete", () => {
-      var functions = {
-        completionFunction: function(done) { }
-      }
-      spyOn(functions, 'completionFunction');
+  describe("validate (callback)", () => {
+    it("invokes done when all rules are complete", (onComplete) => {
       var TestRule = Rule.extend({
         functions: {
           _onValidate: function(done) {
@@ -29,22 +25,21 @@ describe("RulesValidator", () => {
       });
       var rules = [ new TestRule(), new TestRule(), new TestRule() ];
       var validator = new RulesValidator(rules);
-      validator.validate(functions.completionFunction);
-      expect(functions.completionFunction).toHaveBeenCalled();
+      validator.validate((e, rules) => {
+        expect(rules.every(r => r.valid)).toBeTruthy();
+        onComplete();
+      });
     });
 
-    it("sets err when a errors occur in rule validations", () => {
-      var functions = {
-        completionFunction: function(done) { }
-      }
+    it("sets err when a errors occur in rule validations", (onComplete) => {
       var err = new Error("nope!");
-      spyOn(functions, 'completionFunction');
+      var counter = 0;
       var TestRule = Rule.extend({
         params: ['raiseError'],
         functions: {
           _onValidate: function(done) {
             if (this.raiseError) {
-              return done(err);
+              return done(err + ++counter);
             }
             done();
           }
@@ -53,8 +48,51 @@ describe("RulesValidator", () => {
 
       var rules = [new TestRule(true), new TestRule(false), new TestRule(true)];
       var validator = new RulesValidator(rules);
-      validator.validate(functions.completionFunction);
-      expect(functions.completionFunction).toHaveBeenCalledWith([ err, err ]);
+      validator.validate((err, rules) => {
+        expect(err).toBe('Error: nope!1');
+        onComplete();
+      });
+    });
+  });
+
+  describe("validate (promise)", () => {
+    it("invokes done when all rules are complete", (onComplete) => {
+      var TestRule = Rule.extend({
+        functions: {
+          _onValidate: function(done) {
+            return Promise.resolve();
+          }
+        }
+      });
+      var rules = [ new TestRule(), new TestRule(), new TestRule() ];
+      var validator = new RulesValidator(rules);
+      validator.validate().then(rules => {
+        expect(rules.every(r => r.valid)).toBeTruthy();
+        onComplete();
+      });
+    });
+
+    it("sets err when a errors occur in rule validations", (onComplete) => {
+      var err = new Error("nope!");
+      var counter = 0;
+      var TestRule = Rule.extend({
+        params: ['raiseError'],
+        functions: {
+          _onValidate: function(done) {
+            if (this.raiseError) {
+              return Promise.reject(err + ++counter);
+            }
+            return Promise.resolve();
+          }
+        }
+      });
+
+      var rules = [new TestRule(true), new TestRule(false), new TestRule(true)];
+      var validator = new RulesValidator(rules);
+      validator.validate().catch(err => {
+        expect(err).toBe('Error: nope!1');
+        onComplete();
+      });
     });
   });
 
