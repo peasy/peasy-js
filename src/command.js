@@ -77,11 +77,11 @@ var Command = (function() {
         .then(validateRules)
         .then(parseErrorsFromRules)
         .then(createExecutionResult)
-        .then(function(result) {
+        .then((result) => {
           if (done) return done(null, result);
           return result;
         })
-        .catch(function(e) {
+        .catch((e) => {
           if (done) return done(e);
           return Promise.reject(e);
         });
