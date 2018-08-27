@@ -1,8 +1,8 @@
 {
   "name": "peasy-js",
-  "version": "1.5.1",
+  "version": "2.0.0",
   "description": "A middle tier framework for javascript",
-  "main": "lib/peasy.js",
+  "main": "dist/peasy.js",
   "scripts": {
     "test": "node ./node_modules/jasmine/bin/jasmine.js"
   },

@@ -10,7 +10,8 @@ module.exports = {
       // We want webpack to build a UMD wrapper for our module
       libraryTarget: "umd",
       // the destination file name
-      filename: "peasy.js"
+      filename: "peasy.js",
+      globalObject: "this"
    },
    module: {
     rules: [
