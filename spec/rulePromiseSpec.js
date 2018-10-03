@@ -3,13 +3,14 @@ describe("Rule", function() {
   var Command = require("../src/command");
 
   describe("getAllRulesFrom", () => {
-    it("invokes callback immediately if passed empty array", () => {
+    it("invokes callback immediately if passed empty array", (done) => {
       Rule.getAllRulesFrom([]).then(rules => {
         expect(rules.length).toEqual(0);
+        done();
       })
     });
 
-    it("retrieves all rules from supplied commands", () => {
+    it("retrieves all rules from supplied commands", (done) => {
       var Rule1 = Rule.extend({
         functions: {
           _onValidate: () => Promise.resolve()
@@ -41,6 +42,7 @@ describe("Rule", function() {
         expect(rules[0] instanceof Rule1).toBe(true);
         expect(rules[1] instanceof Rule2).toBe(true);
         expect(rules[2] instanceof Rule2).toBe(true);
+        done();
       });
     });
   });
@@ -59,7 +61,7 @@ describe("Rule", function() {
     });
 
     describe("valid parent rule set", () => {
-      it('invokes the next set of rules', (callback) => {
+      it('invokes the next set of rules', (done) => {
         var rule = Rule.ifAllValid([
           new TestRule(true),
           new TestRule(true)
@@ -73,12 +75,12 @@ describe("Rule", function() {
 
         rule.validate().then(() => {
           expect(rule.errors.length).toEqual(2);
-          callback();
+          done();
         });
       });
 
       describe("containing chains n-levels deep", () => {
-        it('invokes the next set of rules', (callback) => {
+        it('invokes the next set of rules', (done) => {
           var rule = Rule.ifAllValid([
             new TestRule(true),
             new TestRule(true)
@@ -98,14 +100,14 @@ describe("Rule", function() {
 
           rule.validate().then(() => {
             expect(rule.errors.length).toEqual(3);
-            callback();
+            done();
           });
         });
       });
     });
 
     describe("invalid parent rule set", () => {
-      it("does not invoke the next set of rules", (callback) => {
+      it("does not invoke the next set of rules", (done) => {
         var rule = Rule.ifAllValid([
           new TestRule(true),
           new TestRule(false)
@@ -119,12 +121,12 @@ describe("Rule", function() {
 
         rule.validate().then(() => {
           expect(rule.errors.length).toEqual(1);
-          callback();
+          done();
         });
       });
 
       describe("containing chains n-levels deep", () => {
-        it('does not invoke the next set of rules', (callback) => {
+        it('does not invoke the next set of rules', (done) => {
           var rule = Rule.ifAllValid([
             new TestRule(true),
             new TestRule(true)
@@ -144,7 +146,7 @@ describe("Rule", function() {
 
           rule.validate().then(() => {
             expect(rule.errors.length).toEqual(2);
-            callback();
+            done();
           });
         });
       });
@@ -207,7 +209,7 @@ describe("Rule", function() {
 
     describe("validate", function() {
 
-      it("clears errors on every invocation", function() {
+      it("clears errors on every invocation", function(done) {
         var rule = new LengthRule("");
 
         rule.validate().then(() => {
@@ -217,6 +219,8 @@ describe("Rule", function() {
         rule.validate().then(() => {
           expect(rule.errors.length).toEqual(1);
         });
+
+        done();
 
       });
 
@@ -566,7 +570,7 @@ describe("Rule", function() {
       });
 
       describe("valid parent rule set", () => {
-        it('invokes the next set of rules', (callback) => {
+        it('invokes the next set of rules', (done) => {
           var rule1 = new TestRule(true);
           rule1.ifValidThenGetRules(() => {
             return Promise.resolve([
@@ -578,12 +582,12 @@ describe("Rule", function() {
 
           rule1.validate().then(() => {
             expect(rule1.errors.length).toEqual(2);
-            callback();
+            done();
           });
         });
 
         describe("containing chains n-levels deep", () => {
-          it('invokes the next set of rules', (callback) => {
+          it('invokes the next set of rules', (done) => {
             var rule1 = new TestRule(true);
             rule1.ifValidThenGetRules(() => {
               return Promise.resolve([
@@ -597,12 +601,12 @@ describe("Rule", function() {
 
             rule1.validate().then(() => {
               expect(rule1.errors.length).toEqual(3);
-              callback();
+              done();
             });
           });
         });
 
-        it('invokes not invalidSuccessors', (callback) => {
+        it('invokes not invalidSuccessors', (done) => {
           var rule1 = new TestRule(true);
           var rule2 = new TestRule(true);
 
@@ -618,13 +622,13 @@ describe("Rule", function() {
           rule1.validate().then(() => {
             expect(rule1.valid).toEqual(true);
             expect(childCallback).not.toHaveBeenCalled();
-            callback();
+            done();
           });
         });
       });
 
       describe("invalid parent rule set", () => {
-        it("does not invoke the next set of rules", (callback) => {
+        it("does not invoke the next set of rules", (done) => {
           var rule1 = new TestRule(false);
           rule1.ifValidThenGetRules(() => {
             return Promise.resolve([
@@ -636,12 +640,12 @@ describe("Rule", function() {
 
           rule1.validate().then(() => {
             expect(rule1.errors.length).toEqual(1);
-            callback();
+            done();
           });
         });
 
         describe("containing chains n-levels deep", () => {
-          it('does not invoke the next set of rules', (callback) => {
+          it('does not invoke the next set of rules', (done) => {
             var rule1 = new TestRule(true);
             rule1.ifValidThenGetRules(() => {
               return Promise.resolve([
@@ -658,27 +662,27 @@ describe("Rule", function() {
 
             rule1.validate().then(() => {
               expect(rule1.errors.length).toEqual(3);
-              callback();
+              done();
             });
           });
         });
 
 
         describe("logical-Or functionality", () => {
-          it('A or B should be valid if A is invalid but B', (callback) => {
+          it('A or B should be valid if A is invalid but B', (done) => {
             var rule1 = new TestRule(false);
             rule1.ifInvalidThenValidate(new TestRule(true));
 
             rule1.validate().then(() => {
               expect(rule1.errors.length).toEqual(0);
               expect(rule1.valid).toEqual(true);
-              callback();
+              done();
             });
           });
         });
 
         describe("containing chains n-levels deep", () => {
-          it('is valid if all invalid successors are deeply valid', (callback) => {
+          it('is valid if all invalid successors are deeply valid', (done) => {
             var rule1 = new TestRule(false);
             rule1.ifInvalidThenValidate([
               new TestRule(true),
@@ -689,11 +693,11 @@ describe("Rule", function() {
             rule1.validate().then(() => {
               expect(rule1.errors.length).toEqual(0);
               expect(rule1.valid).toEqual(true);
-              callback();
+              done();
             });
           });
 
-          it('is invalid if all one successors are deeply invalid', (callback) => {
+          it('is invalid if all one successors are deeply invalid', (done) => {
             var rule1 = new TestRule(false);
             rule1.ifInvalidThenValidate([
               new TestRule(true),
@@ -704,7 +708,7 @@ describe("Rule", function() {
             rule1.validate().then(() => {
               expect(rule1.errors.length).toEqual(3);
               expect(rule1.valid).toEqual(false);
-              callback();
+              done();
             });
           });
         });
