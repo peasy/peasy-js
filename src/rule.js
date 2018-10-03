@@ -22,7 +22,12 @@ var Rule = function () {
 
   Rule.getAllRulesFrom = function(commands, done) {
 
+    var context = {};
+
     if (done) return(doWork(commands, done));
+
+    return Promise.all(commands.map(c => c._getRules(context)))
+      .then(results => [].concat.apply([], results)); // flatten array
 
     return new Promise((resolve, reject) => {
       doWork(commands, (err, result) => {
@@ -44,7 +49,6 @@ var Rule = function () {
       };
 
       var current = 0;
-      var context = {};
       var rules = [];
 
       commands.forEach(command => {
@@ -145,6 +149,7 @@ var Rule = function () {
     _onValidate: function (done) {},
 
     validate: function(done) {
+      debugger;
       var self = this;
       self.errors = [];
 
