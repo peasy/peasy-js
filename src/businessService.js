@@ -84,17 +84,17 @@ var BusinessService = (function() {
     var functions = options.functions || {};
     var service = options.service;
 
-    service.prototype[onInitialization] = functions._onInitialization || function(context, done) {
+    service.prototype[onInitialization] = functions._onInitialization || function(args, context, done) {
       if (done) return done();
       return Promise.resolve();
     };
 
-    service.prototype[getRules] = functions._getRules || function(context, done) {
+    service.prototype[getRules] = functions._getRules || function(args, context, done) {
       if (done) return done(null, []);
       return Promise.resolve([]);
     };
 
-    service.prototype[onValidationSuccess] = functions._onValidationSuccess || function(context, done) {
+    service.prototype[onValidationSuccess] = functions._onValidationSuccess || function(args, context, done) {
       if (done) return done();
       return Promise.resolve();
     };
@@ -103,20 +103,24 @@ var BusinessService = (function() {
 
     service.prototype[name] = function() {
       var serviceInstance = this;
+      var constructorArgs = arguments;
+      var argValues = Object.values(constructorArgs) || [];
 
       var command = new Command({
         _onInitialization: function(context, done) {
-          return serviceInstance[onInitialization].call(this, context, done);
+          var args = argValues.concat(context).concat(done);
+          return serviceInstance[onInitialization].apply(this, args);
         },
         _getRules: function(context, done) {
-          return serviceInstance[getRules].call(this, context, done);
+          var args = argValues.concat(context).concat(done);
+          return serviceInstance[getRules].apply(this, args);
         },
         _onValidationSuccess: function(context, done) {
-          return serviceInstance[onValidationSuccess].call(this, context, done);
+          var args = argValues.concat(context).concat(done);
+          return serviceInstance[onValidationSuccess].apply(this, args);
         }
       });
 
-      var constructorArgs = arguments;
       serviceInstance[commandParams].forEach(function(param, index) {
         command[param] = constructorArgs[index];
       });
@@ -141,7 +145,7 @@ var BusinessService = (function() {
     service: BusinessService,
     params: ["id"],
     functions: {
-      _onValidationSuccess: function(context, done) {
+      _onValidationSuccess: function(id, context, done) {
         if (done) return this.dataProxy.getById(this.id, done);
         return this.dataProxy.getById(this.id);
       }
@@ -154,7 +158,9 @@ var BusinessService = (function() {
     functions: {
       _onValidationSuccess: function(context, done) {
         if (done) return this.dataProxy.getAll(done);
-        return this.dataProxy.getAll(done);
+        return this.dataProxy.getAll();
+        // TODO: will this break anything?
+        // return this.dataProxy.getAll(done);
       }
     }
   });
@@ -164,9 +170,9 @@ var BusinessService = (function() {
     service: BusinessService,
     params: ["data"],
     functions: {
-      _onValidationSuccess: function(context, done) {
-        if (done) return this.dataProxy.insert(this.data, done);
-        return this.dataProxy.insert(this.data);
+      _onValidationSuccess: function(data, context, done) {
+        if (done) return this.dataProxy.insert(data, done);
+        return this.dataProxy.insert(data);
       }
     }
   });
@@ -176,9 +182,9 @@ var BusinessService = (function() {
     service: BusinessService,
     params: ["data"],
     functions: {
-      _onValidationSuccess: function(context, done) {
-        if (done) return this.dataProxy.update(this.data, done);
-        return this.dataProxy.update(this.data);
+      _onValidationSuccess: function(data, context, done) {
+        if (done) return this.dataProxy.update(data, done);
+        return this.dataProxy.update(data);
       }
     }
   });
@@ -188,9 +194,9 @@ var BusinessService = (function() {
     service: BusinessService,
     params: ["id"],
     functions: {
-      _onValidationSuccess: function(context, done) {
-        if (done) return this.dataProxy.destroy(this.id, done);
-        return this.dataProxy.destroy(this.id);
+      _onValidationSuccess: function(id, context, done) {
+        if (done) return this.dataProxy.destroy(id, done);
+        return this.dataProxy.destroy(id);
       }
     }
   });
