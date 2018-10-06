@@ -119,18 +119,18 @@ describe("BusinessService", function() {
         var TestService = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
-            _onInsertCommandInitialization: function(context) {
+            _onInsertCommandInitialization: function(data, context) {
               context.value = 5;
               return Promise.resolve();
             },
-            _getRulesForInsertCommand: function(context) {
+            _getRulesForInsertCommand: function(data, context) {
               context.value++;
               return Promise.resolve([]);
             },
-            _insert: function(context) {
+            _insert: function(data, context) {
               return Promise.resolve({
                 contextValue: context.value + 1,
-                data: this.data + 2,
+                data: data + 2,
                 serviceArg: this.anotherArg,
                 dataProxy: this.dataProxy
               });
@@ -176,15 +176,15 @@ describe("BusinessService", function() {
         var TestService = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
-            _onUpdateCommandInitialization: function(context) {
+            _onUpdateCommandInitialization: function(data, context) {
               context.value = 5;
               return Promise.resolve();
             },
-            _getRulesForUpdateCommand: function(context) {
+            _getRulesForUpdateCommand: function(data, context) {
               context.value++;
               return Promise.resolve([]);
             },
-            _update: function(context) {
+            _update: function(data, context) {
               return Promise.resolve({
                 contextValue: context.value,
                 data: this.data + 2,
@@ -232,15 +232,15 @@ describe("BusinessService", function() {
         var TestService = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
-            _onGetByIdCommandInitialization: function(context) {
+            _onGetByIdCommandInitialization: function(data, context) {
               context.value = 5;
               return Promise.resolve();
             },
-            _getRulesForGetByIdCommand: function(context) {
+            _getRulesForGetByIdCommand: function(data, context) {
               context.value++;
               return Promise.resolve([]);
             },
-            _getById: function(context) {
+            _getById: function(data, context) {
               return Promise.resolve({
                 contextValue: context.value,
                 id: this.id + 2,
@@ -335,15 +335,15 @@ describe("BusinessService", function() {
         var TestService = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
-            _onDestroyCommandInitialization: function(context) {
+            _onDestroyCommandInitialization: function(data, context) {
               context.value = 5;
               return Promise.resolve();
             },
-            _getRulesForDestroyCommand: function(context) {
+            _getRulesForDestroyCommand: function(data, context) {
               context.value++;
               return Promise.resolve([]);
             },
-            _destroy: function(context) {
+            _destroy: function(data, context) {
               return Promise.resolve({
                 contextValue: context.value,
                 id: this.id + 2,
@@ -475,6 +475,42 @@ describe("BusinessService", function() {
 
       describe("arguments", () => {
         describe("when 'functions' supplied", () => {
+          it("passes command constructor arguments to each overridden/handled function", (onComplete) => {
+            var Service = BusinessService.extend().service;
+
+            BusinessService.createCommand({
+              name: 'testCommand',
+              service: Service,
+              functions: {
+                _onInitialization: function(arg1, arg2, arg3, context) {
+                  context.arg1 = arg1;
+                  context.arg2 = arg2;
+                  context.arg3 = arg3;
+                  return Promise.resolve();
+                },
+                _getRules: function(arg1, arg2, arg3, context) {
+                  context.arg1 += "2";
+                  context.arg2 += 2;
+                  context.arg3 += "2";
+                  return Promise.resolve([]);
+                },
+                _onValidationSuccess: function(arg1, arg2, arg3, context) {
+                  return Promise.resolve(context);
+                }
+              }
+            });
+
+            var service = new Service();
+            service.testCommand("1", 2, "3").execute().then(result => {
+              expect(result.value).toEqual({
+                arg1: "12",
+                arg2: 4,
+                arg3: "32",
+              });
+              onComplete();
+            });
+          });
+
           it("creates a command that executes the pipeline as expected", (onComplete) => {
             var Service = BusinessService.extend().service;
             var sharedContext = null
@@ -532,7 +568,7 @@ describe("BusinessService", function() {
               name: 'testCommand',
               service: Service,
               functions: {
-                _onInitialization: function(context) {
+                _onInitialization: function(firstName, lastName, context) {
                   params.push(this.firstName);
                   params.push(this.lastName);
                   return Promise.resolve();
@@ -682,15 +718,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onGetByIdCommandInitialization = (context) => {
+          TestService.prototype._onGetByIdCommandInitialization = (data, context) => {
             context.ids = 1;
             return Promise.resolve();
           };
-          TestService.prototype._getRulesForGetByIdCommand = (context) => {
+          TestService.prototype._getRulesForGetByIdCommand = (data, context) => {
             context.ids++;
             return Promise.resolve([]);
           };
-          TestService.prototype._getById = (context) => {
+          TestService.prototype._getById = (data, context) => {
             context.ids++;
             sharedContext = context;
             return Promise.resolve();
@@ -748,15 +784,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onInsertCommandInitialization = (context) => {
+          TestService.prototype._onInsertCommandInitialization = (data, context) => {
             context.foo = state.foo;
             return Promise.resolve();
           };
-          TestService.prototype._getRulesForInsertCommand = (context) => {
+          TestService.prototype._getRulesForInsertCommand = (data, context) => {
             context.bar = state.bar;
             return Promise.resolve([]);
           };
-          TestService.prototype._insert = (context) => {
+          TestService.prototype._insert = (data, context) => {
             context.meh = state.meh;
             sharedContext = context;
             return Promise.resolve();
@@ -814,15 +850,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onUpdateCommandInitialization = (context) => {
+          TestService.prototype._onUpdateCommandInitialization = (data, context) => {
             context.foo = state.foo;
             return Promise.resolve();
           };
-          TestService.prototype._getRulesForUpdateCommand = (context) => {
+          TestService.prototype._getRulesForUpdateCommand = (data, context) => {
             context.bar = state.bar;
             return Promise.resolve([]);
           };
-          TestService.prototype._update = (context) => {
+          TestService.prototype._update = (data, context) => {
             context.meh = state.meh;
             sharedContext = context;
             return Promise.resolve();
@@ -880,15 +916,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onDestroyCommandInitialization = (context) => {
+          TestService.prototype._onDestroyCommandInitialization = (data, context) => {
             context.ids = '1';
             return Promise.resolve();
           };
-          TestService.prototype._getRulesForDestroyCommand = (context) => {
+          TestService.prototype._getRulesForDestroyCommand = (data, context) => {
             context.ids += '2';
             return Promise.resolve([]);
           };
-          TestService.prototype._destroy = (context) => {
+          TestService.prototype._destroy = (data, context) => {
             context.ids += '3';
             sharedContext = context;
             return Promise.resolve();

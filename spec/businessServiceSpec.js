@@ -21,7 +21,7 @@ describe("BusinessService", function() {
     var MyBaseService = BusinessService.extend({
       params: ['dataProxy'],
       functions: {
-        _update: function(context, done) {
+        _update: function(data, context, done) {
           done(null, returnObject);
         }
       }
@@ -30,7 +30,7 @@ describe("BusinessService", function() {
     it("inherits members", (onComplete) => {
       var CustomerService = BusinessService.extendService(MyBaseService, {}).service;
       var customerService = new CustomerService();
-      customerService.updateCommand({}).execute(function(err, result) {
+      customerService.updateCommand({ name: 'test' }).execute(function(err, result) {
         expect(result.value).toEqual(returnObject);
         onComplete();
       });
@@ -40,7 +40,7 @@ describe("BusinessService", function() {
       var returnObject = { name: "Frank Zappa" };
       var CustomerService = BusinessService.extendService(MyBaseService, {
         functions: {
-          _update: function(context, done) {
+          _update: function(data, context, done) {
             done(null, returnObject);
           }
         }
@@ -62,7 +62,7 @@ describe("BusinessService", function() {
       };
       var CustomerService = BusinessService.extendService(MyBaseService, {
         functions: {
-          _getById: function(context, done) {
+          _getById: function(id, context, done) {
             this.dataProxy.getById(this.id, function(err, result) {
               done(null, result);
             });
@@ -121,15 +121,15 @@ describe("BusinessService", function() {
         var TestService = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
-            _onInsertCommandInitialization: function(context, done) {
+            _onInsertCommandInitialization: function(data, context, done) {
               context.value = 5;
               done();
             },
-            _getRulesForInsertCommand: function(context, done) {
+            _getRulesForInsertCommand: function(data, context, done) {
               context.value++;
               done(null, []);
             },
-            _insert: function(context, done) {
+            _insert: function(data, context, done) {
               done(null, {
                 contextValue: context.value + 1,
                 data: this.data + 2,
@@ -178,15 +178,15 @@ describe("BusinessService", function() {
         var TestService = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
-            _onUpdateCommandInitialization: function(context, done) {
+            _onUpdateCommandInitialization: function(data, context, done) {
               context.value = 5;
               done();
             },
-            _getRulesForUpdateCommand: function(context, done) {
+            _getRulesForUpdateCommand: function(data, context, done) {
               context.value++;
               done(null, []);
             },
-            _update: function(context, done) {
+            _update: function(data, context, done) {
               done(null, {
                 contextValue: context.value,
                 data: this.data + 2,
@@ -234,15 +234,15 @@ describe("BusinessService", function() {
         var TestService = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
-            _onGetByIdCommandInitialization: function(context, done) {
+            _onGetByIdCommandInitialization: function(id, context, done) {
               context.value = 5;
               done();
             },
-            _getRulesForGetByIdCommand: function(context, done) {
+            _getRulesForGetByIdCommand: function(id, context, done) {
               context.value++;
               done(null, []);
             },
-            _getById: function(context, done) {
+            _getById: function(id, context, done) {
               done(null, {
                 contextValue: context.value,
                 id: this.id + 2,
@@ -337,15 +337,15 @@ describe("BusinessService", function() {
         var TestService = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
-            _onDestroyCommandInitialization: function(context, done) {
+            _onDestroyCommandInitialization: function(id, context, done) {
               context.value = 5;
               done();
             },
-            _getRulesForDestroyCommand: function(context, done) {
+            _getRulesForDestroyCommand: function(id, context, done) {
               context.value++;
               done(null, []);
             },
-            _destroy: function(context, done) {
+            _destroy: function(id, context, done) {
               done(null, {
                 contextValue: context.value,
                 id: this.id + 2,
@@ -534,7 +534,7 @@ describe("BusinessService", function() {
               name: 'testCommand',
               service: Service,
               functions: {
-                _onInitialization: function(context, done) {
+                _onInitialization: function(firstName, lastName, context, done) {
                   params.push(this.firstName);
                   params.push(this.lastName);
                   done();
@@ -691,15 +691,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onGetByIdCommandInitialization = (context, done) => {
+          TestService.prototype._onGetByIdCommandInitialization = (id, context, done) => {
             context.ids = 1;
             done();
           };
-          TestService.prototype._getRulesForGetByIdCommand = (context, done) => {
+          TestService.prototype._getRulesForGetByIdCommand = (id, context, done) => {
             context.ids++;
             done(null, []);
           };
-          TestService.prototype._getById = (context, done) => {
+          TestService.prototype._getById = (id, context, done) => {
             context.ids++;
             sharedContext = context;
             done();
@@ -757,11 +757,11 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onInsertCommandInitialization = (context, done) => {
+          TestService.prototype._onInsertCommandInitialization = (data, context, done) => {
             context.foo = state.foo;
             done();
           };
-          TestService.prototype._getRulesForInsertCommand = (context, done) => {
+          TestService.prototype._getRulesForInsertCommand = (data, context, done) => {
             context.bar = state.bar;
             done(null, []);
           };
@@ -823,15 +823,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onUpdateCommandInitialization = (context, done) => {
+          TestService.prototype._onUpdateCommandInitialization = (data, context, done) => {
             context.foo = state.foo;
             done();
           };
-          TestService.prototype._getRulesForUpdateCommand = (context, done) => {
+          TestService.prototype._getRulesForUpdateCommand = (data, context, done) => {
             context.bar = state.bar;
             done(null, []);
           };
-          TestService.prototype._update = (context, done) => {
+          TestService.prototype._update = (data, context, done) => {
             context.meh = state.meh;
             sharedContext = context;
             done();
@@ -889,15 +889,15 @@ describe("BusinessService", function() {
           var TestService = function() {};
           var sharedContext;
           TestService.prototype = new BusinessService();
-          TestService.prototype._onDestroyCommandInitialization = (context, done) => {
+          TestService.prototype._onDestroyCommandInitialization = (id, context, done) => {
             context.ids = '1';
             done();
           };
-          TestService.prototype._getRulesForDestroyCommand = (context, done) => {
+          TestService.prototype._getRulesForDestroyCommand = (id, context, done) => {
             context.ids += '2';
             done(null, []);
           };
-          TestService.prototype._destroy = (context, done) => {
+          TestService.prototype._destroy = (id, context, done) => {
             context.ids += '3';
             sharedContext = context;
             done();

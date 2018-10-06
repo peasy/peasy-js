@@ -84,18 +84,21 @@ var BusinessService = (function() {
     var functions = options.functions || {};
     var service = options.service;
 
-    service.prototype[onInitialization] = functions._onInitialization || function(args, context, done) {
-      if (done) return done();
+    service.prototype[onInitialization] = functions._onInitialization || function() {
+      var doneCallback = arguments[Object.keys(arguments).length -1];
+      if (doneCallback && typeof doneCallback === 'function') return doneCallback(null);
       return Promise.resolve();
     };
 
-    service.prototype[getRules] = functions._getRules || function(args, context, done) {
-      if (done) return done(null, []);
+    service.prototype[getRules] = functions._getRules || function() {
+      var doneCallback = arguments[Object.keys(arguments).length -1];
+      if (doneCallback && typeof doneCallback === 'function') return doneCallback(null, []);
       return Promise.resolve([]);
     };
 
-    service.prototype[onValidationSuccess] = functions._onValidationSuccess || function(args, context, done) {
-      if (done) return done();
+    service.prototype[onValidationSuccess] = functions._onValidationSuccess || function() {
+      var doneCallback = arguments[Object.keys(arguments).length -1];
+      if (doneCallback && typeof doneCallback === 'function') return doneCallback(null);
       return Promise.resolve();
     };
 
@@ -104,19 +107,19 @@ var BusinessService = (function() {
     service.prototype[name] = function() {
       var serviceInstance = this;
       var constructorArgs = arguments;
-      var argValues = Object.values(constructorArgs) || [];
+      var argValues = Object.keys(constructorArgs).map(key => constructorArgs[key]);
 
       var command = new Command({
         _onInitialization: function(context, done) {
-          var args = argValues.concat(context).concat(done);
+          var args = argValues.concat([context, done]);
           return serviceInstance[onInitialization].apply(this, args);
         },
         _getRules: function(context, done) {
-          var args = argValues.concat(context).concat(done);
+          var args = argValues.concat([context, done]);
           return serviceInstance[getRules].apply(this, args);
         },
         _onValidationSuccess: function(context, done) {
-          var args = argValues.concat(context).concat(done);
+          var args = argValues.concat([context, done]);
           return serviceInstance[onValidationSuccess].apply(this, args);
         }
       });
