@@ -1,8 +1,22 @@
-describe("BusinessService", function() {
+fdescribe("BusinessService", function() {
+
   var Command = require('../src/command');
   var BusinessService = require('../src/businessService');
   var ExecutionResult = require('../src/executionResult');
   var service, command, dataProxy;
+
+  function promisify(command) {
+    return {
+      execute: function() {
+        return new Promise((resolve, reject) => {
+          command.execute(function (err, result) {
+            if (err) return reject(err);
+            resolve(result);
+          });
+        });
+      }
+    }
+  }
 
   describe("constructor", () => {
     it("returns a new instance when invoked directly", function() {
@@ -18,7 +32,8 @@ describe("BusinessService", function() {
 
   describe("extendService", () => {
     var returnObject = { name: "Mark Knopfler" };
-    var MyBaseService = BusinessService.extend({
+
+    var Service1 = BusinessService.extend({
       params: ['dataProxy'],
       functions: {
         _update: function(data, context, done) {
@@ -27,57 +42,251 @@ describe("BusinessService", function() {
       }
     }).service;
 
+    var Service2 = BusinessService.extend({
+      params: ['dataProxy'],
+      functions: {
+        _update: function(data, context) {
+          return Promise.resolve(returnObject);
+        }
+      }
+    }).service;
+
+    class Service3 extends BusinessService {
+      constructor(dataProxy) {
+        super(dataProxy);
+      }
+      _update(data, context, done) {
+        done(null, returnObject);
+      }
+    }
+
+    class Service4 extends BusinessService {
+      constructor(dataProxy) {
+        super(dataProxy);
+      }
+      _update(data, context) {
+        return Promise.resolve(returnObject);
+      }
+    }
+
     it("inherits members", (onComplete) => {
-      var CustomerService = BusinessService.extendService(MyBaseService, {}).service;
-      var customerService = new CustomerService();
-      customerService.updateCommand({ name: 'test' }).execute(function(err, result) {
-        expect(result.value).toEqual(returnObject);
+      var CustomerService1 = BusinessService.extendService(Service1, {}).service;
+      var CustomerService2 = BusinessService.extendService(Service2, {}).service;
+      var CustomerService3 = BusinessService.extendService(Service3, {}).service;
+      var CustomerService4 = BusinessService.extendService(Service4, {}).service;
+
+      var customerService1 = new CustomerService1();
+      var customerService2 = new CustomerService2();
+      var customerService3 = new CustomerService3();
+      var customerService4 = new CustomerService4();
+
+      var data = { id: 1, name: 'Jim Morrison' };
+
+      Promise.all([
+        promisify(customerService1.updateCommand(data)).execute(),
+        customerService2.updateCommand(data).execute(),
+        promisify(customerService3.updateCommand(data)).execute(),
+        customerService4.updateCommand(data).execute()
+      ])
+      .then(results => {
+        expect(results[0].value).toEqual(returnObject);
+        expect(results[1].value).toEqual(returnObject);
+        expect(results[2].value).toEqual(returnObject);
+        expect(results[3].value).toEqual(returnObject);
         onComplete();
       });
     });
 
     it("allows overriding inherited members", (onComplete) => {
-      var returnObject = { name: "Frank Zappa" };
-      var CustomerService = BusinessService.extendService(MyBaseService, {
+      var overriddenResult = { name: 'Brian May' };
+      var CustomerService1 = BusinessService.extendService(Service1, {
         functions: {
           _update: function(data, context, done) {
+            done(null, overriddenResult);
+          }
+        }
+      }).service;
+      var CustomerService2 = BusinessService.extendService(Service2, {
+        functions: {
+          _update: function(data, context) {
+            return Promise.resolve(overriddenResult);
+          }
+        }
+      }).service;
+      var CustomerService3 = BusinessService.extendService(Service3, {
+        functions: {
+          _update: function(data, context, done) {
+            done(null, overriddenResult);
+          }
+        }
+      }).service;
+      var CustomerService4 = BusinessService.extendService(Service4, {
+        functions: {
+          _update: function(data, context) {
+            return Promise.resolve(overriddenResult);
+          }
+        }
+      }).service;
+
+      var customerService1 = new CustomerService1();
+      var customerService2 = new CustomerService2();
+      var customerService3 = new CustomerService3();
+      var customerService4 = new CustomerService4();
+
+      var data = { id: 1, name: 'Jim Morrison' };
+
+      Promise.all([
+        promisify(customerService1.updateCommand(data)).execute(),
+        customerService2.updateCommand(data).execute(),
+        promisify(customerService3.updateCommand(data)).execute(),
+        customerService4.updateCommand(data).execute()
+      ])
+      .then(results => {
+        expect(results[0].value).toEqual(overriddenResult);
+        expect(results[1].value).toEqual(overriddenResult);
+        expect(results[2].value).toEqual(overriddenResult);
+        expect(results[3].value).toEqual(overriddenResult);
+        onComplete();
+      });
+
+    });
+
+    describe("allows access to constructor arguments as expected", () => {
+      it("via 'this'", (onComplete) => {
+        var returnObject = { name: "Dickey Betts" };
+        var dataProxy = {
+          getById: function(id, done) {
+            returnObject.id = id;
             done(null, returnObject);
           }
-        }
-      }).service;
-      var customerService = new CustomerService();
-      customerService.updateCommand({}).execute(function(err, result) {
-        expect(result.value).toEqual(returnObject);
-        onComplete();
-      });
-    })
-
-    it("allows access to constructor arguments as expected", (onComplete) => {
-      var returnObject = { name: "Dickey Betts" };
-      var dataProxy = {
-        getById: function(id, done) {
-          returnObject.id = id;
-          done(null, returnObject);
-        }
-      };
-      var CustomerService = BusinessService.extendService(MyBaseService, {
-        functions: {
-          _getById: function(id, context, done) {
-            this.dataProxy.getById(this.id, function(err, result) {
-              done(null, result);
-            });
+        };
+        var dataProxyPromisified = {
+          getById: function(id) {
+            returnObject.id = id;
+            return Promise.resolve(returnObject);
           }
-        }
-      }).service;
-      var customerService = new CustomerService(dataProxy);
-      customerService.getByIdCommand(1).execute(function(err, result) {
-        expect(result.value).toEqual({
-          id: 1,
-          name: "Dickey Betts"
+        };
+        var CustomerService1 = BusinessService.extendService(Service1, {
+          functions: {
+            _getById: function(id, context, done) {
+              return this.dataProxy.getById(this.id, function(err, result) {
+                done(null, result);
+              });
+            }
+          }
+        }).service;
+        var CustomerService2 = BusinessService.extendService(Service2, {
+          functions: {
+            _getById: function(id, context) {
+              return this.dataProxy.getById(this.id);
+            }
+          }
+        }).service;
+        var CustomerService3 = BusinessService.extendService(Service3, {
+          functions: {
+            _getById: function(id, context, done) {
+              return this.dataProxy.getById(this.id, function(err, result) {
+                done(null, result);
+              });
+            }
+          }
+        }).service;
+        var CustomerService4 = BusinessService.extendService(Service4, {
+          functions: {
+            _getById: function(id, context) {
+              return this.dataProxy.getById(this.id);
+            }
+          }
+        }).service;
+
+        var customerService1 = new CustomerService1(dataProxy);
+        var customerService2 = new CustomerService2(dataProxyPromisified);
+        var customerService3 = new CustomerService3(dataProxy);
+        var customerService4 = new CustomerService4(dataProxyPromisified);
+
+        Promise.all([
+          promisify(customerService1.getByIdCommand(1)).execute(),
+          customerService2.getByIdCommand(1).execute(),
+          promisify(customerService3.getByIdCommand(1)).execute(),
+          customerService4.getByIdCommand(1).execute()
+        ])
+        .then(results => {
+          expect(results[0].value).toEqual({ id: 1, name: "Dickey Betts" });
+          expect(results[1].value).toEqual({ id: 1, name: "Dickey Betts" });
+          expect(results[2].value).toEqual({ id: 1, name: "Dickey Betts" });
+          expect(results[3].value).toEqual({ id: 1, name: "Dickey Betts" });
+          onComplete();
         });
-        onComplete();
       });
+      it("via function arguments", (onComplete) => {
+        var returnObject = { name: "Dickey Betts" };
+        var dataProxy = {
+          getById: function(id, done) {
+            returnObject.id = id;
+            done(null, returnObject);
+          }
+        };
+        var dataProxyPromisified = {
+          getById: function(id) {
+            returnObject.id = id;
+            return Promise.resolve(returnObject);
+          }
+        };
+        var CustomerService1 = BusinessService.extendService(Service1, {
+          functions: {
+            _getById: function(id, context, done) {
+              return this.dataProxy.getById(id, function(err, result) {
+                done(null, result);
+              });
+            }
+          }
+        }).service;
+        var CustomerService2 = BusinessService.extendService(Service2, {
+          functions: {
+            _getById: function(id, context) {
+              return this.dataProxy.getById(id);
+            }
+          }
+        }).service;
+        var CustomerService3 = BusinessService.extendService(Service3, {
+          functions: {
+            _getById: function(id, context, done) {
+              return this.dataProxy.getById(id, function(err, result) {
+                done(null, result);
+              });
+            }
+          }
+        }).service;
+        var CustomerService4 = BusinessService.extendService(Service4, {
+          functions: {
+            _getById: function(id, context) {
+              return this.dataProxy.getById(id);
+            }
+          }
+        }).service;
+
+        var customerService1 = new CustomerService1(dataProxy);
+        var customerService2 = new CustomerService2(dataProxyPromisified);
+        var customerService3 = new CustomerService3(dataProxy);
+        var customerService4 = new CustomerService4(dataProxyPromisified);
+
+        Promise.all([
+          promisify(customerService1.getByIdCommand(1)).execute(),
+          customerService2.getByIdCommand(1).execute(),
+          promisify(customerService3.getByIdCommand(1)).execute(),
+          customerService4.getByIdCommand(1).execute()
+        ])
+        .then(results => {
+          expect(results[0].value).toEqual({ id: 1, name: "Dickey Betts" });
+          expect(results[1].value).toEqual({ id: 1, name: "Dickey Betts" });
+          expect(results[2].value).toEqual({ id: 1, name: "Dickey Betts" });
+          expect(results[3].value).toEqual({ id: 1, name: "Dickey Betts" });
+          onComplete();
+        });
+      });
+
     });
+
   });
 
   describe("extend", () => {
@@ -97,6 +306,10 @@ describe("BusinessService", function() {
     });
 
     it("creates a function for each supplied function", () => {
+      function getAll() {}
+      function getById() {}
+      function getRulesForInsert () {}
+
       var Service = BusinessService.extend({
         functions: {
           _getAll: getAll,
@@ -104,10 +317,6 @@ describe("BusinessService", function() {
           _getRulesForInsertCommand: getRulesForInsert
         }
       }).service;
-
-      function getAll() {}
-      function getById() {}
-      function getRulesForInsert () {}
 
       var service = new Service();
       expect(service._getAll).toEqual(getAll);
@@ -118,7 +327,21 @@ describe("BusinessService", function() {
     describe("function overrides", () => {
       describe("insertCommand", () => {
 
-        var TestService = BusinessService.extend({
+        var dataProxy = {
+          insert: function(data, done) {
+            data.id = 1;
+            done(data);
+          }
+        };
+
+        var dataProxyPromisified = {
+          insert: function(data) {
+            data.id = 1;
+            return Promise.resolve(data);
+          }
+        };
+
+        var TestService1 = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
             _onInsertCommandInitialization: function(data, context, done) {
@@ -140,34 +363,71 @@ describe("BusinessService", function() {
           }
         }).service;
 
-        var dataProxy = {
-          insert: function(data, done) {
-            data.id = 1;
-            done(data);
+        var TestService2 = BusinessService.extend({
+          params: ['anotherArg', 'dataProxy'],
+          functions: {
+            _onInsertCommandInitialization: function(data, context) {
+              context.value = 5;
+              return Promise.resolve();
+            },
+            _getRulesForInsertCommand: function(data, context) {
+              context.value++;
+              return Promise.resolve([]);
+            },
+            _insert: function(data, context) {
+              return Promise.resolve({
+                contextValue: context.value + 1,
+                data: this.data + 2,
+                serviceArg: this.anotherArg,
+                dataProxy: this.dataProxy
+              });
+            }
           }
-        };
+        }).service;
 
         it("passes a context between functions", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.insertCommand(2).execute((err, result) => {
-            expect(result.value.contextValue).toEqual(7);
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.insertCommand(2)).execute(),
+            service2.insertCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.contextValue).toEqual(7);
+            expect(results[1].value.contextValue).toEqual(7);
             onComplete();
           });
         });
 
         it("provides accessibility to command method arguments", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.insertCommand(2).execute((err, result) => {
-            expect(result.value.data).toEqual(4);
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.insertCommand(2)).execute(),
+            service2.insertCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.data).toEqual(4);
+            expect(results[1].value.data).toEqual(4);
             onComplete();
           });
         });
 
         it("provides accessibility to containing service constructor arguments", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.insertCommand(2).execute((err, result) => {
-            expect(result.value.dataProxy).toEqual(dataProxy);
-            expect(result.value.serviceArg).toEqual("hello");
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.insertCommand(2)).execute(),
+            service2.insertCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.dataProxy).toEqual(dataProxy);
+            expect(results[0].value.serviceArg).toEqual("hello");
+            expect(results[1].value.dataProxy).toEqual(dataProxyPromisified);
+            expect(results[1].value.serviceArg).toEqual("hello");
             onComplete();
           });
         });
@@ -175,7 +435,7 @@ describe("BusinessService", function() {
 
       describe("updateCommand", () => {
 
-        var TestService = BusinessService.extend({
+        var TestService1 = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
             _onUpdateCommandInitialization: function(data, context, done) {
@@ -197,33 +457,83 @@ describe("BusinessService", function() {
           }
         }).service;
 
+        var TestService2 = BusinessService.extend({
+          params: ['anotherArg', 'dataProxy'],
+          functions: {
+            _onUpdateCommandInitialization: function(data, context) {
+              context.value = 5;
+              return Promise.resolve();
+            },
+            _getRulesForUpdateCommand: function(data, context) {
+              context.value++;
+              return Promise.resolve([]);
+            },
+            _update: function(data, context) {
+              return Promise.resolve({
+                contextValue: context.value,
+                data: this.data + 2,
+                serviceArg: this.anotherArg,
+                dataProxy: this.dataProxy
+              });
+            }
+          }
+        }).service;
+
         var dataProxy = {
           update: function(data, done) {
             done(data);
           }
         };
 
+        var dataProxyPromisified = {
+          update: function(data) {
+            return Promise.resolve(data);
+          }
+        };
+
         it("passes a context between functions", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.updateCommand(2).execute((err, result) => {
-            expect(result.value.contextValue).toEqual(6);
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.updateCommand(2)).execute(),
+            service2.updateCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.contextValue).toEqual(6);
+            expect(results[1].value.contextValue).toEqual(6);
             onComplete();
           });
         });
 
         it("provides accessibility to command method arguments", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.updateCommand(2).execute((err, result) => {
-            expect(result.value.data).toEqual(4);
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.updateCommand(2)).execute(),
+            service2.updateCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.data).toEqual(4);
+            expect(results[1].value.data).toEqual(4);
             onComplete();
           });
         });
 
         it("provides accessibility to containing service constructor arguments", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.updateCommand(2).execute((err, result) => {
-            expect(result.value.dataProxy).toEqual(dataProxy);
-            expect(result.value.serviceArg).toEqual("hello");
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.updateCommand(2)).execute(),
+            service2.updateCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.dataProxy).toEqual(dataProxy);
+            expect(results[0].value.serviceArg).toEqual("hello");
+            expect(results[1].value.dataProxy).toEqual(dataProxyPromisified);
+            expect(results[1].value.serviceArg).toEqual("hello");
             onComplete();
           });
         });
@@ -231,7 +541,7 @@ describe("BusinessService", function() {
 
       describe("getByIdCommand", () => {
 
-        var TestService = BusinessService.extend({
+        var TestService1 = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
             _onGetByIdCommandInitialization: function(id, context, done) {
@@ -253,33 +563,83 @@ describe("BusinessService", function() {
           }
         }).service;
 
+        var TestService2 = BusinessService.extend({
+          params: ['anotherArg', 'dataProxy'],
+          functions: {
+            _onGetByIdCommandInitialization: function(id, context) {
+              context.value = 5;
+              return Promise.resolve();
+            },
+            _getRulesForGetByIdCommand: function(id, context) {
+              context.value++;
+              return Promise.resolve([]);
+            },
+            _getById: function(id, context) {
+              return Promise.resolve({
+                contextValue: context.value,
+                id: this.id + 2,
+                serviceArg: this.anotherArg,
+                dataProxy: this.dataProxy
+              });
+            }
+          }
+        }).service;
+
         var dataProxy = {
           getById: function(id, done) {
             done({});
           }
         };
 
+        var dataProxyPromisified = {
+          getById: function(id, done) {
+            return Promise.resolve({});
+          }
+        };
+
         it("passes a context between functions", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.getByIdCommand(2).execute((err, result) => {
-            expect(result.value.contextValue).toEqual(6);
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.getByIdCommand(2)).execute(),
+            service2.getByIdCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.contextValue).toEqual(6);
+            expect(results[1].value.contextValue).toEqual(6);
             onComplete();
           });
         });
 
         it("provides accessibility to command method arguments", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.getByIdCommand(2).execute((err, result) => {
-            expect(result.value.id).toEqual(4);
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.getByIdCommand(2)).execute(),
+            service2.getByIdCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.id).toEqual(4);
+            expect(results[1].value.id).toEqual(4);
             onComplete();
           });
         });
 
         it("provides accessibility to containing service constructor arguments", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.getByIdCommand(2).execute((err, result) => {
-            expect(result.value.dataProxy).toEqual(dataProxy);
-            expect(result.value.serviceArg).toEqual("hello");
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.getByIdCommand(2)).execute(),
+            service2.getByIdCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.dataProxy).toEqual(dataProxy);
+            expect(results[0].value.serviceArg).toEqual("hello");
+            expect(results[1].value.dataProxy).toEqual(dataProxyPromisified);
+            expect(results[1].value.serviceArg).toEqual("hello");
             onComplete();
           });
         });
@@ -287,7 +647,7 @@ describe("BusinessService", function() {
 
       describe("getAllCommand", () => {
 
-        var TestService = BusinessService.extend({
+        var TestService1 = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
             _onGetAllCommandInitialization: function(context, done) {
@@ -308,25 +668,67 @@ describe("BusinessService", function() {
           }
         }).service;
 
+        var TestService2 = BusinessService.extend({
+          params: ['anotherArg', 'dataProxy'],
+          functions: {
+            _onGetAllCommandInitialization: function(context, done) {
+              context.value = 5;
+              return Promise.resolve();
+            },
+            _getRulesForGetAllCommand: function(context, done) {
+              context.value++;
+              return Promise.resolve([]);
+            },
+            _getAll: function(context, done) {
+              return Promise.resolve({
+                contextValue: context.value,
+                serviceArg: this.anotherArg,
+                dataProxy: this.dataProxy
+              });
+            }
+          }
+        }).service;
+
         var dataProxy = {
           getAll: function(done) {
             done({});
           }
         };
 
+        var dataProxyPromisified = {
+          getAll: function(done) {
+            return Promise.resolve({});
+          }
+        };
+
         it("passes a context between functions", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.getAllCommand().execute((err, result) => {
-            expect(result.value.contextValue).toEqual(6);
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.getAllCommand()).execute(),
+            service2.getAllCommand().execute()
+          ])
+          .then(results => {
+            expect(results[0].value.contextValue).toEqual(6);
+            expect(results[1].value.contextValue).toEqual(6);
             onComplete();
           });
         });
 
         it("provides accessibility to containing service constructor arguments", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.getAllCommand().execute((err, result) => {
-            expect(result.value.dataProxy).toEqual(dataProxy);
-            expect(result.value.serviceArg).toEqual("hello");
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.getAllCommand()).execute(),
+            service2.getAllCommand().execute()
+          ])
+          .then(results => {
+            expect(results[0].value.dataProxy).toEqual(dataProxy);
+            expect(results[0].value.serviceArg).toEqual("hello");
+            expect(results[1].value.dataProxy).toEqual(dataProxyPromisified);
+            expect(results[1].value.serviceArg).toEqual("hello");
             onComplete();
           });
         });
@@ -334,7 +736,7 @@ describe("BusinessService", function() {
 
       describe("destroyCommand", () => {
 
-        var TestService = BusinessService.extend({
+        var TestService1 = BusinessService.extend({
           params: ['anotherArg', 'dataProxy'],
           functions: {
             _onDestroyCommandInitialization: function(id, context, done) {
@@ -356,33 +758,83 @@ describe("BusinessService", function() {
           }
         }).service;
 
+        var TestService2 = BusinessService.extend({
+          params: ['anotherArg', 'dataProxy'],
+          functions: {
+            _onDestroyCommandInitialization: function(id, context, done) {
+              context.value = 5;
+              return Promise.resolve();
+            },
+            _getRulesForDestroyCommand: function(id, context, done) {
+              context.value++;
+              return Promise.resolve([]);
+            },
+            _destroy: function(id, context, done) {
+              return Promise.resolve({
+                contextValue: context.value,
+                id: this.id + 2,
+                serviceArg: this.anotherArg,
+                dataProxy: this.dataProxy
+              });
+            }
+          }
+        }).service;
+
         var dataProxy = {
           destroy: function(id, done) {
             done({});
           }
         };
 
+        var dataProxyPromisified = {
+          destroy: function(id, done) {
+            return Promise.resolve({});
+          }
+        };
+
         it("passes a context between functions", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.destroyCommand(2).execute((err, result) => {
-            expect(result.value.contextValue).toEqual(6);
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.destroyCommand(2)).execute(),
+            service2.destroyCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.contextValue).toEqual(6);
+            expect(results[1].value.contextValue).toEqual(6);
             onComplete();
           });
         });
 
         it("provides accessibility to command method arguments", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.destroyCommand(2).execute((err, result) => {
-            expect(result.value.id).toEqual(4);
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.destroyCommand(2)).execute(),
+            service2.destroyCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.id).toEqual(4);
+            expect(results[1].value.id).toEqual(4);
             onComplete();
           });
         });
 
         it("provides accessibility to containing service constructor arguments", (onComplete) => {
-          var service = new TestService("hello", dataProxy);
-          service.destroyCommand(2).execute((err, result) => {
-            expect(result.value.dataProxy).toEqual(dataProxy);
-            expect(result.value.serviceArg).toEqual("hello");
+          var service1 = new TestService1("hello", dataProxy);
+          var service2 = new TestService2("hello", dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.destroyCommand(2)).execute(),
+            service2.destroyCommand(2).execute()
+          ])
+          .then(results => {
+            expect(results[0].value.dataProxy).toEqual(dataProxy);
+            expect(results[0].value.serviceArg).toEqual("hello");
+            expect(results[1].value.dataProxy).toEqual(dataProxyPromisified);
+            expect(results[1].value.serviceArg).toEqual("hello");
             onComplete();
           });
         });
@@ -477,12 +929,13 @@ describe("BusinessService", function() {
 
       describe("arguments", () => {
         describe("when 'functions' supplied", () => {
-          it("creates a command that executes the pipeline as expected", (onComplete) => {
+          fit("creates a command that executes the pipeline as expected", (onComplete) => {
             var Service = BusinessService.extend().service;
-            var sharedContext = null
+            var sharedContext1 = null;
+            var sharedContext2 = null;
 
             BusinessService.createCommand({
-              name: 'testCommand',
+              name: 'testCommand1',
               service: Service,
               functions: {
                 _onInitialization: function(context, done) {
@@ -494,16 +947,42 @@ describe("BusinessService", function() {
                   done(null, []);
                 },
                 _onValidationSuccess: function(context, done) {
-                  sharedContext = context;
+                  sharedContext1 = context;
                   done(null, { data: 'abc' });
                 }
               }
             });
 
+            BusinessService.createCommand({
+              name: 'testCommand2',
+              service: Service,
+              functions: {
+                _onInitialization: function(context, done) {
+                  context.testValue = "1";
+                  return Promise.resolve();
+                },
+                _getRules: function(context, done) {
+                  context.testValue += "2";
+                  return Promise.resolve([]);
+                },
+                _onValidationSuccess: function(context, done) {
+                  sharedContext2 = context;
+                  return Promise.resolve({ data: 'abc' });
+                }
+              }
+            });
+
             var service = new Service();
-            service.testCommand().execute((err, result) => {
-              expect(result.value).toEqual({ data: 'abc' });
-              expect(sharedContext.testValue).toEqual("12");
+
+            Promise.all([
+              promisify(service.testCommand1()).execute(),
+              service.testCommand2().execute()
+            ])
+            .then(results => {
+              expect(results[0].value).toEqual({ data: 'abc' });
+              expect(sharedContext1).toEqual({ testValue: '12' });
+              expect(results[1].value).toEqual({ data: 'abc' });
+              expect(sharedContext1).toEqual({ testValue: '12' });
               onComplete();
             });
           });
@@ -909,6 +1388,24 @@ describe("BusinessService", function() {
             onComplete()
           });
         });
+      });
+    });
+
+    describe('multiple command function args', () => {
+      it("passes the arguments to all functions as expected", () => {
+        // service.someCommand('a', 5, '6', {});
+      });
+    });
+
+    describe('function overloads as iffys () =>', () => {
+      it("invoke as expected", () => {
+        // service.someCommand('a', 5, '6', {});
+      });
+    });
+
+    describe('when only one command function is overloaded exposed as service.XYZCommand', () => {
+      it("invokes as expected", () => {
+        // service.someCommand('a', 5, '6', {});
       });
     });
   });
