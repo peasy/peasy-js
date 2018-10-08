@@ -916,12 +916,7 @@ describe("BusinessService", function() {
   });
 
   describe("BusinessService.createCommand", () => {
-    describe("overriding one method", () => {
 
-    });
-    describe("new command", () => {
-
-    });
     describe("method invocation", () => {
       it("creates the expected command functions on the service prototype", () => {
         var Service = BusinessService.extend().service;
@@ -1011,98 +1006,61 @@ describe("BusinessService", function() {
             Promise.all([
               promisify(service.testCommand()).execute(),
               service.testCommand().execute()
-            ])
-            .then(results => {
-              expect(results[0]).toEqual(new ExecutionResult(true, undefined, null));
-              expect(results[1]).toEqual(new ExecutionResult(true, undefined, null));
-              onComplete();
-            });
-          });
-        });
-
-        describe("when 'params' are supplied", () => {
-          it("instance members are created and assigned the appropriate argument values", (onComplete) => {
-            var params1 = [];
-            var params2 = [];
-            var Service = BusinessService.extend().service;
-            BusinessService.createCommand({
-              name: 'testCommand1',
-              service: Service,
-              functions: {
-                _onInitialization: function(firstName, lastName, context, done) {
-                  params1.push(this.firstName);
-                  params1.push(this.lastName);
-                  done();
-                }
-              },
-              params: ['firstName', 'lastName']
-            });
-            BusinessService.createCommand({
-              name: 'testCommand2',
-              service: Service,
-              functions: {
-                _onInitialization: function(firstName, lastName, context) {
-                  params2.push(this.firstName);
-                  params2.push(this.lastName);
-                  return Promise.resolve();
-                }
-              },
-              params: ['firstName', 'lastName']
-            });
-
-            var service = new Service({});
-
-            Promise.all([
-              promisify(service.testCommand1('Jimmy', 'Page')).execute(),
-              service.testCommand2('Jimmy', 'Page').execute()
-            ])
-            .then(results => {
-              expect(params1).toEqual(['Jimmy', 'Page']);
-              expect(params2).toEqual(['Jimmy', 'Page']);
-              onComplete();
+              ])
+              .then(results => {
+                expect(results[0]).toEqual(new ExecutionResult(true, undefined, null));
+                expect(results[1]).toEqual(new ExecutionResult(true, undefined, null));
+                onComplete();
+              });
             });
           });
 
-          it("command function arguments are supplied appropriately", (onComplete) => {
-            var params1 = [];
-            var params2 = [];
-            var Service = BusinessService.extend().service;
+          describe("when 'params' are supplied", () => {
+            it("command execution invokes pipeline functions correctly with expected arguments", (onComplete) => {
+              var Service1 = BusinessService.extend().service;
+              var Service2 = BusinessService.extend().service;
 
-            BusinessService.createCommand({
-              name: 'testCommand1',
-              service: Service,
-              functions: {
-                _onInitialization: function(firstName, lastName, context, done) {
-                  params1.push(firstName);
-                  params1.push(lastName);
-                  done();
-                }
-              }
-            });
+              BusinessService.createCommand({
+                name: 'testCommand',
+                service: Service1,
+                functions: {
+                  _getRules: function(a, b, c, d, context, done) {
+                    context.c = c;
+                    done(null, []);
+                  },
+                  _onValidationSuccess: function(a, b, c, d, context, done) {
+                    done(null, { a: this.a, b: b, c: context.c, d: d });
+                  }
+                },
+                params: ['a', 'b', 'c', 'd']
+              });
 
-            BusinessService.createCommand({
-              name: 'testCommand2',
-              service: Service,
-              functions: {
-                _onInitialization: function(firstName, lastName, context) {
-                  params2.push(firstName);
-                  params2.push(lastName);
-                  return Promise.resolve();
-                }
-              }
-            });
+              BusinessService.createCommand({
+                name: 'testCommand',
+                service: Service2,
+                functions: {
+                  _onInitialization: function(a, b, c, d, context) {
+                    context.d = d;
+                    return Promise.resolve();
+                  },
+                  _onValidationSuccess: function(a, b, c, d, context) {
+                    return Promise.resolve({ a: a, b: this.b, c: this.c, d: context.d });
+                  }
+                },
+                params: ['a', 'b', 'c', 'd']
+              });
 
-            var service = new Service({});
+              var service1 = new Service1();
+              var service2 = new Service2();
 
             Promise.all([
-              promisify(service.testCommand1('Jimmy', 'Page')).execute(),
-              service.testCommand2('Jimmy', 'Page').execute()
-            ])
-            .then(results => {
-              expect(params1).toEqual(['Jimmy', 'Page']);
-              expect(params2).toEqual(['Jimmy', 'Page']);
+              promisify(service1.testCommand(1, 2, 3, 4)).execute(),
+              service2.testCommand(1, 2, 3, 4).execute()
+            ]).then(results => {
+              expect(results[0].value).toEqual({ a: 1, b: 2, c: 3, d: 4 });
+              expect(results[1].value).toEqual({ a: 1, b: 2, c: 3, d: 4 });
               onComplete();
-            });
+            })
           });
         });
 
@@ -2018,9 +1976,6 @@ describe("BusinessService", function() {
         }
 
         class AutoWrapService extends BusinessService {
-          // constructor(dataProxy) {
-          //   super(dataProxy);
-          // }
           _onGetByIdCommandInitialization(id, context) {
             state.val += id;
           }
@@ -2106,26 +2061,6 @@ describe("BusinessService", function() {
       });
     });
 
-    // describe('when only one command function is overloaded exposed as service.XYZCommand', () => {
-    //   it("invokes as expected", () => {
-    //     var state = {};
-    //     class SomeService extends BusinessService {
-    //       someCommand(name, address, zip) {
-    //         return new Command({
-    //           _onInitialization: (name, address, zip) => {
-    //             state.name = name;
-    //             state.address = address;
-    //             state.zip = zip;
-    //           }
-    //         });
-    //       }
-    //     }
-
-    //     var service = new SomeService();
-    //     var result = await service.someCommand()
-    //   });
-    // });
-
     describe('when command method is overridden', () => {
       it("bypasses business service command pipeline", async () => {
         var state = {};
@@ -2159,10 +2094,6 @@ describe("BusinessService", function() {
       });
     });
 
-
-    // write es6 tests for command and rule
-
   });
-
 
 });
