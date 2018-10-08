@@ -3,7 +3,7 @@ var Command = require('./command');
 var ExecutionResult = require('./executionResult');
 var Rule = require('./rule');
 var ServiceException = require('./serviceException');
-var ServiceException = require('./configuration');
+var Configuration = require('./configuration');
 
 module.exports = {
   BusinessService: BusinessService,
