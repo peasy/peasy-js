@@ -10,7 +10,8 @@
             "name": "JasmineIndividualTest",
             "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
             "args": [
-                "spec/rulesValidatorSpec.js"
+                "spec/businessServiceSpec.js"
+                // "spec/rulesValidatorSpec.js"
             ],
             "env": {
                 "NODE_PATH": "."

@@ -25,6 +25,11 @@ declare module Peasy { // TODO: module vs. namespace
     destroy(id: TKey): Promise<void>
   }
 
+  class Configuration {
+    /** if true, will wrap command function results in promises */
+    static autoPromiseWrap: boolean;
+  }
+
   class BusinessService<T, TKey> implements IBusinessService<T, TKey> {
     constructor(dataProxy: IDataProxy<T, TKey>);
     getByIdCommand(id: TKey): ICommand<T>;

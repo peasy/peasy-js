@@ -1,6 +1,7 @@
 var ExecutionResult = require('./executionResult');
 var ServiceException = require('./serviceException');
 var RulesValidator = require('./rulesValidator');
+var Configuration = require('./configuration');
 
 var Command = (function() {
 
@@ -88,18 +89,35 @@ var Command = (function() {
 
       if (!done) return promise;
 
-      function performInitialization(func) {
-        return initialization(context);
+      function performInitialization() {
+        var result = initialization(context);
+        if (Configuration.autoPromiseWrap &&
+          (result === undefined || typeof result.then != 'function')) {
+            return Promise.resolve(result);
+        }
+        return result;
       }
 
       function getRules() {
-        return rulesFunc(context)
-          .then(rules => {
-            if (!Array.isArray(rules)) {
-              rules = [rules];
-            }
-            return rules;
-          });
+        var result = rulesFunc(context);
+        if (Configuration.autoPromiseWrap) {
+          if (Array.isArray(result)) {
+            result = Promise.resolve(result);
+          }
+          if (result === undefined) {
+            result = Promise.resolve([]);
+          }
+          if (typeof result.then != 'function') {
+            result = Promise.resolve(result);
+          }
+        }
+
+        return result.then(rules => {
+          if (!Array.isArray(rules)) {
+            rules = [rules];
+          }
+          return rules;
+        });
       }
 
       function validateRules(rules) {
@@ -118,11 +136,19 @@ var Command = (function() {
           return executionFailureFunc(errors);
 
         try {
-          return validationSuccessFunc(context)
-            .then(result => {
-              return Promise.resolve(new ExecutionResult(true, result, null));
-            })
-            .catch(handleError);
+          var result = validationSuccessFunc(context);
+          if (Configuration.autoPromiseWrap) {
+            if (result === undefined) {
+              result = Promise.resolve(result);
+            }
+            if (typeof result.then != 'function') {
+              result = Promise.resolve(result);
+            }
+          }
+          return result.then(result => {
+            return Promise.resolve(new ExecutionResult(true, result, null));
+          })
+          .catch(handleError);
         } catch(err) {
           return handleError(err);
         }

@@ -1,4 +1,5 @@
 var Command = require('./command');
+var Configuration = require('./configuration');
 
 var BusinessService = (function() {
 
@@ -112,15 +113,34 @@ var BusinessService = (function() {
       var command = new Command({
         _onInitialization: function(context, done) {
           var args = argValues.concat([context, done]);
-          return serviceInstance[onInitialization].apply(this, args);
+          var result = serviceInstance[onInitialization].apply(this, args);
+          if (Configuration.autoPromiseWrap) {
+            if (result === undefined && !done) return Promise.resolve();
+            if (typeof result.then != 'function') {
+              return Promise.resolve(result);
+            }
+          }
+          return result;
         },
         _getRules: function(context, done) {
           var args = argValues.concat([context, done]);
-          return serviceInstance[getRules].apply(this, args);
+          var result = serviceInstance[getRules].apply(this, args);
+          if (!Configuration.autoPromiseWrap) return result;
+          if (!result && !done) return Promise.resolve([]);
+          if (typeof result.then != 'function') {
+            return Promise.resolve(result);
+          }
+          return result;
         },
         _onValidationSuccess: function(context, done) {
           var args = argValues.concat([context, done]);
-          return serviceInstance[onValidationSuccess].apply(this, args);
+          var result = serviceInstance[onValidationSuccess].apply(this, args);
+          if (!Configuration.autoPromiseWrap) return result;
+          if (!result && !done) return Promise.resolve();
+          if (typeof result.then != 'function') {
+            return Promise.resolve(result);
+          }
+          return result;
         }
       });
 
@@ -162,8 +182,6 @@ var BusinessService = (function() {
       _onValidationSuccess: function(context, done) {
         if (done) return this.dataProxy.getAll(done);
         return this.dataProxy.getAll();
-        // TODO: will this break anything?
-        // return this.dataProxy.getAll(done);
       }
     }
   });

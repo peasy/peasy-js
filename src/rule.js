@@ -1,4 +1,5 @@
 var RulesValidator = require('./rulesValidator');
+var Configuration = require('./configuration');
 
 var Rule = function () {
 
@@ -149,7 +150,6 @@ var Rule = function () {
     _onValidate: function (done) {},
 
     validate: function(done) {
-      debugger;
       var self = this;
       self.errors = [];
 
@@ -160,7 +160,15 @@ var Rule = function () {
         });
       }
 
-      return this._onValidate().then(validationComplete);
+      var result = this._onValidate();
+
+      if (Configuration.autoPromiseWrap) {
+        if (result === undefined || typeof result.then != 'function') {
+          result = Promise.resolve(result);
+        }
+      }
+
+      return result.then(validationComplete);
 
       function validationComplete(onComplete) {
         if (self.valid) {

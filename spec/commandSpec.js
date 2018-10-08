@@ -383,4 +383,9 @@ describe("Command", function() {
     });
   });
 
+  describe('Configuration.autoPromiseWrap = true', () => {
+    it("invokes each function without an explicit return of a promise", async () => {
+    });
+  });
+
 });
