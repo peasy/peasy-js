@@ -1,7 +1,7 @@
 var ExecutionResult = require('./executionResult');
 var ServiceException = require('./serviceException');
 var RulesValidator = require('./rulesValidator');
-var Configuration = require('./configuration');
+var utility = require('./utility');
 
 var Command = (function() {
 
@@ -91,27 +91,12 @@ var Command = (function() {
 
       function performInitialization() {
         var result = initialization(context);
-        if (Configuration.autoPromiseWrap &&
-          (result === undefined || typeof result.then != 'function')) {
-            return Promise.resolve(result);
-        }
-        return result;
+        return utility.autoWrapInitializationResult(result);
       }
 
       function getRules() {
         var result = rulesFunc(context);
-        if (Configuration.autoPromiseWrap) {
-          if (Array.isArray(result)) {
-            result = Promise.resolve(result);
-          }
-          if (result === undefined) {
-            result = Promise.resolve([]);
-          }
-          if (typeof result.then != 'function') {
-            result = Promise.resolve(result);
-          }
-        }
-
+        result = utility.autoWrapRulesResult(result);
         return result.then(rules => {
           if (!Array.isArray(rules)) {
             rules = [rules];
@@ -132,19 +117,10 @@ var Command = (function() {
       }
 
       function createExecutionResult(errors) {
-        if (errors.length > 0)
-          return executionFailureFunc(errors);
-
+        if (errors.length > 0) return executionFailureFunc(errors);
         try {
           var result = validationSuccessFunc(context);
-          if (Configuration.autoPromiseWrap) {
-            if (result === undefined) {
-              result = Promise.resolve(result);
-            }
-            if (typeof result.then != 'function') {
-              result = Promise.resolve(result);
-            }
-          }
+          result = utility.autoWrapValidationCompleteResult(result);
           return result.then(result => {
             return Promise.resolve(new ExecutionResult(true, result, null));
           })

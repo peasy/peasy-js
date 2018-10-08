@@ -1,5 +1,5 @@
 var Command = require('./command');
-var Configuration = require('./configuration');
+var utility = require('./utility');
 
 var BusinessService = (function() {
 
@@ -114,33 +114,17 @@ var BusinessService = (function() {
         _onInitialization: function(context, done) {
           var args = argValues.concat([context, done]);
           var result = serviceInstance[onInitialization].apply(this, args);
-          if (Configuration.autoPromiseWrap) {
-            if (result === undefined && !done) return Promise.resolve();
-            if (typeof result.then != 'function') {
-              return Promise.resolve(result);
-            }
-          }
-          return result;
+          return utility.autoWrapInitializationResult(result);
         },
         _getRules: function(context, done) {
           var args = argValues.concat([context, done]);
           var result = serviceInstance[getRules].apply(this, args);
-          if (!Configuration.autoPromiseWrap) return result;
-          if (!result && !done) return Promise.resolve([]);
-          if (typeof result.then != 'function') {
-            return Promise.resolve(result);
-          }
-          return result;
+          return utility.autoWrapRulesResult(result);
         },
         _onValidationSuccess: function(context, done) {
           var args = argValues.concat([context, done]);
           var result = serviceInstance[onValidationSuccess].apply(this, args);
-          if (!Configuration.autoPromiseWrap) return result;
-          if (!result && !done) return Promise.resolve();
-          if (typeof result.then != 'function') {
-            return Promise.resolve(result);
-          }
-          return result;
+          return utility.autoWrapValidationCompleteResult(result);
         }
       });
 
