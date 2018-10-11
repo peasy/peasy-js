@@ -108,22 +108,18 @@ var BusinessService = (function() {
     service.prototype[name] = function() {
       var serviceInstance = this;
       var constructorArgs = arguments;
-      var argValues = Object.keys(constructorArgs).map(key => constructorArgs[key]);
 
       var command = new Command({
-        _onInitialization: function(context, done) {
-          var args = argValues.concat([context, done]);
-          var result = serviceInstance[onInitialization].apply(this, args);
+        _onInitialization: function() {
+          var result = serviceInstance[onInitialization].apply(this, arguments);
           return utility.autoWrapInitializationResult(result);
         },
-        _getRules: function(context, done) {
-          var args = argValues.concat([context, done]);
-          var result = serviceInstance[getRules].apply(this, args);
+        _getRules: function() {
+          var result = serviceInstance[getRules].apply(this, arguments);
           return utility.autoWrapRulesResult(result);
         },
-        _onValidationSuccess: function(context, done) {
-          var args = argValues.concat([context, done]);
-          var result = serviceInstance[onValidationSuccess].apply(this, args);
+        _onValidationSuccess: function() {
+          var result = serviceInstance[onValidationSuccess].apply(this, arguments);
           return utility.autoWrapValidationCompleteResult(result);
         }
       });
@@ -135,6 +131,8 @@ var BusinessService = (function() {
       Object.keys(serviceInstance).forEach((key) => {
         command[key] = serviceInstance[key];
       });
+
+      command['arguments'] = arguments;
 
       return command;
     };

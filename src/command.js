@@ -48,6 +48,9 @@ var Command = (function() {
     execute: function(done) {
       var self = this;
       var context = {};
+      var constructorArgs = self.arguments || {};
+      var constructorValues = Object.keys(constructorArgs).map(key => constructorArgs[key]);
+      var functionArgs = constructorValues.concat([context]);
 
       var initialization = self._onInitialization.bind(self);
       var rulesFunc = self._getRules.bind(self);
@@ -90,12 +93,12 @@ var Command = (function() {
       if (!done) return promise;
 
       function performInitialization() {
-        var result = initialization(context);
+        var result = initialization.apply(self, functionArgs);
         return utility.autoWrapInitializationResult(result);
       }
 
       function getRules() {
-        var result = rulesFunc(context);
+        var result = rulesFunc.apply(self, functionArgs);
         result = utility.autoWrapRulesResult(result);
         return result.then(rules => {
           if (!Array.isArray(rules)) {
@@ -119,7 +122,7 @@ var Command = (function() {
       function createExecutionResult(errors) {
         if (errors.length > 0) return executionFailureFunc(errors);
         try {
-          var result = validationSuccessFunc(context);
+          var result = validationSuccessFunc.apply(self, functionArgs);
           result = utility.autoWrapValidationCompleteResult(result);
           return result.then(result => {
             return Promise.resolve(new ExecutionResult(true, result, null));
@@ -140,10 +143,11 @@ var Command = (function() {
       function wrap(fn) {
         return function(context) {
           return new Promise((resolve, reject) => {
-            fn(context, function(err, result) {
+            var callback = function(err, result) {
               if (err) return reject(err);
               resolve(result);
-            });
+            }
+            fn.apply(self, functionArgs.concat(callback));
           });
         }
       }
@@ -165,18 +169,21 @@ var Command = (function() {
 
     Extended.prototype = new Command();
 
-    Extended.prototype._onInitialization = functions._onInitialization || function(context, done) {
-      if (done) return done();
+    Extended.prototype._onInitialization = functions._onInitialization || function() {
+      var doneCallback = arguments[Object.keys(arguments).length -1];
+      if (doneCallback && typeof doneCallback === 'function') return doneCallback(null);
       return Promise.resolve();
     };
 
-    Extended.prototype._getRules = functions._getRules || function(context, done) {
-      if (done) return done(null, []);
+    Extended.prototype._getRules = functions._getRules || function() {
+      var doneCallback = arguments[Object.keys(arguments).length -1];
+      if (doneCallback && typeof doneCallback === 'function') return doneCallback(null, []);
       return Promise.resolve([]);
     };
 
-    Extended.prototype._onValidationSuccess = functions._onValidationSuccess || function(context, done) {
-      if (done) return done();
+    Extended.prototype._onValidationSuccess = functions._onValidationSuccess || function() {
+      var doneCallback = arguments[Object.keys(arguments).length -1];
+      if (doneCallback && typeof doneCallback === 'function') return doneCallback(null);
       return Promise.resolve();
     };
 
