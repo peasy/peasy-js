@@ -1,15 +1,29 @@
-describe("Rule", function() {
+fdescribe("Rule", function() {
   var Rule = require("../src/rule");
   var Command = require("../src/command");
 
+  function wrap(fn, args) {
+    return new Promise((resolve, reject) => {
+      fn(args, (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      });
+    });
+  }
+
   describe("getAllRulesFrom", () => {
-    it("invokes callback immediately if passed empty array", () => {
-      Rule.getAllRulesFrom([], (err, rules) => {
-        expect(rules.length).toEqual(0);
-      })
+    it("invokes callback immediately if passed empty array", async () => {
+
+      var results = await Promise.all([
+        wrap(Rule.getAllRulesFrom, []),
+        Rule.getAllRulesFrom([])
+      ]);
+
+      expect(results[0].length).toEqual(0);
+      expect(results[1].length).toEqual(0);
     });
 
-    it("retrieves all rules from supplied commands", () => {
+    fit("retrieves all rules from supplied commands", async () => {
       var Rule1 = Rule.extend({
         functions: {
           _onValidate: (done) => done()
@@ -34,14 +48,55 @@ describe("Rule", function() {
           }
         }
       });
-
-      var commands = [new Command1(), new Command2()];
-      Rule.getAllRulesFrom(commands, (err, rules) => {
-        expect(rules.length).toEqual(3);
-        expect(rules[0] instanceof Rule1).toBe(true);
-        expect(rules[1] instanceof Rule2).toBe(true);
-        expect(rules[2] instanceof Rule2).toBe(true);
+      var Rule3 = Rule.extend({
+        functions: {
+          _onValidate: () => Promise.resolve()
+        }
       });
+      var Rule4 = Rule.extend({
+        functions: {
+          _onValidate: () => Promise.resolve()
+        }
+      });
+      var Command3 = Command.extend({
+        functions: {
+          _getRules: function(context) {
+            return Promise.resolve([new Rule3(), new Rule4()]);
+          }
+        }
+      });
+      var Command4 = Command.extend({
+        functions: {
+          _getRules: function(context) {
+            return Promise.resolve(new Rule4());
+          }
+        }
+      });
+
+      var commandsWithCallbacks = [
+        new Command1(),
+        new Command2()
+      ];
+
+      var commandsWithPromises = [
+        new Command3(),
+        new Command4()
+      ];
+
+      var results = await Promise.all([
+        wrap(Rule.getAllRulesFrom, commandsWithCallbacks),
+        Rule.getAllRulesFrom(commandsWithPromises)
+      ]);
+
+      expect(results[0].length).toEqual(3);
+      expect(results[0][0] instanceof Rule1).toBe(true);
+      expect(results[0][1] instanceof Rule2).toBe(true);
+      expect(results[0][2] instanceof Rule2).toBe(true);
+
+      expect(results[1].length).toEqual(3);
+      expect(results[1][0] instanceof Rule3).toBe(true);
+      expect(results[1][1] instanceof Rule4).toBe(true);
+      expect(results[1][2] instanceof Rule4).toBe(true);
     });
   });
 
