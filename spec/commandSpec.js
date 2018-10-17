@@ -128,7 +128,7 @@ describe("Command", function() {
         FalseRuleWithCallback = Rule.extend({
           params: ['message'],
           functions: {
-            _onValidate: function(done) {
+            _onValidate: function(message, done) {
               this._invalidate(this.message);
               done();
             }

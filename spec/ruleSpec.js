@@ -118,7 +118,7 @@ describe("Rule", function() {
     var TestRule1 = Rule.extend({
       params: ['value'],
       functions: {
-        _onValidate: function() {
+        _onValidate: function(value) {
           if (!this.value) {
             this._invalidate("NOPE");
           }
@@ -130,7 +130,7 @@ describe("Rule", function() {
     var TestRule2 = Rule.extend({
       params: ['value'],
       functions: {
-        _onValidate: function(done) {
+        _onValidate: function(value, done) {
           if (!this.value) {
             this._invalidate("NOPE");
           }
@@ -315,7 +315,7 @@ describe("Rule", function() {
       var TestRule1 = Rule.extend({
         params: ['word', 'bar'],
         functions: {
-          _onValidate: function() {
+          _onValidate: function(word, bar) {
             expect(this.word).toEqual('yes');
             expect(this.bar).toEqual('no');
             return Promise.resolve();
@@ -326,7 +326,7 @@ describe("Rule", function() {
       var TestRule2 = Rule.extend({
         params: ['word', 'bar'],
         functions: {
-          _onValidate: function(done) {
+          _onValidate: function(word, bar, done) {
             expect(this.word).toEqual('yes');
             expect(this.bar).toEqual('no');
             done();
@@ -358,18 +358,18 @@ describe("Rule", function() {
     }
   });
 
-  var LengthRule2 = Rule.extend({
-    association: "foo",
-    params: ['word', 'bar'],
-    functions: {
-      _onValidate: function() {
-        if (this.word.length < 1) {
-          this._invalidate("too few characters");
-        }
-        return Promise.resolve();
-      }
-    }
-  });
+  // var LengthRule2 = Rule.extend({
+  //   association: "foo",
+  //   params: ['word', 'bar'],
+  //   functions: {
+  //     _onValidate: function() {
+  //       if (this.word.length < 1) {
+  //         this._invalidate("too few characters");
+  //       }
+  //       return Promise.resolve();
+  //     }
+  //   }
+  // });
 
   runTests();
 
@@ -386,19 +386,21 @@ describe("Rule", function() {
     done();
   };
 
-  // class LengthRule2 extends Rule {
-  //   constructor(foo, bar) {
-  //     this.foo = foo;
-  //     this.bar = bar;
-  //   }
+  class LengthRule2 extends Rule {
+    constructor(word, bar) {
+      super();
+      this.association = 'foo';
+      this.word = word;
+      this.bar = bar;
+    }
 
-  //   _onValidate() {
-  //     if (this.word.length < 1) {
-  //       this._invalidate("too few characters");
-  //     }
-  //     return Promise.resolve();
-  //   }
-  // }
+    _onValidate() {
+      if (this.word.length < 1) {
+        this._invalidate("too few characters");
+      }
+      return Promise.resolve();
+    }
+  }
 
   runTests();
 
@@ -974,7 +976,7 @@ describe("Rule", function() {
       var TestRule1 = Rule.extend({
         params: ['value'],
         functions: {
-          _onValidate: function(done) {
+          _onValidate: function(value, done) {
             if (!this.value) {
               this._invalidate("NOPE");
             }
@@ -986,8 +988,8 @@ describe("Rule", function() {
       var TestRule2 = Rule.extend({
         params: ['value'],
         functions: {
-          _onValidate: function() {
-            if (!this.value) {
+          _onValidate: function(value) {
+            if (!value) {
               this._invalidate("NOPE");
             }
             return Promise.resolve();
@@ -1240,6 +1242,32 @@ describe("Rule", function() {
 
   describe('Configuration.autoPromiseWrap = true', () => {
     it("invokes each function without an explicit return of a promise", async () => {
+      var Rule1 = Rule.extend({
+        functions: {
+          _onValidate: function(v1, v2, done) {
+            if (!v1) {
+              this._invalidate("NOPE");
+            }
+            done();
+          }
+        }
+      });
+      // var Rule1 = Rule.extend({
+      //   functions: {
+      //     // _onValidate: (a, b, done) => {
+      //     //   var x = a;
+      //     //   done();
+      //     // }
+      //     _onValidate: function(done) {
+      //       done();
+      //     }
+      //   }
+      // });
+
+      var r = new Rule1("a", false);
+      r.validate((result) => {
+
+      });
     });
   });
 

@@ -37,7 +37,7 @@ describe("RulesValidator", () => {
       var TestRule = Rule.extend({
         params: ['raiseError'],
         functions: {
-          _onValidate: function(done) {
+          _onValidate: function(raiseError, done) {
             if (this.raiseError) {
               return done(err + ++counter);
             }
