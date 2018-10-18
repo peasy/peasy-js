@@ -2033,9 +2033,6 @@ describe("BusinessService", function() {
           }
         }
 
-        // redundant, just for illustrative purposes - set to false to see tests fail
-        Configuration.autoPromiseWrap = true;
-
         var dataProxy = {};
         var service = new AutoWrapService(dataProxy);
 
@@ -2063,6 +2060,8 @@ describe("BusinessService", function() {
 
     describe('when command method is overridden', () => {
       it("bypasses business service command pipeline", async () => {
+
+
         var state = {};
         class SomeService extends BusinessService {
           insertCommand(name, address, zip) {

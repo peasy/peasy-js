@@ -4,6 +4,7 @@ describe("Command", function() {
   var ServiceException = require("../src/serviceException");
   var Configuration = require("../src/configuration");
 
+  Configuration.autoPromiseWrap = true;
 
   function promisify(command) {
     return {
@@ -568,18 +569,19 @@ describe("Command", function() {
         }
       });
 
-      // NOTE: this works due to autoPromiseWrap
       var Command2 = Command.extend({
         functions: {
           _onInitialization: function(a, b, c, context) {
             context.a = a; context.b = b; context.c = c;
+            return Promise.resolve();
           },
           _getRules: function(a, b, c, context) {
             context.a += a; context.b += b; context.c += c;
+            return Promise.resolve([]);
           },
           _onValidationSuccess: function(a, b, c, context) {
             context.a += a; context.b += b; context.c += c;
-            return context;
+            return Promise.resolve(context);
           }
         }
       });
@@ -660,7 +662,6 @@ describe("Command", function() {
 
   describe('Configuration.autoPromiseWrap = true', () => {
     it("invokes each function without an explicit return of a promise", async () => {
-      Configuration.autoPromiseWrap = true;
 
       var command1 = new Command({
         _onInitialization: function(context) {
@@ -686,12 +687,12 @@ describe("Command", function() {
 
       var Command3 = Command.extend({
         functions: {
-          _onInitialization: function(context) {
+          _onInitialization: function(a, b, context) {
           },
-          _getRules: function(context) {
+          _getRules: function(a, b, context) {
           },
-          _onValidationSuccess: function(context) {
-            return { stuff: "command3 result"};
+          _onValidationSuccess: function(a, b, context) {
+            return { stuff: `${a} ${b}`};
           }
         }
       });

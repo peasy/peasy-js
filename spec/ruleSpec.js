@@ -1,6 +1,9 @@
 describe("Rule", function() {
   var Rule = require("../src/rule");
   var Command = require("../src/command");
+  var Configuration = require("../src/configuration");
+
+  Configuration.autoPromiseWrap = true;
 
   function promisify(rule) {
     return {
@@ -1237,37 +1240,69 @@ describe("Rule", function() {
       });
 
     });
-
   }
 
-  describe('Configuration.autoPromiseWrap = true', () => {
-    it("invokes each function without an explicit return of a promise", async () => {
+  describe('Constructor value passing', () => {
+    it("passes constructor parameters to _onValidate as expected", (onComplete) => {
+
       var Rule1 = Rule.extend({
         functions: {
           _onValidate: function(v1, v2, done) {
-            if (!v1) {
-              this._invalidate("NOPE");
+            if (v1) {
+              this._invalidate(`NOPE ${v1} ${v2}`);
             }
             done();
           }
         }
       });
-      // var Rule1 = Rule.extend({
-      //   functions: {
-      //     // _onValidate: (a, b, done) => {
-      //     //   var x = a;
-      //     //   done();
-      //     // }
-      //     _onValidate: function(done) {
-      //       done();
-      //     }
-      //   }
-      // });
 
-      var r = new Rule1("a", false);
-      r.validate((result) => {
-
+      var rule = new Rule1("hello", 4);
+      rule.validate((err, result) => {
+        expect(rule.errors[0].message).toEqual("NOPE hello 4");
+        onComplete();
       });
+    });
+  });
+
+  describe('Configuration.autoPromiseWrap = true', () => {
+    it("invokes each function without an explicit return of a promise", async () => {
+
+      var Rule1 = Rule.extend({
+        functions: {
+          _onValidate: function(v1, v2) {
+            if (v1) {
+              this._invalidate(`NOPE ${v1} ${v2}`);
+            }
+          }
+        }
+      });
+
+      class Rule2 extends Rule {
+        constructor(v1, v2) {
+          super();
+          this.v1 = v1;
+          this.v2 = v2;
+        }
+        _onValidate() {
+          if (this.v1) {
+            this._invalidate(`NOPE ${this.v1} ${this.v2}`);
+          }
+        }
+      }
+
+      var rule1 = new Rule1("a", false);
+      var rule2 = new Rule2("a", false);
+
+      await Promise.all([
+        rule1.validate(),
+        rule2.validate()
+      ]);
+
+      expect(rule1.errors[0].message).toEqual("NOPE a false");
+      expect(rule1.valid).toEqual(false);
+
+      expect(rule2.errors[0].message).toEqual("NOPE a false");
+      expect(rule2.valid).toEqual(false);
     });
   });
 

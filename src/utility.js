@@ -37,6 +37,10 @@ var utility = {
     return wrap(result);
   },
 
+  autoWrapRuleValidationCompleteResult: (result) => {
+    return wrap(result);
+  },
+
 };
 
 module.exports = utility;

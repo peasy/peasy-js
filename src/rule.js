@@ -145,7 +145,7 @@ var Rule = function () {
     validate: function(done) {
       var self = this;
       self.errors = [];
-      var args = self.arguments || [];
+      var args = self.arguments || {};
       var argumentValues = Object.keys(args).map(key => self.arguments[key]);
 
       if (done) {
