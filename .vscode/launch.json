@@ -10,7 +10,9 @@
             "name": "JasmineIndividualTest",
             "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
             "args": [
-                "spec/rulesValidatorSpec.js"
+                // "src/sampleWithCallbacks.js"
+                "src/sampleWithPromises.js"
+                // "spec/commandSpec.js"
             ],
             "env": {
                 "NODE_PATH": "."

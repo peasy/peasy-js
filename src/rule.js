@@ -1,4 +1,5 @@
 var RulesValidator = require('./rulesValidator');
+var utility = require('./utility');
 
 var Rule = function () {
 
@@ -28,13 +29,6 @@ var Rule = function () {
 
     return Promise.all(commands.map(c => c._getRules(context)))
       .then(results => [].concat.apply([], results)); // flatten array
-
-    return new Promise((resolve, reject) => {
-      doWork(commands, (err, result) => {
-        if (err) return reject(err);
-        return resolve(result);
-      });
-    })
 
     function doWork(commands, done) {
 
@@ -149,18 +143,23 @@ var Rule = function () {
     _onValidate: function (done) {},
 
     validate: function(done) {
-      debugger;
       var self = this;
       self.errors = [];
+      var args = self.arguments || {};
+      var argumentValues = Object.keys(args).map(key => self.arguments[key]);
 
       if (done) {
-        return this._onValidate((err) => {
+        var cb = (err) => {
           if (err) return done(err);
           validationComplete(done);
-        });
+        };
+        return this._onValidate.apply(self, argumentValues.concat(cb));
       }
 
-      return this._onValidate().then(validationComplete);
+      var result = this._onValidate.apply(self, argumentValues);
+      result = utility.autoWrapValidationResult(result);
+
+      return result.then(validationComplete);
 
       function validationComplete(onComplete) {
         if (self.valid) {

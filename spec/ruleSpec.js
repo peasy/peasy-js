@@ -1,15 +1,45 @@
 describe("Rule", function() {
   var Rule = require("../src/rule");
   var Command = require("../src/command");
+  var Configuration = require("../src/configuration");
+
+  Configuration.autoPromiseWrap = true;
+
+  function promisify(rule) {
+    return {
+      validate: function() {
+        return new Promise((resolve, reject) => {
+          rule.validate(function (err, result) {
+            if (err) return reject(err);
+            resolve(result);
+          });
+        });
+      }
+    }
+  }
+
+  function wrap(fn, args) {
+    return new Promise((resolve, reject) => {
+      fn(args, (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      });
+    });
+  }
 
   describe("getAllRulesFrom", () => {
-    it("invokes callback immediately if passed empty array", () => {
-      Rule.getAllRulesFrom([], (err, rules) => {
-        expect(rules.length).toEqual(0);
-      })
+    it("invokes onComplete immediately if passed empty array", async () => {
+
+      var results = await Promise.all([
+        wrap(Rule.getAllRulesFrom, []),
+        Rule.getAllRulesFrom([])
+      ]);
+
+      expect(results[0].length).toEqual(0);
+      expect(results[1].length).toEqual(0);
     });
 
-    it("retrieves all rules from supplied commands", () => {
+    it("retrieves all rules from supplied commands", async () => {
       var Rule1 = Rule.extend({
         functions: {
           _onValidate: (done) => done()
@@ -34,120 +64,244 @@ describe("Rule", function() {
           }
         }
       });
-
-      var commands = [new Command1(), new Command2()];
-      Rule.getAllRulesFrom(commands, (err, rules) => {
-        expect(rules.length).toEqual(3);
-        expect(rules[0] instanceof Rule1).toBe(true);
-        expect(rules[1] instanceof Rule2).toBe(true);
-        expect(rules[2] instanceof Rule2).toBe(true);
+      var Rule3 = Rule.extend({
+        functions: {
+          _onValidate: () => Promise.resolve()
+        }
       });
+      var Rule4 = Rule.extend({
+        functions: {
+          _onValidate: () => Promise.resolve()
+        }
+      });
+      var Command3 = Command.extend({
+        functions: {
+          _getRules: function(context) {
+            return Promise.resolve([new Rule3(), new Rule4()]);
+          }
+        }
+      });
+      var Command4 = Command.extend({
+        functions: {
+          _getRules: function(context) {
+            return Promise.resolve(new Rule4());
+          }
+        }
+      });
+
+      var commandsWithCallbacks = [
+        new Command1(),
+        new Command2()
+      ];
+
+      var commandsWithPromises = [
+        new Command3(),
+        new Command4()
+      ];
+
+      var results = await Promise.all([
+        wrap(Rule.getAllRulesFrom, commandsWithCallbacks),
+        Rule.getAllRulesFrom(commandsWithPromises)
+      ]);
+
+      expect(results[0].length).toEqual(3);
+      expect(results[0][0] instanceof Rule1).toBe(true);
+      expect(results[0][1] instanceof Rule2).toBe(true);
+      expect(results[0][2] instanceof Rule2).toBe(true);
+
+      expect(results[1].length).toEqual(3);
+      expect(results[1][0] instanceof Rule3).toBe(true);
+      expect(results[1][1] instanceof Rule4).toBe(true);
+      expect(results[1][2] instanceof Rule4).toBe(true);
     });
   });
 
   describe("ifAllValid", () => {
-    var TestRule = Rule.extend({
+
+    var TestRule1 = Rule.extend({
       params: ['value'],
       functions: {
-        _onValidate: function(done) {
+        _onValidate: function(value) {
           if (!this.value) {
             this._invalidate("NOPE");
           }
-          //var time = Math.floor((Math.random() * 10000) + 1);
-          //setTimeout(() => done(), 500);
+          return Promise.resolve();
+        }
+      }
+    });
+
+    var TestRule2 = Rule.extend({
+      params: ['value'],
+      functions: {
+        _onValidate: function(value, done) {
+          if (!this.value) {
+            this._invalidate("NOPE");
+          }
           done();
         }
       }
     });
 
     describe("valid parent rule set", () => {
-      it('invokes the next set of rules', (callback) => {
-        var rule = Rule.ifAllValid([
-          // new TestRule(true),
-          new TestRule(true)
+      it('invokes the next set of rules', async () => {
+
+        var rule1 = Rule.ifAllValid([
+          new TestRule1(true),
+          new TestRule1(true)
         ])
-        .thenGetRules(function(done) {
-          done(null, [
-            new TestRule(false),
-            new TestRule(false)
+        .thenGetRules(() => {
+          return Promise.resolve([
+            new TestRule1(false),
+            new TestRule1(false)
           ]);
         });
 
-        rule.validate(() => {
-          expect(rule.errors.length).toEqual(2);
-          callback();
+        var rule2 = Rule.ifAllValid([
+          new TestRule2(true),
+          new TestRule2(true)
+        ])
+        .thenGetRules(function(done) {
+          done(null, [
+            new TestRule2(false),
+            new TestRule2(false)
+          ]);
         });
+
+        await Promise.all([
+          rule1.validate(),
+          promisify(rule2).validate()
+        ]);
+
+        expect(rule1.errors.length).toEqual(2);
+        expect(rule2.errors.length).toEqual(2);
       });
 
       describe("containing chains n-levels deep", () => {
-        it('invokes the next set of rules', (callback) => {
-          var rule = Rule.ifAllValid([
-            new TestRule(true),
-            new TestRule(true)
+        it('invokes the next set of rules', async () => {
+
+          var rule1 = Rule.ifAllValid([
+            new TestRule1(true),
+            new TestRule1(true)
           ])
-          .thenGetRules(function(done) {
-            done(null, [
-              new TestRule(false),
-              Rule.ifAllValid([new TestRule(true)])
-                  .thenGetRules(function(done) {
-                    done(null, [
-                      new TestRule(false),
-                      new TestRule(false)
+          .thenGetRules(() => {
+            return Promise.resolve([
+              new TestRule1(false),
+              Rule.ifAllValid([new TestRule1(true)])
+                  .thenGetRules(() => {
+                    return Promise.resolve([
+                      new TestRule1(false),
+                      new TestRule1(false)
                     ])
                   })
             ]);
           });
 
-          rule.validate(() => {
-            expect(rule.errors.length).toEqual(3);
-            callback();
+          var rule2 = Rule.ifAllValid([
+            new TestRule2(true),
+            new TestRule2(true)
+          ])
+          .thenGetRules(function(done) {
+            done(null, [
+              new TestRule2(false),
+              Rule.ifAllValid([new TestRule2(true)])
+                  .thenGetRules(function(done) {
+                    done(null, [
+                      new TestRule2(false),
+                      new TestRule2(false)
+                    ])
+                  })
+            ]);
           });
+
+          await Promise.all([
+            rule1.validate(),
+            promisify(rule2).validate()
+          ]);
+
+          expect(rule1.errors.length).toEqual(3);
+          expect(rule2.errors.length).toEqual(3);
         });
       });
     });
 
     describe("invalid parent rule set", () => {
-      it("does not invoke the next set of rules", (callback) => {
-        var rule = Rule.ifAllValid([
-          new TestRule(true),
-          new TestRule(false)
+      it("does not invoke the next set of rules", async () => {
+
+        var rule1 = Rule.ifAllValid([
+          new TestRule1(true),
+          new TestRule1(false)
         ])
-        .thenGetRules(function(done) {
-          done(null, [
-            new TestRule(false),
-            new TestRule(false)
+        .thenGetRules(() => {
+          return Promise.resolve([
+            new TestRule1(false),
+            new TestRule1(false)
           ]);
         });
 
-        rule.validate(() => {
-          expect(rule.errors.length).toEqual(1);
-          callback();
+        var rule2 = Rule.ifAllValid([
+          new TestRule2(true),
+          new TestRule2(false)
+        ])
+        .thenGetRules(function(done) {
+          done(null, [
+            new TestRule2(false),
+            new TestRule2(false)
+          ]);
         });
+
+        await Promise.all([
+          rule1.validate(),
+          promisify(rule2).validate()
+        ]);
+
+        expect(rule1.errors.length).toEqual(1);
+        expect(rule2.errors.length).toEqual(1);
       });
 
       describe("containing chains n-levels deep", () => {
-        it('does not invoke the next set of rules', (callback) => {
-          var rule = Rule.ifAllValid([
-            new TestRule(true),
-            new TestRule(true)
+        it('does not invoke the next set of rules', async () => {
+
+          var rule1 = Rule.ifAllValid([
+            new TestRule1(true),
+            new TestRule1(true)
           ])
-          .thenGetRules(function(done) {
-            done(null, [
-              new TestRule(false),
-              Rule.ifAllValid([new TestRule(false)])
-                  .thenGetRules(function(done) {
-                    done(null, [
-                      new TestRule(false),
-                      new TestRule(false)
+          .thenGetRules(() => {
+            return Promise.resolve([
+              new TestRule1(false),
+              Rule.ifAllValid([new TestRule1(false)])
+                  .thenGetRules(() => {
+                    return Promise.resolve([
+                      new TestRule1(false),
+                      new TestRule1(false)
                     ])
                   })
             ]);
           });
 
-          rule.validate(() => {
-            expect(rule.errors.length).toEqual(2);
-            callback();
+          var rule2 = Rule.ifAllValid([
+            new TestRule2(true),
+            new TestRule2(true)
+          ])
+          .thenGetRules(function(done) {
+            done(null, [
+              new TestRule2(false),
+              Rule.ifAllValid([new TestRule2(false)])
+                  .thenGetRules(function(done) {
+                    done(null, [
+                      new TestRule2(false),
+                      new TestRule2(false)
+                    ])
+                  })
+            ]);
           });
+
+          await Promise.all([
+            rule1.validate(),
+            promisify(rule2).validate()
+          ]);
+
+          expect(rule1.errors.length).toEqual(2);
+          expect(rule2.errors.length).toEqual(2);
         });
       });
     });
@@ -159,23 +313,42 @@ describe("Rule", function() {
       expect(Rule.extend).toThrowError();
     });
 
-    it("matches params to supplied function arguments", () => {
-      var TestRule = Rule.extend({
+    it("matches params to supplied function arguments", async () => {
+
+      var TestRule1 = Rule.extend({
         params: ['word', 'bar'],
         functions: {
-          _onValidate: function(done) {
+          _onValidate: function(word, bar) {
+            expect(this.word).toEqual('yes');
+            expect(this.bar).toEqual('no');
+            return Promise.resolve();
+          }
+        }
+      });
+
+      var TestRule2 = Rule.extend({
+        params: ['word', 'bar'],
+        functions: {
+          _onValidate: function(word, bar, done) {
             expect(this.word).toEqual('yes');
             expect(this.bar).toEqual('no');
             done();
           }
         }
-      })
-      new TestRule('yes', 'no').validate(() => {});
-    })
+      });
+
+      var rule1 = new TestRule1('yes', 'no');
+      var rule2 = new TestRule2('yes', 'no');
+
+      await Promise.all([
+        rule1.validate(),
+        promisify(rule2).validate()
+      ]);
+
+    });
   });
 
-  // this will test the Rule.extend functionality
-  var LengthRule = Rule.extend({
+  var LengthRule1 = Rule.extend({
     association: "foo",
     params: ['word', 'bar'],
     functions: {
@@ -183,449 +356,748 @@ describe("Rule", function() {
         if (this.word.length < 1) {
           this._invalidate("too few characters");
         }
-        //var time = Math.floor((Math.random() * 2000) + 1);
-        //setTimeout(() => done(), 500);
         done();
       }
     }
-  })
+  });
+
+  // var LengthRule2 = Rule.extend({
+  //   association: "foo",
+  //   params: ['word', 'bar'],
+  //   functions: {
+  //     _onValidate: function() {
+  //       if (this.word.length < 1) {
+  //         this._invalidate("too few characters");
+  //       }
+  //       return Promise.resolve();
+  //     }
+  //   }
+  // });
 
   runTests();
 
-  var LengthRule = function(word) {
+  var LengthRule1 = function(word) {
     Rule.call(this, { association: "foo" });
     this.word = word;
   };
 
-  LengthRule.prototype = new Rule();
-  LengthRule.prototype._onValidate = function(done) {
+  LengthRule1.prototype = new Rule();
+  LengthRule1.prototype._onValidate = function(done) {
     if (this.word.length < 1) {
       this._invalidate("too few characters");
     }
-    //var time = Math.floor((Math.random() * 2000) + 1);
-    //setTimeout(() => done(), 500);
     done();
   };
 
+  class LengthRule2 extends Rule {
+    constructor(word, bar) {
+      super();
+      this.association = 'foo';
+      this.word = word;
+      this.bar = bar;
+    }
+
+    _onValidate() {
+      if (this.word.length < 1) {
+        this._invalidate("too few characters");
+      }
+      return Promise.resolve();
+    }
+  }
+
   runTests();
+
 
   function runTests() {
 
     describe("validate", function() {
 
-      it("clears errors on every invocation", function() {
-        var rule = new LengthRule("");
+      it("clears errors on every invocation", async function() {
+        var rule1 = new LengthRule1("");
+        var rule2 = new LengthRule2("");
 
-        rule.validate(() => {});
-        expect(rule.errors.length).toEqual(1);
+        await Promise.all([
+          promisify(rule1).validate(),
+          rule2.validate()
+        ]);
 
-        rule.validate(() => {});
-        expect(rule.errors.length).toEqual(1);
+        expect(rule1.errors.length).toEqual(1);
+        expect(rule2.errors.length).toEqual(1);
       });
 
       describe("failed validation", function() {
-        it("contains an error", function(done) {
-          var rule = new LengthRule("");
+        it("contains an error", async function() {
+          var rule1 = new LengthRule1("");
+          var rule2 = new LengthRule2("");
 
-          rule.validate(() => {
-            expect(rule.errors.length).toEqual(1);
-            var error = rule.errors[0];
-            expect(error.association).toEqual("foo");
-            expect(error.message).toEqual("too few characters");
-            done();
-          });
+          await Promise.all([
+            promisify(rule1).validate(),
+            rule2.validate()
+          ]);
+
+          expect(rule1.errors.length).toEqual(1);
+          var error = rule1.errors[0];
+          expect(error.association).toEqual("foo");
+          expect(error.message).toEqual("too few characters");
+
+          expect(rule2.errors.length).toEqual(1);
+          var error = rule2.errors[0];
+          expect(error.association).toEqual("foo");
+          expect(error.message).toEqual("too few characters");
         });
 
-        it("does not invoke the 'ifValidThenExecute' callback", function(done) {
-          var rule = new LengthRule("");
-          var callback = jasmine.createSpy();
-          rule.ifValidThenExecute(callback);
+        it("does not invoke the 'ifValidThenExecute' onComplete", async function() {
+          var rule1 = new LengthRule1("");
+          var rule2 = new LengthRule2("");
 
-          rule.validate(() => {
-            expect(callback).not.toHaveBeenCalled();
-            done();
-          });
+          var onComplete = jasmine.createSpy();
+          rule1.ifValidThenExecute(onComplete);
+          rule2.ifValidThenExecute(onComplete);
+
+          await Promise.all([
+            promisify(rule1).validate(),
+            rule2.validate()
+          ]);
+
+          expect(onComplete).not.toHaveBeenCalled();
         });
 
-        it("does not invoke the 'ifValidThenGetRules' callback", function(done) {
-          var rule = new LengthRule("");
-          var callback = jasmine.createSpy();
-          rule.ifValidThenGetRules(callback);
+        it("does not invoke the 'ifValidThenGetRules' onComplete", async function() {
+          var rule1 = new LengthRule1("");
+          var rule2 = new LengthRule2("");
+          var onComplete = jasmine.createSpy();
 
-          rule.validate(() => {
-            expect(callback).not.toHaveBeenCalled();
-            done();
-          });
+          rule1.ifValidThenGetRules(onComplete);
+          rule2.ifValidThenGetRules(onComplete);
+
+          await Promise.all([
+            promisify(rule1).validate(),
+            rule2.validate()
+          ]);
+
+          expect(onComplete).not.toHaveBeenCalled();
         });
 
-        it("invokes the 'ifInvalidThenExecute' callback", function(done) {
-          var rule = new LengthRule("");
-          var callback = jasmine.createSpy();
-          rule.ifInvalidThenExecute(callback);
+        it("invokes the 'ifInvalidThenExecute' onComplete", async function() {
+          var rule1 = new LengthRule1("");
+          var rule2 = new LengthRule2("");
+          var onComplete1 = jasmine.createSpy();
+          var onComplete2 = jasmine.createSpy();
 
-          rule.validate(() => {
-            expect(callback).toHaveBeenCalled();
-            done();
-          });
+          rule1.ifInvalidThenExecute(onComplete1);
+          rule2.ifInvalidThenExecute(onComplete2);
+
+          await Promise.all([
+            promisify(rule1).validate(),
+            rule2.validate()
+          ]);
+
+          expect(onComplete1).toHaveBeenCalled();
+          expect(onComplete2).toHaveBeenCalled();
         });
 
-        it("sets the error on the parent when child validation fails", function(done) {
-          var parent = new LengthRule("hello");
-          var child = new LengthRule("");
-          parent.ifValidThenValidate(child);
+        it("sets the error on the parent when child validation fails", async function() {
+          var parent1 = new LengthRule1("hello");
+          var child1 = new LengthRule1("");
 
-          parent.validate(() => {
-            expect(parent.errors.length).toEqual(1);
-            done();
-          });
+          var parent2 = new LengthRule2("hello");
+          var child2 = new LengthRule2("");
+
+          parent1.ifValidThenValidate(child1);
+          parent2.ifValidThenValidate(child2);
+
+          await Promise.all([
+            promisify(parent1).validate(),
+            parent2.validate()
+          ]);
+
+          expect(parent1.errors.length).toEqual(1);
+          expect(parent2.errors.length).toEqual(1);
         });
 
-        it("does not validate the child rule if the parent validation fails", function(done) {
-          var parent = new LengthRule("");
-          var child = new LengthRule("");
-          parent.ifValidThenValidate(child);
+        it("does not validate the child rule if the parent validation fails", async function() {
+          var parent1 = new LengthRule1("");
+          var child1 = new LengthRule1("");
 
-          parent.validate(() => {
-            expect(child.errors.length).toEqual(0);
-            done();
-          });
+          var parent2 = new LengthRule2("");
+          var child2 = new LengthRule2("");
+
+          parent1.ifValidThenValidate(child1);
+          parent2.ifValidThenValidate(child2);
+
+          await Promise.all([
+            promisify(parent1).validate(),
+            parent2.validate()
+          ]);
+
+          expect(child1.errors.length).toEqual(0);
+          expect(child2.errors.length).toEqual(0);
         });
 
       });
 
       describe("successful validation", function() {
-        it("does not contain errors", (done) => {
-          var rule = new LengthRule("blah");
+        it("does not contain errors", async () => {
+          var rule1 = new LengthRule1("blah");
+          var rule2 = new LengthRule2("blah");
 
-          rule.validate(() => {
-            expect(rule.errors.length).toEqual(0);
-            done();
-          });
+          await Promise.all([
+            promisify(rule1).validate(),
+            rule2.validate()
+          ]);
+
+          expect(rule1.errors.length).toEqual(0);
+          expect(rule2.errors.length).toEqual(0);
         });
 
-        it("invokes the 'ifValidThenExecute' callback", function(done) {
-          var rule = new LengthRule("blah");
-          var callback = jasmine.createSpy();
-          rule.ifValidThenExecute(callback);
+        it("invokes the 'ifValidThenExecute' onComplete", async function() {
+          var rule1 = new LengthRule1("blah");
+          var rule2 = new LengthRule2("blah");
+          var onComplete1 = jasmine.createSpy();
+          var onComplete2 = jasmine.createSpy();
 
-          rule.validate(() => {
-            expect(callback).toHaveBeenCalled();
-            done();
-          });
+          rule1.ifValidThenExecute(onComplete1);
+          rule2.ifValidThenExecute(onComplete2);
+
+          await Promise.all([
+            promisify(rule1).validate(),
+            rule2.validate()
+          ]);
+
+          expect(onComplete1).toHaveBeenCalled();
+          expect(onComplete2).toHaveBeenCalled();
         });
 
-        //it("invokes the 'ifValidThenGetRules' callback", function(done) {
-          //var rule = new LengthRule("blah");
-          //var callback = jasmine.createSpy();
-          //rule.ifValidThenGetRules(callback);
+        it("invokes the 'ifValidThenGetRules' onComplete", async function() {
+          var rule1 = new LengthRule1("blah");
+          var rule2 = new LengthRule2("blah");
+          var values = [];
+          var onComplete1 = (done) => { values.push(1); done(null, []); };
+          var onComplete2 = () => { values.push(1); return Promise.resolve([]); };
 
-          //rule.validate(() => {
-            //expect(callback).toHaveBeenCalled();
-            //done();
-          //});
-        //});
+          rule1.ifValidThenGetRules(onComplete1);
+          rule2.ifValidThenGetRules(onComplete2);
 
-        it("does not invoke the 'ifInvalidThenExecute' callback if the validation passes", function(done) {
-          var rule = new LengthRule("hello");
-          var callback = jasmine.createSpy();
-          rule.ifInvalidThenExecute(callback);
+          await Promise.all([
+            promisify(rule1).validate(),
+            rule2.validate()
+          ]);
 
-          rule.validate(() => {
-            expect(callback).not.toHaveBeenCalled();
-            done();
-          });
+          expect(values.length).toEqual(2);
         });
 
-        it("validates the child rule if the parent validation succeeds", function(done) {
-          var parent = new LengthRule("hello");
-          var child = new LengthRule("");
-          parent.ifValidThenValidate(child);
+        it("does not invoke the 'ifInvalidThenExecute' onComplete if the validation passes", async function() {
+          var rule1 = new LengthRule1("blah");
+          var rule2 = new LengthRule2("blah");
+          var onComplete1 = jasmine.createSpy();
+          var onComplete2 = jasmine.createSpy();
 
-          parent.validate(() => {
-            expect(child.errors.length).toEqual(1);
-            done();
-          });
+          rule1.ifInvalidThenExecute(onComplete1);
+          rule2.ifInvalidThenExecute(onComplete2);
+
+          await Promise.all([
+            promisify(rule1).validate(),
+            rule2.validate()
+          ]);
+
+          expect(onComplete1).not.toHaveBeenCalled();
+          expect(onComplete2).not.toHaveBeenCalled();
+        });
+
+        it("validates the child rule if the parent validation succeeds", async function() {
+          var parent1 = new LengthRule1("hello");
+          var child1 = new LengthRule1("");
+          var parent2 = new LengthRule2("hello");
+          var child2 = new LengthRule2("");
+
+          parent1.ifValidThenValidate(child1);
+          parent2.ifValidThenValidate(child2);
+
+          await Promise.all([
+            promisify(parent1).validate(),
+            parent2.validate()
+          ]);
+
+          expect(child1.errors.length).toEqual(1);
+          expect(child2.errors.length).toEqual(1);
         });
       });
 
     });
 
     describe("multiple rules", () => {
-      it("pass as expected", (done) => {
-        var rules = [
-          new LengthRule("a"),
-          new LengthRule("b"),
-          new LengthRule("c")
+      it("pass as expected", async () => {
+        var rulesWithCallbacks = [
+          new LengthRule1("a"),
+          new LengthRule1("b"),
+          new LengthRule1("c")
+        ];
+        var rulesWithPromises = [
+          new LengthRule2("a"),
+          new LengthRule2("b"),
+          new LengthRule2("c")
         ];
 
-        var rule = new LengthRule("test").ifValidThenValidate(rules);
+        var rule1 = new LengthRule1("test").ifValidThenValidate(rulesWithCallbacks);
+        var rule2 = new LengthRule2("test").ifValidThenValidate(rulesWithPromises);
 
-        rule.validate(() => {
-          expect(rule.errors.length).toEqual(0);
-          done();
-        });
+        await Promise.all([
+          promisify(rule1).validate(),
+          rule2.validate()
+        ]);
+
+        expect(rule1.errors.length).toEqual(0);
+        expect(rule2.errors.length).toEqual(0);
       });
 
-      it("parent rule fails if one child fails", (done) => {
-        var rules = [
-          new LengthRule("a"),
-          new LengthRule(""),
-          new LengthRule("c")
+      it("parent rule fails if one child fails", async () => {
+        var rulesWithCallbacks = [
+          new LengthRule1("a"),
+          new LengthRule1(""),
+          new LengthRule1("c")
+        ];
+        var rulesWithPromises = [
+          new LengthRule2("a"),
+          new LengthRule2(""),
+          new LengthRule2("c")
         ];
 
-        var rule = new LengthRule("test").ifValidThenValidate(rules);
+        var rule1 = new LengthRule1("test").ifValidThenValidate(rulesWithCallbacks);
+        var rule2 = new LengthRule2("test").ifValidThenValidate(rulesWithPromises);
 
-        rule.validate(() => {
-          expect(rule.errors.length).toEqual(1);
-          done();
-        });
+        await Promise.all([
+          promisify(rule1).validate(),
+          rule2.validate()
+        ]);
+
+        expect(rule1.errors.length).toEqual(1);
+        expect(rule2.errors.length).toEqual(1);
       });
 
-      it("failing children sets errors on parent", (done) => {
-        var rules = [
-          new LengthRule(""),
-          new LengthRule(""),
-          new LengthRule("")
+      it("failing children sets errors on parent", async () => {
+        var rulesWithCallbacks = [
+          new LengthRule1(""),
+          new LengthRule1(""),
+          new LengthRule1("")
+        ];
+        var rulesWithPromises = [
+          new LengthRule2(""),
+          new LengthRule2(""),
+          new LengthRule2("")
         ];
 
-        var rule = new LengthRule("test").ifValidThenValidate(rules);
+        var rule1 = new LengthRule1("test").ifValidThenValidate(rulesWithCallbacks);
+        var rule2 = new LengthRule2("test").ifValidThenValidate(rulesWithPromises);
 
-        rule.validate(() => {
-          expect(rule.errors.length).toEqual(3);
-          done();
-        });
+        await Promise.all([
+          promisify(rule1).validate(),
+          rule2.validate()
+        ]);
 
+        expect(rule1.errors.length).toEqual(3);
+        expect(rule2.errors.length).toEqual(3);
       });
     });
 
     describe("rule chaining", () => {
       describe("one level deep", () => {
-        it("invokes valid callbacks", (done) => {
-          var parent = new LengthRule("a");
-          var child = new LengthRule("b");
-          var parentCallback = jasmine.createSpy();
-          var childCallback = jasmine.createSpy();
-          parent.ifValidThenExecute(parentCallback);
-          child.ifValidThenExecute(childCallback);
+        it("invokes valid onCompletes", async () => {
+          var parent1 = new LengthRule1("a");
+          var child1 = new LengthRule1("b");
+          var parentCallback1 = jasmine.createSpy();
+          var childCallback1 = jasmine.createSpy();
+          parent1.ifValidThenExecute(parentCallback1);
+          child1.ifValidThenExecute(childCallback1);
 
-          parent.ifValidThenValidate(child);
-          parent.validate(() => {
-            expect(parentCallback).toHaveBeenCalled();
-            expect(childCallback).toHaveBeenCalled();
-            done();
-          });
+          var parent2 = new LengthRule2("a");
+          var child2 = new LengthRule2("b");
+          var parentCallback2 = jasmine.createSpy();
+          var childCallback2 = jasmine.createSpy();
+          parent2.ifValidThenExecute(parentCallback2);
+          child2.ifValidThenExecute(childCallback2);
+
+          parent1.ifValidThenValidate(child1);
+          parent2.ifValidThenValidate(child2);
+
+          await Promise.all([
+            promisify(parent1).validate(),
+            parent2.validate()
+          ]);
+
+          expect(parentCallback1).toHaveBeenCalled();
+          expect(childCallback1).toHaveBeenCalled();
+          expect(parentCallback2).toHaveBeenCalled();
+          expect(childCallback2).toHaveBeenCalled();
         });
 
-        it("does not invoke child valid callback", (done) => {
-          var parent = new LengthRule("a");
-          var child = new LengthRule("");
-          var callback = jasmine.createSpy();
-          child.ifValidThenExecute(callback);
+        it("does not invoke child valid onComplete", async () => {
+          var parent1 = new LengthRule1("a");
+          var child1 = new LengthRule1("");
+          var childCallback1 = jasmine.createSpy();
+          child1.ifValidThenExecute(childCallback1);
 
-          parent.ifValidThenValidate(child);
-          parent.validate(() => {
-            expect(callback).not.toHaveBeenCalled();
-            done();
-          });
+          var parent2 = new LengthRule2("a");
+          var child2 = new LengthRule2("");
+          var childCallback2 = jasmine.createSpy();
+          child2.ifValidThenExecute(childCallback2);
+
+          parent1.ifValidThenValidate(child1);
+          parent2.ifValidThenValidate(child2);
+
+          await Promise.all([
+            promisify(parent1).validate(),
+            parent2.validate()
+          ]);
+
+          expect(childCallback1).not.toHaveBeenCalled();
+          expect(childCallback2).not.toHaveBeenCalled();
         });
 
-        it("invokes child invalid callback", (done) => {
-          var parent = new LengthRule("a");
-          var child = new LengthRule("");
-          var callback = jasmine.createSpy();
-          child.ifInvalidThenExecute(callback);
+        it("invokes child invalid onComplete", async () => {
+          var parent1 = new LengthRule1("a");
+          var child1 = new LengthRule1("");
+          var childCallback1 = jasmine.createSpy();
+          child1.ifInvalidThenExecute(childCallback1);
 
-          parent.ifValidThenValidate(child);
-          parent.validate(() => {
-            expect(callback).toHaveBeenCalled();
-            done();
-          });
+          var parent2 = new LengthRule2("a");
+          var child2 = new LengthRule2("");
+          var childCallback2 = jasmine.createSpy();
+          child2.ifInvalidThenExecute(childCallback2);
+
+          parent1.ifValidThenValidate(child1);
+          parent2.ifValidThenValidate(child2);
+
+          await Promise.all([
+            promisify(parent1).validate(),
+            parent2.validate()
+          ]);
+
+          expect(childCallback1).toHaveBeenCalled();
+          expect(childCallback2).toHaveBeenCalled();
         });
 
-        it("does not invoke child invalid callback", (done) => {
-          var parent = new LengthRule("a");
-          var child = new LengthRule("b");
-          var callback = jasmine.createSpy();
-          child.ifInvalidThenExecute(callback);
+        it("does not invoke child invalid onComplete", async () => {
+          var parent1 = new LengthRule1("a");
+          var child1 = new LengthRule1("b");
+          var childCallback1 = jasmine.createSpy();
+          child1.ifInvalidThenExecute(childCallback1);
 
-          parent.ifValidThenValidate(child);
-          parent.validate(() => {
-            expect(callback).not.toHaveBeenCalled();
-            done();
-          });
+          var parent2 = new LengthRule2("a");
+          var child2 = new LengthRule2("b");
+          var childCallback2 = jasmine.createSpy();
+          child2.ifInvalidThenExecute(childCallback2);
+
+          parent1.ifValidThenValidate(child1);
+          parent2.ifValidThenValidate(child2);
+
+          await Promise.all([
+            promisify(parent1).validate(),
+            parent2.validate()
+          ]);
+
+          expect(childCallback1).not.toHaveBeenCalled();
+          expect(childCallback2).not.toHaveBeenCalled();
         });
       });
 
       describe("two levels deep", () => {
-        it("invokes valid callbacks", (done) => {
-          var parent = new LengthRule("a");
-          var child = new LengthRule("b");
-          var grandchild = new LengthRule("c");
-          var parentCallback = jasmine.createSpy();
-          var childCallback = jasmine.createSpy();
-          var grandchildCallback = jasmine.createSpy();
+        it("invokes valid onCompletes", async () => {
+          var parent1 = new LengthRule1("a");
+          var child1 = new LengthRule1("b");
+          var grandchild1 = new LengthRule1("c");
+          var parentCallback1 = jasmine.createSpy();
+          var childCallback1 = jasmine.createSpy();
+          var grandchildCallback1 = jasmine.createSpy();
 
-          parent.ifValidThenExecute(parentCallback);
-          child.ifValidThenExecute(childCallback);
-          grandchild.ifValidThenExecute(grandchildCallback);
+          var parent2 = new LengthRule2("a");
+          var child2 = new LengthRule2("b");
+          var grandchild2 = new LengthRule2("c");
+          var parentCallback2 = jasmine.createSpy();
+          var childCallback2 = jasmine.createSpy();
+          var grandchildCallback2 = jasmine.createSpy();
 
-          parent.ifValidThenValidate(child);
-          child.ifValidThenValidate(grandchild);
+          parent1.ifValidThenExecute(parentCallback1);
+          child1.ifValidThenExecute(childCallback1);
+          grandchild1.ifValidThenExecute(grandchildCallback1);
 
-          parent.validate(() => {
-            expect(parentCallback).toHaveBeenCalled();
-            expect(childCallback).toHaveBeenCalled();
-            expect(grandchildCallback).toHaveBeenCalled();
-            done();
-          });
+          parent2.ifValidThenExecute(parentCallback2);
+          child2.ifValidThenExecute(childCallback2);
+          grandchild2.ifValidThenExecute(grandchildCallback2);
+
+          parent1.ifValidThenValidate(child1);
+          child1.ifValidThenValidate(grandchild1);
+
+          parent2.ifValidThenValidate(child2);
+          child2.ifValidThenValidate(grandchild2);
+
+          await Promise.all([
+            promisify(parent1).validate(),
+            parent2.validate()
+          ]);
+
+          expect(parentCallback1).toHaveBeenCalled();
+          expect(childCallback1).toHaveBeenCalled();
+          expect(grandchildCallback1).toHaveBeenCalled();
+          expect(parentCallback2).toHaveBeenCalled();
+          expect(childCallback2).toHaveBeenCalled();
+          expect(grandchildCallback2).toHaveBeenCalled();
         });
 
-        it("does not invoke grandchild valid callback", (done) => {
-          var parent = new LengthRule("a");
-          var child = new LengthRule("");
-          var grandchild = new LengthRule("c");
-          var parentCallback = jasmine.createSpy();
-          var childCallback = jasmine.createSpy();
-          var grandchildCallback = jasmine.createSpy();
+        it("does not invoke grandchild valid onComplete", async () => {
+          var parent1 = new LengthRule1("a");
+          var child1 = new LengthRule1("");
+          var grandchild1 = new LengthRule1("c");
+          var parentCallback1 = jasmine.createSpy();
+          var childCallback1 = jasmine.createSpy();
+          var grandchildCallback1 = jasmine.createSpy();
 
-          parent.ifValidThenExecute(parentCallback);
-          child.ifValidThenExecute(childCallback);
-          grandchild.ifValidThenExecute(grandchildCallback);
+          var parent2 = new LengthRule2("a");
+          var child2 = new LengthRule2("");
+          var grandchild2 = new LengthRule2("c");
+          var parentCallback2 = jasmine.createSpy();
+          var childCallback2 = jasmine.createSpy();
+          var grandchildCallback2 = jasmine.createSpy();
 
-          parent.ifValidThenValidate(child);
-          child.ifValidThenValidate(grandchild);
+          parent1.ifValidThenExecute(parentCallback1);
+          child1.ifValidThenExecute(childCallback1);
+          grandchild1.ifValidThenExecute(grandchildCallback1);
 
-          parent.validate(() => {
-            expect(parentCallback).toHaveBeenCalled();
-            expect(childCallback).not.toHaveBeenCalled();
-            expect(grandchildCallback).not.toHaveBeenCalled();
-            done();
-          });
+          parent2.ifValidThenExecute(parentCallback2);
+          child2.ifValidThenExecute(childCallback2);
+          grandchild2.ifValidThenExecute(grandchildCallback2);
+
+          parent1.ifValidThenValidate(child1);
+          child1.ifValidThenValidate(grandchild1);
+
+          parent2.ifValidThenValidate(child2);
+          child2.ifValidThenValidate(grandchild2);
+
+          await Promise.all([
+            promisify(parent1).validate(),
+            parent2.validate()
+          ]);
+
+          expect(parentCallback1).toHaveBeenCalled();
+          expect(childCallback1).not.toHaveBeenCalled();
+          expect(grandchildCallback1).not.toHaveBeenCalled();
+          expect(parentCallback2).toHaveBeenCalled();
+          expect(childCallback2).not.toHaveBeenCalled();
+          expect(grandchildCallback2).not.toHaveBeenCalled();
         });
 
-        it("invokes grandchild invalid callback", (done) => {
-          var parent = new LengthRule("a");
-          var child = new LengthRule("b");
-          var grandchild = new LengthRule("");
-          var parentCallback = jasmine.createSpy();
-          var childCallback = jasmine.createSpy();
-          var grandchildCallback = jasmine.createSpy();
+        it("invokes grandchild invalid onComplete", async () => {
+          var parent1 = new LengthRule1("a");
+          var child1 = new LengthRule1("b");
+          var grandchild1 = new LengthRule1("");
+          var parentCallback1 = jasmine.createSpy();
+          var childCallback1 = jasmine.createSpy();
+          var grandchildCallback1 = jasmine.createSpy();
 
-          parent.ifValidThenExecute(parentCallback);
-          child.ifValidThenExecute(childCallback);
-          grandchild.ifInvalidThenExecute(grandchildCallback);
+          var parent2 = new LengthRule2("a");
+          var child2 = new LengthRule2("b");
+          var grandchild2 = new LengthRule2("");
+          var parentCallback2 = jasmine.createSpy();
+          var childCallback2 = jasmine.createSpy();
+          var grandchildCallback2 = jasmine.createSpy();
 
-          parent.ifValidThenValidate(child);
-          child.ifValidThenValidate(grandchild);
+          parent1.ifValidThenExecute(parentCallback1);
+          child1.ifValidThenExecute(childCallback1);
+          grandchild1.ifInvalidThenExecute(grandchildCallback1);
 
-          parent.validate(() => {
-            expect(parentCallback).toHaveBeenCalled();
-            expect(childCallback).toHaveBeenCalled();
-            expect(grandchildCallback).toHaveBeenCalled();
-            done();
-          });
+          parent2.ifValidThenExecute(parentCallback2);
+          child2.ifValidThenExecute(childCallback2);
+          grandchild2.ifInvalidThenExecute(grandchildCallback2);
 
+          parent1.ifValidThenValidate(child1);
+          child1.ifValidThenValidate(grandchild1);
+
+          parent2.ifValidThenValidate(child2);
+          child2.ifValidThenValidate(grandchild2);
+
+          await Promise.all([
+            promisify(parent1).validate(),
+            parent2.validate()
+          ]);
+
+          expect(parentCallback1).toHaveBeenCalled();
+          expect(childCallback1).toHaveBeenCalled();
+          expect(grandchildCallback1).toHaveBeenCalled();
+
+          expect(parentCallback2).toHaveBeenCalled();
+          expect(childCallback2).toHaveBeenCalled();
+          expect(grandchildCallback2).toHaveBeenCalled();
         });
 
-        it("does not invoke grandchild invalid callback", (done) => {
-          var parent = new LengthRule("a");
-          var child = new LengthRule("b");
-          var grandchild = new LengthRule("c");
-          var parentCallback = jasmine.createSpy();
-          var childCallback = jasmine.createSpy();
-          var grandchildCallback = jasmine.createSpy();
+        it("does not invoke grandchild invalid onComplete", async () => {
+          var parent1 = new LengthRule1("a");
+          var child1 = new LengthRule1("b");
+          var grandchild1 = new LengthRule1("c");
+          var parentCallback1 = jasmine.createSpy();
+          var childCallback1 = jasmine.createSpy();
+          var grandchildCallback1 = jasmine.createSpy();
 
-          parent.ifValidThenExecute(parentCallback);
-          child.ifValidThenExecute(childCallback);
-          grandchild.ifInvalidThenExecute(grandchildCallback);
+          var parent2 = new LengthRule2("a");
+          var child2 = new LengthRule2("b");
+          var grandchild2 = new LengthRule2("c");
+          var parentCallback2 = jasmine.createSpy();
+          var childCallback2 = jasmine.createSpy();
+          var grandchildCallback2 = jasmine.createSpy();
 
-          parent.ifValidThenValidate(child);
-          child.ifValidThenValidate(grandchild);
+          parent1.ifValidThenExecute(parentCallback1);
+          child1.ifValidThenExecute(childCallback1);
+          grandchild1.ifInvalidThenExecute(grandchildCallback1);
 
-          parent.validate(() => {
-            expect(parentCallback).toHaveBeenCalled();
-            expect(childCallback).toHaveBeenCalled();
-            expect(grandchildCallback).not.toHaveBeenCalled();
-            done();
-          });
+          parent2.ifValidThenExecute(parentCallback2);
+          child2.ifValidThenExecute(childCallback2);
+          grandchild2.ifInvalidThenExecute(grandchildCallback2);
+
+          parent1.ifValidThenValidate(child1);
+          child1.ifValidThenValidate(grandchild1);
+
+          parent2.ifValidThenValidate(child2);
+          child2.ifValidThenValidate(grandchild2);
+
+          await Promise.all([
+            promisify(parent1).validate(),
+            parent2.validate()
+          ]);
+
+          expect(parentCallback1).toHaveBeenCalled();
+          expect(childCallback1).toHaveBeenCalled();
+          expect(grandchildCallback1).not.toHaveBeenCalled();
+
+          expect(parentCallback2).toHaveBeenCalled();
+          expect(childCallback2).toHaveBeenCalled();
+          expect(grandchildCallback2).not.toHaveBeenCalled();
         });
 
       });
     });
 
     describe("ifValidThenGetRules", () => {
-      var TestRule = Rule.extend({
+
+      var TestRule1 = Rule.extend({
         params: ['value'],
         functions: {
-          _onValidate: function(done) {
+          _onValidate: function(value, done) {
             if (!this.value) {
               this._invalidate("NOPE");
             }
-            //var time = Math.floor((Math.random() * 10000) + 1);
-            //setTimeout(() => done(), 500);
             done();
           }
         }
       });
 
+      var TestRule2 = Rule.extend({
+        params: ['value'],
+        functions: {
+          _onValidate: function(value) {
+            if (!value) {
+              this._invalidate("NOPE");
+            }
+            return Promise.resolve();
+          }
+        }
+      });
+
       describe("valid parent rule set", () => {
-        it('invokes the next set of rules', (callback) => {
-          var rule1 = new TestRule(true);
+        it('invokes the next set of rules', async () => {
+          var rule1 = new TestRule1(true);
+          var rule2 = new TestRule2(true);
+
           rule1.ifValidThenGetRules(function(done) {
             done(null, [
-              new TestRule(false),
-              new TestRule(true),
-              new TestRule(false)
+              new TestRule1(false),
+              new TestRule1(true),
+              new TestRule1(false)
             ]);
           });
 
-          rule1.validate(() => {
-            expect(rule1.errors.length).toEqual(2);
-            callback();
+          rule2.ifValidThenGetRules(function() {
+            return Promise.resolve([
+              new TestRule2(false),
+              new TestRule2(true),
+              new TestRule2(false)
+            ]);
           });
+
+          await Promise.all([
+            promisify(rule1).validate(),
+            rule2.validate()
+          ]);
+
+          expect(rule1.errors.length).toEqual(2);
+          expect(rule2.errors.length).toEqual(2);
         });
 
         describe("containing chains n-levels deep", () => {
-          it('invokes the next set of rules', (callback) => {
-            var rule1 = new TestRule(true);
+          it('invokes the next set of rules', async () => {
+            var rule1 = new TestRule1(true);
+            var rule2 = new TestRule2(true);
+
             rule1.ifValidThenGetRules(function(done) {
               done(null, [
-                new TestRule(false),
-                new TestRule(true).ifValidThenGetRules((done) => {
-                  done(null, new TestRule(false))
+                new TestRule1(false),
+                new TestRule1(true).ifValidThenGetRules((done) => {
+                  done(null, new TestRule1(false))
                 }),
-                new TestRule(false)
+                new TestRule1(false)
               ]);
             });
 
-            rule1.validate(() => {
-              expect(rule1.errors.length).toEqual(3);
-              callback();
+            rule2.ifValidThenGetRules(function() {
+              return Promise.resolve([
+                new TestRule2(false),
+                new TestRule2(true).ifValidThenGetRules(() => {
+                  return Promise.resolve(new TestRule2(false))
+                }),
+                new TestRule2(false)
+              ]);
             });
+
+            await Promise.all([
+              promisify(rule1).validate(),
+              rule2.validate()
+            ]);
+
+            expect(rule1.errors.length).toEqual(3);
+            expect(rule2.errors.length).toEqual(3);
           });
         });
 
-        it('invokes not invalidSuccessors', (callback) => {
-          var rule1 = new TestRule(true);
-          var rule2 = new TestRule(true);
+        it('does not invoke invalidSuccessors', async () => {
+          var rule1 = new TestRule1(true);
+          var rule2 = new TestRule1(true);
+          var rule3 = new TestRule2(true);
+          var rule4 = new TestRule2(true);
 
-          var childCallback =jasmine.createSpy();
+          var childCallback1 = jasmine.createSpy();
+          var childCallback2 = jasmine.createSpy();
 
-          rule2._onValidate = function(done) {childCallback(); done()} ;
+          rule2._onValidate = function (done) { childCallback1(); done() };
+          rule4._onValidate = function () { childCallback2(); return Promise.resolve() };
 
           rule1.ifInvalidThenValidate(rule2);
+          rule3.ifInvalidThenValidate(rule4);
 
-          rule1.validate(() => {
-            expect(rule1.valid).toEqual(true);
-            expect(childCallback).not.toHaveBeenCalled();
-            callback();
-          });
+          await Promise.all([
+            promisify(rule1).validate(),
+            rule3.validate()
+          ]);
+
+          expect(rule1.valid).toEqual(true);
+          expect(childCallback1).not.toHaveBeenCalled();
+
+          expect(rule3.valid).toEqual(true);
+          expect(childCallback2).not.toHaveBeenCalled();
         });
       });
 
       describe("invalid parent rule set", () => {
-        it("does not invoke the next set of rules", (callback) => {
-          var rule1 = new TestRule(false);
+        it("does not invoke the next set of rules", async () => {
+          var rule1 = new TestRule1(false);
+          var rule2 = new TestRule2(false);
+
           rule1.ifValidThenGetRules(function(done) {
             done(null, [
               new TestRule(false),
@@ -634,84 +1106,204 @@ describe("Rule", function() {
             ]);
           });
 
-          rule1.validate(() => {
-            expect(rule1.errors.length).toEqual(1);
-            callback();
+          rule2.ifValidThenGetRules(function() {
+            return Promise.resolve([
+              new TestRule(false),
+              new TestRule(true),
+              new TestRule(false)
+            ]);
           });
+
+          await Promise.all([
+            promisify(rule1).validate(),
+            rule2.validate()
+          ]);
+
+          expect(rule1.errors.length).toEqual(1);
+          expect(rule2.errors.length).toEqual(1);
         });
 
         describe("containing chains n-levels deep", () => {
-          it('does not invoke the next set of rules', (callback) => {
-            var rule1 = new TestRule(true);
+          it('does not invoke the next set of rules', async () => {
+            var rule1 = new TestRule1(true);
+            var rule2 = new TestRule2(true);
+
             rule1.ifValidThenGetRules(function(done) {
               done(null, [
-                new TestRule(false),
-                new TestRule(false).ifValidThenGetRules((done) => {
+                new TestRule1(false),
+                new TestRule1(false).ifValidThenGetRules((done) => {
                   done(null, [
-                    new TestRule(false),
-                    new TestRule(false)
+                    new TestRule1(false),
+                    new TestRule1(false)
                   ])
                 }),
-                new TestRule(false)
+                new TestRule1(false)
               ]);
             });
 
-            rule1.validate(() => {
-              expect(rule1.errors.length).toEqual(3);
-              callback();
+            rule2.ifValidThenGetRules(function(done) {
+              return Promise.resolve([
+                new TestRule2(false),
+                new TestRule2(false).ifValidThenGetRules(() => {
+                  return Promise.resolve([
+                    new TestRule2(false),
+                    new TestRule2(false)
+                  ])
+                }),
+                new TestRule2(false)
+              ]);
             });
+
+            await Promise.all([
+              promisify(rule1).validate(),
+              rule2.validate()
+            ]);
+
+            expect(rule1.errors.length).toEqual(3);
+            expect(rule2.errors.length).toEqual(3);
           });
         });
 
 
         describe("logical-Or functionality", () => {
-          it('A or B should be valid if A is invalid but B', (callback) => {
-            var rule1 = new TestRule(false);
-            rule1.ifInvalidThenValidate(new TestRule(true));
+          it('A or B should be valid if A is invalid and B is valid', async () => {
+            var rule1 = new TestRule1(false);
+            var rule2 = new TestRule2(false);
 
-            rule1.validate(() => {
-              expect(rule1.errors.length).toEqual(0);
-              expect(rule1.valid).toEqual(true);
-              callback();
-            });
+            rule1.ifInvalidThenValidate(new TestRule1(true));
+            rule2.ifInvalidThenValidate(new TestRule2(true));
+
+            await Promise.all([
+              promisify(rule1).validate(),
+              rule2.validate()
+            ]);
+
+            expect(rule1.errors.length).toEqual(0);
+            expect(rule1.valid).toEqual(true);
+
+            expect(rule2.errors.length).toEqual(0);
+            expect(rule2.valid).toEqual(true);
           });
         });
 
         describe("containing chains n-levels deep", () => {
-          it('is valid if all invalid successors are deeply valid', (callback) => {
-            var rule1 = new TestRule(false);
-            rule1.ifInvalidThenValidate([
-                new TestRule(true),
-                new TestRule(false).ifInvalidThenValidate(new TestRule(true)),
-                new TestRule(true)
-              ]);
+          it('is valid if all invalid successors are deeply valid', async () => {
+            var rule1 = new TestRule1(false);
+            var rule2 = new TestRule2(false);
 
-            rule1.validate(() => {
-              expect(rule1.errors.length).toEqual(0);
-              expect(rule1.valid).toEqual(true);
-              callback();
-            });
-          });
-
-          it('is invalid if all one successors are deeply invalid', (callback) => {
-            var rule1 = new TestRule(false);
             rule1.ifInvalidThenValidate([
-              new TestRule(true),
-              new TestRule(false).ifInvalidThenValidate(new TestRule(false)),
-              new TestRule(true)
+              new TestRule1(true),
+              new TestRule1(false).ifInvalidThenValidate(new TestRule1(true)),
+              new TestRule1(true)
             ]);
 
-            rule1.validate(() => {
-              expect(rule1.errors.length).toEqual(3);
-              expect(rule1.valid).toEqual(false);
-              callback();
-            });
+            rule2.ifInvalidThenValidate([
+              new TestRule2(true),
+              new TestRule2(false).ifInvalidThenValidate(new TestRule2(true)),
+              new TestRule2(true)
+            ]);
+
+            await Promise.all([
+              promisify(rule1).validate(),
+              rule2.validate()
+            ]);
+
+            expect(rule1.errors.length).toEqual(0);
+            expect(rule1.valid).toEqual(true);
+
+            expect(rule2.errors.length).toEqual(0);
+            expect(rule2.valid).toEqual(true);
+          });
+
+          it('is invalid if all one successors are deeply invalid', async () => {
+            var rule1 = new TestRule1(false);
+            var rule2 = new TestRule2(false);
+
+            rule1.ifInvalidThenValidate([
+              new TestRule1(true),
+              new TestRule1(false).ifInvalidThenValidate(new TestRule1(false)),
+              new TestRule1(true)
+            ]);
+
+            rule2.ifInvalidThenValidate([
+              new TestRule2(true),
+              new TestRule2(false).ifInvalidThenValidate(new TestRule2(false)),
+              new TestRule2(true)
+            ]);
+
+            await Promise.all([
+              promisify(rule1).validate(),
+              rule2.validate()
+            ]);
           });
         });
       });
 
     });
-
   }
+
+  describe('Constructor value passing', () => {
+    it("passes constructor parameters to _onValidate as expected", (onComplete) => {
+
+      var Rule1 = Rule.extend({
+        functions: {
+          _onValidate: function(v1, v2, done) {
+            if (v1) {
+              this._invalidate(`NOPE ${v1} ${v2}`);
+            }
+            done();
+          }
+        }
+      });
+
+      var rule = new Rule1("hello", 4);
+      rule.validate((err, result) => {
+        expect(rule.errors[0].message).toEqual("NOPE hello 4");
+        onComplete();
+      });
+    });
+  });
+
+  describe('Configuration.autoPromiseWrap = true', () => {
+    it("invokes each function without an explicit return of a promise", async () => {
+
+      var Rule1 = Rule.extend({
+        functions: {
+          _onValidate: function(v1, v2) {
+            if (v1) {
+              this._invalidate(`NOPE ${v1} ${v2}`);
+            }
+          }
+        }
+      });
+
+      class Rule2 extends Rule {
+        constructor(v1, v2) {
+          super();
+          this.v1 = v1;
+          this.v2 = v2;
+        }
+        _onValidate() {
+          if (this.v1) {
+            this._invalidate(`NOPE ${this.v1} ${this.v2}`);
+          }
+        }
+      }
+
+      var rule1 = new Rule1("a", false);
+      var rule2 = new Rule2("a", false);
+
+      await Promise.all([
+        rule1.validate(),
+        rule2.validate()
+      ]);
+
+      expect(rule1.errors[0].message).toEqual("NOPE a false");
+      expect(rule1.valid).toEqual(false);
+
+      expect(rule2.errors[0].message).toEqual("NOPE a false");
+      expect(rule2.valid).toEqual(false);
+    });
+  });
 
 });

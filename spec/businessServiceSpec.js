@@ -1,9 +1,12 @@
-fdescribe("BusinessService", function() {
+describe("BusinessService", function() {
 
   var Command = require('../src/command');
   var BusinessService = require('../src/businessService');
   var ExecutionResult = require('../src/executionResult');
-  var service, command, dataProxy;
+  var Rule = require('../src/rule');
+  var Configuration = require('../src/configuration');
+
+  Configuration.autoPromiseWrap = true;
 
   function promisify(command) {
     return {
@@ -913,6 +916,7 @@ fdescribe("BusinessService", function() {
   });
 
   describe("BusinessService.createCommand", () => {
+
     describe("method invocation", () => {
       it("creates the expected command functions on the service prototype", () => {
         var Service = BusinessService.extend().service;
@@ -929,7 +933,7 @@ fdescribe("BusinessService", function() {
 
       describe("arguments", () => {
         describe("when 'functions' supplied", () => {
-          fit("creates a command that executes the pipeline as expected", (onComplete) => {
+          it("creates a command that executes the pipeline as expected", (onComplete) => {
             var Service = BusinessService.extend().service;
             var sharedContext1 = null;
             var sharedContext2 = null;
@@ -998,34 +1002,65 @@ fdescribe("BusinessService", function() {
             });
 
             var service = new Service();
-            service.testCommand().execute((err, result) => {
-              expect(result).toEqual(new ExecutionResult(true, undefined, null));
-              onComplete();
+
+            Promise.all([
+              promisify(service.testCommand()).execute(),
+              service.testCommand().execute()
+              ])
+              .then(results => {
+                expect(results[0]).toEqual(new ExecutionResult(true, undefined, null));
+                expect(results[1]).toEqual(new ExecutionResult(true, undefined, null));
+                onComplete();
+              });
             });
           });
-        });
 
-        describe("when 'params' are supplied", () => {
-          it("instance members are created and assigned the appropriate argument values", (onComplete) => {
-            var params = [];
-            var Service = BusinessService.extend().service;
-            BusinessService.createCommand({
-              name: 'testCommand',
-              service: Service,
-              functions: {
-                _onInitialization: function(firstName, lastName, context, done) {
-                  params.push(this.firstName);
-                  params.push(this.lastName);
-                  done();
-                }
-              },
-              params: ['firstName', 'lastName']
-            });
-            var command = new Service({}).testCommand('Jimmy', 'Page');
-            command.execute((err, result) => {
-              expect(params).toEqual(['Jimmy', 'Page']);
+          describe("when 'params' are supplied", () => {
+            it("command execution invokes pipeline functions correctly with expected arguments", (onComplete) => {
+              var Service1 = BusinessService.extend().service;
+              var Service2 = BusinessService.extend().service;
+
+              BusinessService.createCommand({
+                name: 'testCommand',
+                service: Service1,
+                functions: {
+                  _getRules: function(a, b, c, d, context, done) {
+                    context.c = c;
+                    done(null, []);
+                  },
+                  _onValidationSuccess: function(a, b, c, d, context, done) {
+                    done(null, { a: this.a, b: b, c: context.c, d: d });
+                  }
+                },
+                params: ['a', 'b', 'c', 'd']
+              });
+
+              BusinessService.createCommand({
+                name: 'testCommand',
+                service: Service2,
+                functions: {
+                  _onInitialization: function(a, b, c, d, context) {
+                    context.d = d;
+                    return Promise.resolve();
+                  },
+                  _onValidationSuccess: function(a, b, c, d, context) {
+                    return Promise.resolve({ a: a, b: this.b, c: this.c, d: context.d });
+                  }
+                },
+                params: ['a', 'b', 'c', 'd']
+              });
+
+              var service1 = new Service1();
+              var service2 = new Service2();
+
+            Promise.all([
+              promisify(service1.testCommand(1, 2, 3, 4)).execute(),
+              service2.testCommand(1, 2, 3, 4).execute()
+            ]).then(results => {
+              expect(results[0].value).toEqual({ a: 1, b: 2, c: 3, d: 4 });
+              expect(results[1].value).toEqual({ a: 1, b: 2, c: 3, d: 4 });
               onComplete();
-            });
+            })
           });
         });
 
@@ -1035,29 +1070,37 @@ fdescribe("BusinessService", function() {
               done(null, "hello" + data);
             }});
 
-            var commands = [
-              x.insertCommand("abc"),
-              x.insertCommand("def"),
-              x.insertCommand("ghi"),
-              x.insertCommand("jkl"),
-              x.insertCommand("lmn")
+            var y = new BusinessService({ insert: function(data) {
+              return Promise.resolve("hello" + data);
+            }});
+
+            commands = [
+              promisify(x.insertCommand("abc")),
+              promisify(x.insertCommand("def")),
+              promisify(x.insertCommand("ghi")),
+              promisify(x.insertCommand("jkl")),
+              promisify(x.insertCommand("lmn")),
+              y.insertCommand("abc"),
+              y.insertCommand("def"),
+              y.insertCommand("ghi"),
+              y.insertCommand("jkl"),
+              y.insertCommand("lmn")
             ];
 
-            var results = [];
-            commands.forEach((command, index) => {
-              command.execute((err, result) => {
-                results.push(result);
-                if (index === commands.length - 1) {
-                  expect(results[0].value).toEqual("helloabc");
-                  expect(results[1].value).toEqual("hellodef");
-                  expect(results[2].value).toEqual("helloghi");
-                  expect(results[3].value).toEqual("hellojkl");
-                  expect(results[4].value).toEqual("hellolmn");
-                  onComplete();
-                }
-              })
-            });
-
+            Promise.all(commands.map(c => c.execute()))
+              .then(results => {
+                expect(results[0].value).toEqual("helloabc");
+                expect(results[1].value).toEqual("hellodef");
+                expect(results[2].value).toEqual("helloghi");
+                expect(results[3].value).toEqual("hellojkl");
+                expect(results[4].value).toEqual("hellolmn");
+                expect(results[5].value).toEqual("helloabc");
+                expect(results[6].value).toEqual("hellodef");
+                expect(results[7].value).toEqual("helloghi");
+                expect(results[8].value).toEqual("hellojkl");
+                expect(results[9].value).toEqual("hellolmn");
+                onComplete();
+              });
 
           });
         });
@@ -1069,27 +1112,47 @@ fdescribe("BusinessService", function() {
 
   describe("getAllCommand and associated methods", function() {
 
+    var dataProxy, dataProxyPromisified, service1, service2;
+
     beforeAll(() => {
       dataProxy = { getAll: function(done) { done(null, []) } };
-      service = new BusinessService(dataProxy);
-      command = service.getAllCommand();
+      dataProxyPromisified = { getAll: function(done) { return Promise.resolve([]) } };
+      service1 = new BusinessService(dataProxy);
+      service2 = new BusinessService(dataProxyPromisified);
       spyOn(dataProxy, "getAll").and.callThrough();
+      spyOn(dataProxyPromisified, "getAll").and.callThrough();
     });
 
     describe("instance methods", () => {
       describe("_getAll", () => {
         it("invokes dataProxy.getAll", (onComplete) => {
-          command.execute((err, result) => {
+          Promise.all([
+            promisify(service1.getAllCommand()).execute(),
+            service2.getAllCommand().execute()
+          ])
+          .then(results => {
             expect(dataProxy.getAll).toHaveBeenCalledWith(jasmine.any(Function));
+            expect(dataProxyPromisified.getAll).toHaveBeenCalled();
             onComplete();
           });
         });
       });
 
       describe("_getRulesForGetAllCommand", () => {
+        var context = {};
         it("returns an empty array", (onComplete) => {
-          service._getRulesForGetAllCommand({}, (err, result) => {
-            expect(result).toEqual([]);
+          Promise.all([
+            new Promise((resolve, reject) => {
+              service1._getRulesForGetAllCommand(context, (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+              });
+            }),
+            service2._getRulesForGetAllCommand(context)
+          ])
+          .then(results => {
+            expect(results[0]).toEqual([]);
+            expect(results[1]).toEqual([]);
             onComplete();
           });
         });
@@ -1098,30 +1161,56 @@ fdescribe("BusinessService", function() {
 
     describe("the returned command", () => {
       it("is of the correct type", () => {
-        expect(command instanceof Command).toBe(true);
+        expect(service1.getAllCommand() instanceof Command).toBe(true);
+        expect(service2.getAllCommand() instanceof Command).toBe(true);
       });
 
       describe("on execution", () => {
         it("passes shared context to all getAll pipeline methods", (onComplete) => {
-          var TestService = function() {};
-          var sharedContext;
-          TestService.prototype = new BusinessService();
-          TestService.prototype._onGetAllCommandInitialization = (context, done) => {
+          var TestService1 = function() {};
+          var TestService2 = function() {};
+          var sharedContext1, sharedContext2;
+
+          TestService1.prototype = new BusinessService();
+          TestService1.prototype._onGetAllCommandInitialization = (context, done) => {
             context.foo = "";
             done();
           };
-          TestService.prototype._getRulesForGetAllCommand = (context, done) => {
+          TestService1.prototype._getRulesForGetAllCommand = (context, done) => {
             context.bar = "";
             done(null, []);
           };
-          TestService.prototype._getAll = (context, done) => {
-            sharedContext = context;
+          TestService1.prototype._getAll = (context, done) => {
+            sharedContext1 = context;
             done();
           }
-          var command = new TestService(dataProxy).getAllCommand();
-          command.execute((err, result) => {
-            expect(sharedContext.foo).not.toBeUndefined();
-            expect(sharedContext.bar).not.toBeUndefined();
+
+          TestService2.prototype = new BusinessService();
+          TestService2.prototype._onGetAllCommandInitialization = (context) => {
+            context.foo = "";
+            return Promise.resolve();
+          };
+          TestService2.prototype._getRulesForGetAllCommand = (context) => {
+            context.bar = "";
+            return Promise.resolve([]);
+          };
+          TestService2.prototype._getAll = (context) => {
+            sharedContext2 = context;
+            return Promise.resolve();
+          }
+
+          var service1 = new TestService1(dataProxy);
+          var service2 = new TestService2(dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.getAllCommand()).execute(),
+            service2.getAllCommand().execute()
+          ])
+          .then(results => {
+            expect(sharedContext1.foo).not.toBeUndefined();
+            expect(sharedContext1.bar).not.toBeUndefined();
+            expect(sharedContext2.foo).not.toBeUndefined();
+            expect(sharedContext2.bar).not.toBeUndefined();
             onComplete();
           });
         });
@@ -1131,20 +1220,28 @@ fdescribe("BusinessService", function() {
 
   describe("getByIdCommand and associated methods", function() {
 
+    var dataProxy, dataProxyPromisified, service1, service2;
     var id = 1;
 
     beforeAll(() => {
-      dataProxy = { getById: function(id, done) { done('the data') } };
-      service = new BusinessService(dataProxy);
-      command = service.getByIdCommand(id);
+      dataProxy = { getById: function(id, done) { done(null, 'the data') } };
+      dataProxyPromisified = { getById: function(id) { return Promise.resolve('the data') } };
+      service1 = new BusinessService(dataProxy);
+      service2 = new BusinessService(dataProxyPromisified);
       spyOn(dataProxy, "getById").and.callThrough();
+      spyOn(dataProxyPromisified, "getById").and.callThrough();
     });
 
     describe("instance methods", () => {
       describe("_getById", () => {
         it("invokes dataProxy.getById", (onComplete) => {
-          command.execute((err, result) => {
+          Promise.all([
+            promisify(service1.getByIdCommand(1)).execute(),
+            service2.getByIdCommand(1).execute()
+          ])
+          .then(results => {
             expect(dataProxy.getById).toHaveBeenCalledWith(id, jasmine.any(Function));
+            expect(dataProxyPromisified.getById).toHaveBeenCalledWith(id);
             onComplete();
           });
         });
@@ -1152,8 +1249,19 @@ fdescribe("BusinessService", function() {
 
       describe("_getRulesForGetByIdCommand", () => {
         it("returns an empty array", (onComplete) => {
-          service._getRulesForGetByIdCommand({}, (err, result) => {
-            expect(result).toEqual([]);
+          var context = {};
+          Promise.all([
+            new Promise((resolve, reject) => {
+              service1._getRulesForGetByIdCommand(id, context, (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+              });
+            }),
+            service2._getRulesForGetByIdCommand(id, context)
+          ])
+          .then(results => {
+            expect(results[0]).toEqual([]);
+            expect(results[1]).toEqual([]);
             onComplete();
           });
         });
@@ -1162,32 +1270,56 @@ fdescribe("BusinessService", function() {
 
     describe("the returned command", () => {
       it("is of the correct type", () => {
-        expect(command instanceof Command).toBe(true);
+        expect(service1.getByIdCommand() instanceof Command).toBe(true);
+        expect(service2.getByIdCommand() instanceof Command).toBe(true);
       });
 
       describe("on execution", () => {
         it("passes shared context and id to all getById pipeline methods", (onComplete) => {
-          var TestService = function() {};
-          var sharedContext;
-          TestService.prototype = new BusinessService();
-          TestService.prototype._onGetByIdCommandInitialization = (id, context, done) => {
+          var TestService1 = function() {};
+          var TestService2 = function() {};
+          var sharedContext1, sharedContext2;
+
+          TestService1.prototype = new BusinessService();
+          TestService1.prototype._onGetByIdCommandInitialization = (id, context, done) => {
             context.ids = 1;
             done();
           };
-          TestService.prototype._getRulesForGetByIdCommand = (id, context, done) => {
+          TestService1.prototype._getRulesForGetByIdCommand = (id, context, done) => {
             context.ids++;
             done(null, []);
           };
-          TestService.prototype._getById = (id, context, done) => {
+          TestService1.prototype._getById = (id, context, done) => {
             context.ids++;
-            sharedContext = context;
+            sharedContext1 = context;
             done();
           }
-          var id = 1;
-          var command = new TestService(dataProxy).getByIdCommand(1);
-          command.execute((err, result) => {
-            expect(sharedContext.ids).not.toBeUndefined();
-            expect(sharedContext.ids).toEqual(3);
+
+          TestService2.prototype = new BusinessService();
+          TestService2.prototype._onGetByIdCommandInitialization = (id, context) => {
+            context.ids = 1;
+            return Promise.resolve();
+          };
+          TestService2.prototype._getRulesForGetByIdCommand = (id, context) => {
+            context.ids++;
+            return Promise.resolve([]);
+          };
+          TestService2.prototype._getById = (id, context) => {
+            context.ids++;
+            sharedContext2 = context;
+            return Promise.resolve();
+          }
+
+          var service1 = new TestService1(dataProxy);
+          var service2 = new TestService2(dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.getByIdCommand(1)).execute(),
+            service2.getByIdCommand(1).execute()
+          ])
+          .then(results => {
+            expect(sharedContext1.ids).toEqual(3);
+            expect(sharedContext2.ids).toEqual(3);
             onComplete();
           });
         });
@@ -1197,20 +1329,28 @@ fdescribe("BusinessService", function() {
 
   describe("insertCommand and associated methods", function() {
 
+    var dataProxy, dataProxyPromisified, service1, service2;
     var state = { foo: "a", bar: "b", meh: "c" };
 
     beforeAll(() => {
-      dataProxy = { insert: function(id, done) { done({ id: 1})} };
-      service = new BusinessService(dataProxy);
-      command = service.insertCommand(state);
+      dataProxy = { insert: function(id, done) { done(null, { id: 1})} };
+      dataProxyPromisified = { insert: function(id) { return Promise.resolve({ id: 1})} };
+      service1 = new BusinessService(dataProxy);
+      service2 = new BusinessService(dataProxyPromisified);
       spyOn(dataProxy, "insert").and.callThrough();
+      spyOn(dataProxyPromisified, "insert").and.callThrough();
     });
 
     describe("instance methods", () => {
       describe("_insert", () => {
         it("invokes dataProxy.insert", (onComplete) => {
-          command.execute((err, result) => {
+          Promise.all([
+            promisify(service1.insertCommand(state)).execute(),
+            service2.insertCommand(state).execute()
+          ])
+          .then(results => {
             expect(dataProxy.insert).toHaveBeenCalledWith(state, jasmine.any(Function));
+            expect(dataProxyPromisified.insert).toHaveBeenCalledWith(state);
             onComplete();
           });
         });
@@ -1218,8 +1358,19 @@ fdescribe("BusinessService", function() {
 
       describe("_getRulesForInsertCommand", () => {
         it("returns an empty array", (onComplete) => {
-          service._getRulesForInsertCommand({}, (err, result) => {
-            expect(result).toEqual([]);
+          var context = {};
+          Promise.all([
+            new Promise((resolve, reject) => {
+              service1._getRulesForInsertCommand(state, context, (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+              });
+            }),
+            service2._getRulesForInsertCommand(state, context)
+          ])
+          .then(results => {
+            expect(results[0]).toEqual([]);
+            expect(results[1]).toEqual([]);
             onComplete();
           });
         });
@@ -1228,32 +1379,60 @@ fdescribe("BusinessService", function() {
 
     describe("the returned command", () => {
       it("is of the correct type", () => {
-        expect(command instanceof Command).toBe(true);
+        expect(service1.insertCommand() instanceof Command).toBe(true);
+        expect(service2.insertCommand() instanceof Command).toBe(true);
       });
 
       describe("on execution", () => {
         it("passes shared context and data to all insert pipeline methods", (onComplete) => {
-          var TestService = function() {};
-          var sharedContext;
-          TestService.prototype = new BusinessService();
-          TestService.prototype._onInsertCommandInitialization = (data, context, done) => {
-            context.foo = state.foo;
+          var TestService1 = function() {};
+          var TestService2 = function() {};
+          var sharedContext1, sharedContext2;
+
+          TestService1.prototype = new BusinessService();
+          TestService1.prototype._onInsertCommandInitialization = (data, context, done) => {
+            context.foo = data.foo;
             done();
           };
-          TestService.prototype._getRulesForInsertCommand = (data, context, done) => {
-            context.bar = state.bar;
+          TestService1.prototype._getRulesForInsertCommand = (data, context, done) => {
+            context.bar = data.bar;
             done(null, []);
           };
-          TestService.prototype._insert = (context, done) => {
-            context.meh = state.meh;
-            sharedContext = context;
+          TestService1.prototype._insert = (data, context, done) => {
+            context.meh = data.meh;
+            sharedContext1 = context;
             done();
           }
-          var command = new TestService(dataProxy).insertCommand(state);
-          command.execute((err, result) => {
-            expect(sharedContext.foo).toEqual("a");
-            expect(sharedContext.bar).toEqual("b");
-            expect(sharedContext.meh).toEqual("c");
+
+          TestService2.prototype = new BusinessService();
+          TestService2.prototype._onInsertCommandInitialization = (data, context) => {
+            context.foo = data.foo;
+            return Promise.resolve();
+          };
+          TestService2.prototype._getRulesForInsertCommand = (data, context) => {
+            context.bar = data.bar;
+            return Promise.resolve([]);
+          };
+          TestService2.prototype._insert = (data, context) => {
+            context.meh = data.meh;
+            sharedContext2 = context;
+            return Promise.resolve();
+          }
+
+          var service1 = new TestService1(dataProxy);
+          var service2 = new TestService2(dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.insertCommand(state)).execute(),
+            service2.insertCommand(state).execute()
+          ])
+          .then(results => {
+            expect(sharedContext1.foo).toEqual("a");
+            expect(sharedContext1.bar).toEqual("b");
+            expect(sharedContext1.meh).toEqual("c");
+            expect(sharedContext2.foo).toEqual("a");
+            expect(sharedContext2.bar).toEqual("b");
+            expect(sharedContext2.meh).toEqual("c");
             onComplete();
           });
         });
@@ -1267,16 +1446,23 @@ fdescribe("BusinessService", function() {
 
     beforeAll(() => {
       dataProxy = { update: function(id, done) { done(); } };
-      service = new BusinessService(dataProxy);
-      command = service.updateCommand(state);
+      dataProxyPromisified = { update: function(id) { return Promise.resolve(); } };
+      service1 = new BusinessService(dataProxy);
+      service2 = new BusinessService(dataProxyPromisified);
       spyOn(dataProxy, "update").and.callThrough();
+      spyOn(dataProxyPromisified, "update").and.callThrough();
     });
 
     describe("instance methods", () => {
       describe("_update", () => {
         it("invokes dataProxy.update", (onComplete) => {
-          command.execute(() => {
+          Promise.all([
+            promisify(service1.updateCommand(state)).execute(),
+            service2.updateCommand(state).execute()
+          ])
+          .then(results => {
             expect(dataProxy.update).toHaveBeenCalledWith(state, jasmine.any(Function));
+            expect(dataProxyPromisified.update).toHaveBeenCalledWith(state);
             onComplete();
           });
         });
@@ -1284,8 +1470,19 @@ fdescribe("BusinessService", function() {
 
       describe("_getRulesForUpdate", () => {
         it("returns an empty array", (onComplete) => {
-          service._getRulesForUpdateCommand({}, (err, result) => {
-            expect(result).toEqual([]);
+          var context = {};
+          Promise.all([
+            new Promise((resolve, reject) => {
+              service1._getRulesForUpdateCommand(state, context, (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+              });
+            }),
+            service2._getRulesForUpdateCommand(state, context)
+          ])
+          .then(results => {
+            expect(results[0]).toEqual([]);
+            expect(results[1]).toEqual([]);
             onComplete();
           });
         });
@@ -1294,32 +1491,60 @@ fdescribe("BusinessService", function() {
 
     describe("the returned command", () => {
       it("is of the correct type", () => {
-        expect(command instanceof Command).toBe(true);
+        expect(service1.updateCommand() instanceof Command).toBe(true);
+        expect(service2.updateCommand() instanceof Command).toBe(true);
       });
 
       describe("on execution", () => {
         it("passes shared context and data to all insert pipeline methods", (onComplete) => {
-          var TestService = function() {};
-          var sharedContext;
-          TestService.prototype = new BusinessService();
-          TestService.prototype._onUpdateCommandInitialization = (data, context, done) => {
+          var TestService1 = function() {};
+          var TestService2 = function() {};
+          var sharedContext1, sharedContext2;
+
+          TestService1.prototype = new BusinessService();
+          TestService1.prototype._onUpdateCommandInitialization = (data, context, done) => {
             context.foo = state.foo;
             done();
           };
-          TestService.prototype._getRulesForUpdateCommand = (data, context, done) => {
+          TestService1.prototype._getRulesForUpdateCommand = (data, context, done) => {
             context.bar = state.bar;
             done(null, []);
           };
-          TestService.prototype._update = (data, context, done) => {
+          TestService1.prototype._update = (data, context, done) => {
             context.meh = state.meh;
-            sharedContext = context;
+            sharedContext1 = context;
             done();
-          }
-          var command = new TestService(dataProxy).updateCommand(state);
-          command.execute((err, result) => {
-            expect(sharedContext.foo).toEqual("a");
-            expect(sharedContext.bar).toEqual("b");
-            expect(sharedContext.meh).toEqual("c");
+          };
+
+          TestService2.prototype = new BusinessService();
+          TestService2.prototype._onUpdateCommandInitialization = (data, context) => {
+            context.foo = state.foo;
+            return Promise.resolve();
+          };
+          TestService2.prototype._getRulesForUpdateCommand = (data, context) => {
+            context.bar = state.bar;
+            return Promise.resolve([]);
+          };
+          TestService2.prototype._update = (data, context) => {
+            context.meh = state.meh;
+            sharedContext2 = context;
+            return Promise.resolve();
+          };
+
+          var service1 = new TestService1(dataProxy);
+          var service2 = new TestService2(dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.updateCommand(state)).execute(),
+            service2.updateCommand(state).execute()
+          ])
+          .then(results => {
+            expect(sharedContext1.foo).toEqual("a");
+            expect(sharedContext1.bar).toEqual("b");
+            expect(sharedContext1.meh).toEqual("c");
+            expect(sharedContext2.foo).toEqual("a");
+            expect(sharedContext2.bar).toEqual("b");
+            expect(sharedContext2.meh).toEqual("c");
             onComplete();
           });
         });
@@ -1333,16 +1558,23 @@ fdescribe("BusinessService", function() {
 
     beforeAll(() => {
       dataProxy = { destroy: function(id, done) { done(); } };
-      service = new BusinessService(dataProxy);
-      command = service.destroyCommand(id);
+      dataProxyPromisified = { destroy: function(id, done) { return Promise.resolve()} };
+      service1 = new BusinessService(dataProxy);
+      service2 = new BusinessService(dataProxyPromisified);
       spyOn(dataProxy, "destroy").and.callThrough();
+      spyOn(dataProxyPromisified, "destroy").and.callThrough();
     });
 
     describe("instance methods", () => {
       describe("_destroy", () => {
         it("invokes dataProxy.destroy", (onComplete) => {
-          command.execute((err, result) => {
+          Promise.all([
+            promisify(service1.destroyCommand(id)).execute(),
+            service2.destroyCommand(id).execute()
+          ])
+          .then(results => {
             expect(dataProxy.destroy).toHaveBeenCalledWith(id, jasmine.any(Function));
+            expect(dataProxyPromisified.destroy).toHaveBeenCalledWith(id);
             onComplete();
           });
         });
@@ -1350,8 +1582,19 @@ fdescribe("BusinessService", function() {
 
       describe("_getRulesForDestroy", () => {
         it("returns an empty array", (onComplete) => {
-          service._getRulesForDestroyCommand({}, (err, result) => {
-            expect(result).toEqual([]);
+          var context = {};
+          Promise.all([
+            new Promise((resolve, reject) => {
+              service1._getRulesForDestroyCommand(id, context, (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+              });
+            }),
+            service2._getRulesForDestroyCommand(id, context)
+          ])
+          .then(results => {
+            expect(results[0]).toEqual([]);
+            expect(results[1]).toEqual([]);
             onComplete();
           });
         });
@@ -1360,55 +1603,496 @@ fdescribe("BusinessService", function() {
 
     describe("the returned command", () => {
       it("is of the correct type", () => {
-        expect(command instanceof Command).toBe(true);
+        expect(service1.destroyCommand() instanceof Command).toBe(true);
+        expect(service2.destroyCommand() instanceof Command).toBe(true);
       });
 
       describe("on execution", () => {
         it("passes shared context and id to all destroy pipeline methods", (onComplete) => {
-          var TestService = function() {};
-          var sharedContext;
-          TestService.prototype = new BusinessService();
-          TestService.prototype._onDestroyCommandInitialization = (id, context, done) => {
+          var TestService1 = function() {};
+          var TestService2 = function() {};
+          var sharedContext1, sharedContext2;
+
+          TestService1.prototype = new BusinessService();
+          TestService1.prototype._onDestroyCommandInitialization = (id, context, done) => {
             context.ids = '1';
             done();
           };
-          TestService.prototype._getRulesForDestroyCommand = (id, context, done) => {
+          TestService1.prototype._getRulesForDestroyCommand = (id, context, done) => {
             context.ids += '2';
             done(null, []);
           };
-          TestService.prototype._destroy = (id, context, done) => {
+          TestService1.prototype._destroy = (id, context, done) => {
             context.ids += '3';
-            sharedContext = context;
+            sharedContext1 = context;
             done();
+          };
+
+          TestService2.prototype = new BusinessService();
+          TestService2.prototype._onDestroyCommandInitialization = (id, context) => {
+            context.ids = '1';
+            return Promise.resolve();
+          };
+          TestService2.prototype._getRulesForDestroyCommand = (id, context) => {
+            context.ids += '2';
+            return Promise.resolve([]);
+          };
+          TestService2.prototype._destroy = (id, context) => {
+            context.ids += '3';
+            sharedContext2 = context;
+            return Promise.resolve();
           }
-          var id = 1;
-          var command = new TestService(dataProxy).destroyCommand(1);
-          command.execute((err, result) => {
-            expect(sharedContext.ids).toEqual('123');
-            onComplete()
+
+          var service1 = new TestService1(dataProxy);
+          var service2 = new TestService2(dataProxyPromisified);
+
+          Promise.all([
+            promisify(service1.destroyCommand(1)).execute(),
+            service2.destroyCommand(1).execute()
+          ])
+          .then(results => {
+            expect(sharedContext1.ids).toEqual('123');
+            expect(sharedContext2.ids).toEqual('123');
+            onComplete();
           });
         });
       });
     });
 
-    describe('multiple command function args', () => {
-      it("passes the arguments to all functions as expected", () => {
-        // service.someCommand('a', 5, '6', {});
+    describe('es6 class inheritance', () => {
+      // NOTE: the command function overrides do not explicitly return promises and take advantage of BusinessService.autoPromiseWrap
+
+      var customers = [];
+
+      beforeEach(() =>  {
+        customers = [
+          { id: 1, name: 'Jimi Hendrix' },
+          { id: 2, name: 'Warren Haynes' },
+          { id: 3, name: 'Duane Allman' }
+        ];
+      });
+
+      var customerDataProxy = {
+        getById: (id) => {
+          return Promise.resolve(customers.find(c => c.id === id));
+        },
+        getAll: () => {
+          return Promise.resolve(customers);
+        },
+        insert: (data) => {
+          customers.push(Object.assign({}, data));
+          return Promise.resolve(Object.assign({}, data));
+        },
+        update: (data) => {
+          var customer = customers.find(c => c.id === data.id);
+          Object.assign(customer, data);
+          return Promise.resolve(Object.assign({}, customer));
+        },
+        destroy: (id) => {
+          var index = customers.findIndex(c => c.id === id);
+          customers.splice(index, 1);
+          return Promise.resolve();
+        }
+      }
+
+      class CustomerService extends BusinessService {
+        constructor(dataProxy) {
+          super(dataProxy);
+        }
+      }
+
+      describe('getByIdCommand', () => {
+        it('invokes the pipeline correctly', async () => {
+          var state = {};
+
+          class ServiceWithGetByIdOverrides extends CustomerService {
+            constructor(dataProxy) {
+              super(dataProxy);
+            }
+            async _onGetByIdCommandInitialization(id, context) {
+              var c = await this.dataProxy.getById(2);
+              context.id = id;
+            }
+            _getRulesForGetByIdCommand(id, context) {
+              context.id += id;
+              return super._getRulesForGetByIdCommand(id, context);
+            }
+            _getById(id, context) {
+              state.id = context.id += id;
+              return super._getById(id);
+            }
+          }
+
+          var service = new ServiceWithGetByIdOverrides(customerDataProxy);
+          var result = await service.getByIdCommand(3).execute();
+
+          expect(state.id).toEqual(9);
+          expect(result.value.name).toEqual('Duane Allman');
+        });
+      });
+
+      describe('getAllCommand', () => {
+        it('invokes the pipeline correctly', async () => {
+          var state = {};
+
+          class ServiceWithGetAllOverrides extends CustomerService {
+            constructor(dataProxy) {
+              super(dataProxy);
+            }
+            _onGetAllCommandInitialization(context) {
+              context.id = 1;
+            }
+            _getRulesForGetAllCommand(context) {
+              context.id += 1;
+            }
+            _getAll(context) {
+              state.id = context.id += 1;
+              return super._getAll();
+            }
+          }
+
+          var service = new ServiceWithGetAllOverrides(customerDataProxy);
+          var results = await service.getAllCommand().execute();
+
+          expect(state.id).toEqual(3);
+          expect(results.value.length).toEqual(3);
+        });
+      });
+
+      describe('insertCommand', () => {
+        it('invokes the pipeline correctly', async () => {
+          var state = {};
+
+          class ServiceWithInsertOverrides extends CustomerService {
+            constructor(dataProxy) {
+              super(dataProxy);
+            }
+            async _onInsertCommandInitialization(data, context) {
+              var customers = await this.dataProxy.getAll();
+              data.id = customers.length + 1;
+              context.id = 1;
+            }
+            _getRulesForInsertCommand(data, context) {
+              context.id += 1;
+            }
+            _insert(data, context) {
+              state.id = context.id += 1;
+              return super._insert(data);
+            }
+          }
+
+          var service = new ServiceWithInsertOverrides(customerDataProxy);
+          var result = await service.insertCommand({ name: 'Jimi Herring' }).execute();
+
+          expect(result.value.id).toEqual(4);
+          expect(state.id).toEqual(3);
+          expect(customers.length).toEqual(4);
+        });
+
+      });
+
+      describe('updateCommand', () => {
+        it('invokes the pipeline correctly', async () => {
+          var state = {};
+
+          class ServiceWithUpdateOverrides extends CustomerService {
+            constructor(dataProxy) {
+              super(dataProxy);
+            }
+            async _onUpdateCommandInitialization(data, context) {
+              context.id = 1;
+            }
+            _getRulesForUpdateCommand(data, context) {
+              context.id += 1;
+            }
+            _update(data, context) {
+              state.id = context.id += 1;
+              return super._update(data);
+            }
+          }
+
+          var service = new ServiceWithUpdateOverrides(customerDataProxy);
+          var result = await service.updateCommand({ id: 3, name: 'Jimmy Herring' }).execute();
+
+          expect(result.value.name).toEqual('Jimmy Herring');
+          expect(state.id).toEqual(3);
+          expect(customers[2].name).toEqual('Jimmy Herring');
+        });
+      });
+
+      describe('destroyCommand', () => {
+        it('invokes the pipeline correctly', async () => {
+          var state = {};
+
+          class ServiceWithDestroyOverrides extends CustomerService {
+            constructor(dataProxy) {
+              super(dataProxy);
+            }
+            async _onDestroyCommandInitialization(id, context) {
+              context.id = id;
+            }
+            _getRulesForDestroyCommand(id, context) {
+              context.id += id;
+            }
+            _destroy(id, context) {
+              state.id = context.id += id;
+              return super._destroy(id);
+            }
+          }
+
+          var service = new ServiceWithDestroyOverrides(customerDataProxy);
+          await service.destroyCommand(1).execute();
+
+          expect(state.id).toEqual(3);
+          expect(customers.length).toEqual(2);
+          expect(customers[0].name).toEqual("Warren Haynes");
+          expect(customers[1].name).toEqual("Duane Allman");
+        });
+      });
+
+      describe('custom command', () => {
+        it('invokes the pipeline correctly', async () => {
+          var state = {};
+
+          class ServiceWithGetByNameCommand extends CustomerService {
+            constructor(dataProxy) {
+              super(dataProxy);
+            }
+            getByNameCommand(first, last) {
+              var dataProxy = this.dataProxy;
+              return new Command({
+                _onInitialization() {
+                  state.first = first;
+                  state.last = last;
+                },
+                _getRules() {
+                  state.first += first;
+                  state.last += last;
+                },
+                async _onValidationSuccess() {
+                  var data = await dataProxy.getAll();
+                  return data.find(d => d.name.indexOf(first) > -1 && d.name.indexOf(last) > -1);
+                }
+              });
+            }
+          }
+
+          var service = new ServiceWithGetByNameCommand(customerDataProxy);
+          var result = await service.getByNameCommand('Warren', 'Haynes').execute();
+
+          expect(state.first).toEqual("WarrenWarren");
+          expect(state.last).toEqual("HaynesHaynes");
+          expect(result.value.name).toEqual("Warren Haynes");
+        });
+      });
+
+      describe('rule failures', () => {
+        it('invoke the pipeline correctly', async () => {
+
+          class FalsyRule extends Rule {
+            constructor(message) {
+              super();
+              this.message = message;
+            }
+            _onValidate() {
+              this._invalidate(this.message);
+              return Promise.resolve();
+            }
+          }
+
+          class ServiceWithFalsyRules extends CustomerService {
+            constructor(dataProxy) {
+              super(dataProxy);
+            }
+            _getRulesForGetByIdCommand(id) {
+              return new FalsyRule(id.toString());
+            }
+            _getRulesForGetAllCommand() {
+              return Promise.resolve([
+                new FalsyRule("nope 1"),
+              ]);
+            }
+            _getRulesForInsertCommand(data) {
+              return [
+                new FalsyRule(data.name),
+                new FalsyRule(data.name)
+              ];
+            }
+            _getRulesForUpdateCommand(data) {
+              return Promise.resolve(new FalsyRule(data.name));
+            }
+            _getRulesForDestroyCommand(id) {
+              return Promise.resolve([
+                new FalsyRule(id.toString()),
+                new FalsyRule(id.toString()),
+              ]);
+            }
+          }
+
+          var service = new ServiceWithFalsyRules(customerDataProxy);
+          var getByIdResult = await service.getByIdCommand(1).execute();
+          var getAllResult = await service.getAllCommand().execute();
+          var insertResult = await service.insertCommand({ name: 'Dickey Betts' }).execute();
+          var updateResult = await service.updateCommand({ id: 1, name: 'Dickey Betts' }).execute();
+          var destroyResult = await service.destroyCommand(1).execute();
+
+          expect(getByIdResult.success).toBe(false);
+          expect(getByIdResult.errors.length).toBe(1);
+          expect(getByIdResult.errors[0].message).toBe("1");
+
+          expect(getAllResult.success).toBe(false);
+          expect(getAllResult.errors.length).toBe(1);
+          expect(getAllResult.errors[0].message).toBe("nope 1");
+
+          expect(insertResult.success).toBe(false);
+          expect(insertResult.errors.length).toBe(2);
+          expect(insertResult.errors[0].message).toBe("Dickey Betts");
+          expect(insertResult.errors[1].message).toBe("Dickey Betts");
+
+          expect(updateResult.success).toBe(false);
+          expect(updateResult.errors.length).toBe(1);
+          expect(updateResult.errors[0].message).toBe("Dickey Betts");
+
+          expect(destroyResult.success).toBe(false);
+          expect(destroyResult.errors.length).toBe(2);
+          expect(destroyResult.errors[0].message).toBe("1");
+          expect(destroyResult.errors[1].message).toBe("1");
+        });
+
+      });
+
+    });
+
+    describe('Configuration.autoPromiseWrap = true', () => {
+      it("invokes each function without an explicit return of a promise", async () => {
+
+        var state = { val: 0 };
+
+        class TruthyRule extends Rule {
+          constructor(message) {
+            super();
+            this.message = message;
+          }
+        }
+
+        class AutoWrapService extends BusinessService {
+          _onGetByIdCommandInitialization(id, context) {
+            state.val += id;
+          }
+          _getRulesForGetByIdCommand(id, context) {
+            state.val += id;
+            return new TruthyRule();
+          }
+          _getById(id, context) {
+            state.val += id;
+            return { stuff: "getByIdResult" };
+          }
+          _onGetAllCommandInitialization(context) {
+            state.val += 5;
+          }
+          _getRulesForGetAllCommand(context) {
+            state.val += 5;
+            return new TruthyRule();
+          }
+          _getAll(context) {
+            state.val += 5;
+            return { stuff: "getAllResult" };
+          }
+          _onInsertCommandInitialization(data, context) {
+            state.val += data.thing;
+          }
+          _getRulesForInsertCommand(data, context) {
+            state.val += data.thing;
+            return new TruthyRule();
+          }
+          _insert(data, context) {
+            state.val += data.thing;
+            return { stuff: "insertResult" };
+          }
+          _onUpdateCommandInitialization(data, context) {
+            state.val += data.id;
+            return new TruthyRule();
+          }
+          _getRulesForUpdateCommand(data, context) {
+            state.val += data.id;
+          }
+          _update(data, context) {
+            state.val += data.id;
+            return { stuff: "updateResult" };
+          }
+          _onDestroyCommandInitialization(id, context) {
+            state.val += id;
+          }
+          _getRulesForDestroyCommand(id, context) {
+            state.val += id;
+            return new TruthyRule();
+          }
+          _destroy(id, context) {
+            state.val += id;
+            return { stuff: "destroyResult" };
+          }
+        }
+
+        var dataProxy = {};
+        var service = new AutoWrapService(dataProxy);
+
+        var getByIdResult = await service.getByIdCommand(5).execute();
+        expect(getByIdResult.value.stuff).toEqual("getByIdResult");
+        expect(state.val).toEqual(15);
+
+        var getAllResult = await service.getAllCommand().execute();
+        expect(getAllResult.value.stuff).toEqual("getAllResult");
+        expect(state.val).toEqual(30);
+
+        var insertResult = await service.insertCommand({ thing: 5 }).execute();
+        expect(insertResult.value.stuff).toEqual("insertResult");
+        expect(state.val).toEqual(45);
+
+        var updateResult = await service.updateCommand({ id: 5, thing: 10 }).execute();
+        expect(updateResult.value.stuff).toEqual("updateResult");
+        expect(state.val).toEqual(60);
+
+        var destroyResult = await service.destroyCommand(5).execute();
+        expect(destroyResult.value.stuff).toEqual("destroyResult");
+        expect(state.val).toEqual(75);
       });
     });
 
-    describe('function overloads as iffys () =>', () => {
-      it("invoke as expected", () => {
-        // service.someCommand('a', 5, '6', {});
+    describe('when command method is overridden', () => {
+      it("bypasses business service command pipeline", async () => {
+
+
+        var state = {};
+        class SomeService extends BusinessService {
+          insertCommand(name, address, zip) {
+            return new Command({
+              _onInitialization: () => {
+                state.name = name;
+                state.address = address;
+                state.zip = zip;
+              },
+              _onValidationSuccess: () => {
+                return state;
+              }
+            });
+          }
+        }
+
+        var dataProxy = {};
+        var service = new SomeService(dataProxy);
+        spyOn(service, '_onInsertCommandInitialization');
+        spyOn(service, '_getRulesForInsertCommand');
+        spyOn(service, '_insert');
+
+        var result = await service.insertCommand('Carlos', '123 Some St.', 12345).execute();
+        expect(result.value).toEqual(state);
+
+        expect(service._onInsertCommandInitialization).not.toHaveBeenCalled();
+        expect(service._getRulesForInsertCommand).not.toHaveBeenCalled();
+        expect(service._insert).not.toHaveBeenCalled();
       });
     });
 
-    describe('when only one command function is overloaded exposed as service.XYZCommand', () => {
-      it("invokes as expected", () => {
-        // service.someCommand('a', 5, '6', {});
-      });
-    });
   });
-
 
 });
