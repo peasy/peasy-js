@@ -59,7 +59,7 @@ A [business service](https://github.com/peasy/peasy-js/wiki/BusinessService) imp
 - Install with **npm**: ```npm install peasy-js```
 - Install with **yarn**: ```yarn add peasy-js```
 
-You can also download and add the [peasy.js](https://github.com/peasy/peasy-js/blob/master/lib/peasy.js) file to your project and reference it accordingly.
+You can also download and add the [peasy.js](https://github.com/peasy/peasy-js/blob/master/dist/peasy.js) file to your project and reference it accordingly.
 
 # Getting started
 
