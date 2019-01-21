@@ -6,7 +6,8 @@
 
 "use strict";
 
-var peasy = require('./../lib/peasy');
+var peasy = require('./index');
+// var peasy = require('./../dist/peasy');
 var Rule = peasy.Rule;
 var BusinessService = peasy.BusinessService;
 var Command = peasy.Command;
@@ -19,8 +20,8 @@ var AgeRule = Rule.extend({
   association: "age",
   params: ['birthdate'],
   functions: {
-    _onValidate: function(done) {
-      if (new Date().getFullYear() - this.birthdate.getFullYear() < 50) {
+    _onValidate: function(birthdate, done) {
+      if (new Date().getFullYear() - birthdate.getFullYear() < 50) {
         this._invalidate("You are too young");
       }
       var time = Math.floor((Math.random() * 3000) + 1);
@@ -33,8 +34,8 @@ var NameRule = Rule.extend({
   association: "name",
   params: ['name'],
   functions: {
-    _onValidate: function(done) {
-      if (this.name === "Jimi") {
+    _onValidate: function(name, done) {
+      if (name === "Jimi") {
         this._invalidate("Name cannot be Jimi");
       }
       var time = Math.floor((Math.random() * 3000) + 1);
@@ -46,10 +47,10 @@ var NameRule = Rule.extend({
 var FieldRequiredRule = Rule.extend({
   params: ['field', 'data'],
   functions: {
-    _onValidate: function(done) {
-      if (!this.data[this.field]) {
-        this.association = this.field;
-        this._invalidate(this.field + " is required");
+    _onValidate: function(field, data, done) {
+      if (!data[field]) {
+        this.association = field;
+        this._invalidate(field + " is required");
       }
       var time = Math.floor((Math.random() * 3000) + 1);
       setTimeout(() => done(), time); // simulate latency
@@ -60,14 +61,11 @@ var FieldRequiredRule = Rule.extend({
 var CustomerAuthorizationRule = Rule.extend({
   params: ['roles'],
   functions: {
-    _onValidate: function(done) {
+    _onValidate: function(roles, done) {
       var validRoles = ['super admin', 'admin'];
-      this.roles.forEach(function(role) {
-        if (validRoles.indexOf(role) > 0) {
-          return done();
-        }
-      });
-      this._invalidate("You do not have sufficient priviledges to access national security information");
+      if (!roles.some(r => validRoles.indexOf(r) > -1)) {
+        this._invalidate("You do not have sufficient priviledges to access national security information");
+      }
       done();
     }
   }
@@ -79,7 +77,6 @@ var CustomerAuthorizationRule = Rule.extend({
 // https://github.com/peasy/peasy-js/wiki/Command for more details
 
 // ROLES SERVICE
-
 var RolesService = BusinessService.extend({
   params: ['userId', 'dataProxy'],
   functions: {
@@ -93,22 +90,21 @@ var RolesService = BusinessService.extend({
 
 
 // CUSTOMER SERVICE
-
 var CustomerService = BusinessService
   .extend({
     params: ['dataProxy', 'rolesService'],
     functions: {
       _getRulesForInsertCommand: getRulesForInsert,
       _getAll: function(context, done) {
-        this.dataProxy.getAll(function(err, data) {
-          data.forEach(function(customer) {
+        this.dataProxy.getAll((err, data) => {
+          data.forEach(customer => {
             delete customer.nsd; // remove confidential data
           });
           done(err, data);
         });
       },
-      _getById: function(context, done) {
-        this.dataProxy.getById(function(err, data) {
+      _getById: function(id, context, done) {
+        this.dataProxy.getById((err, data) => {
           delete data.nsd; // remove confidential data
           done(err, data);
         });
@@ -120,16 +116,16 @@ var CustomerService = BusinessService
     params: ['id'],
     functions:
     {
-      _getRules: function(context, done) {
+      _getRules: function(id, context, done) {
         var getRolesForCurrentUserCommand = this.rolesService.getAllCommand();
-        getRolesForCurrentUserCommand.execute(function(err, result) {
+        getRolesForCurrentUserCommand.execute((err, result) => {
           if (!result.success) return done(null, result.errors);
           var roles = result.value;
           done(err, new CustomerAuthorizationRule(roles));
         });
       },
-      _onValidationSuccess: function(context, done) {
-        this.dataProxy.getById(this.id, function(err, data) {
+      _onValidationSuccess: function(id, context, done) {
+        this.dataProxy.getById(id, (err, data) => {
           done(err, { id: data.id, nsd: data.nsd });
         });
       }
@@ -137,17 +133,18 @@ var CustomerService = BusinessService
   })
   .service;
 
-function getRulesForInsert(context, done) {
+function getRulesForInsert(data, context, done) {
 
   // see https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules for more details
 
-  var customer = this.data;
+  var customer = data;
+
   // these will all execute
-  //done([
-      //new AgeRule(customer.age),
-      //new NameRule(customer.name),
-      //new FieldRequiredRule("address", customer)
-  //]);
+  // done(null, [
+  //     new AgeRule(customer.age),
+  //     new NameRule(customer.name),
+  //     new FieldRequiredRule("address", customer)
+  // ]);
 
   // chained rules - rules will only execute upon successful validation of predecessor
   done(null, new AgeRule(customer.age)
@@ -205,20 +202,18 @@ var customerDataProxy = (function() {
 var rolesDataProxy = {
   getById: function(id, done) {
     // add/remove roles to manipulate execution of getNationalSecurityCommand
-    done(null, ['admin', 'user']);
+    done(null, ['', 'user']);
   }
 }
 
 
 // CREATE INSTANCE OF A CUSTOMER SERVICE WITH THE REQUIRED DATA PROXY
-
 var currentUserId = 12345; // this id would likely come from some authentication service
 var rolesService = new RolesService(currentUserId, rolesDataProxy);
 var customerService = new CustomerService(customerDataProxy, rolesService);
 
 
 // EXECUTE CUSTOM COMMAND
-
 var customerId = 1;
 customerService.getNationalSecurityCommand(customerId).execute(function(err, result) {
   if (err) console.log("ERROR!", err);
@@ -227,7 +222,6 @@ customerService.getNationalSecurityCommand(customerId).execute(function(err, res
 
 
 // CREATE AN ARRAY OF INSERT COMMANDS
-
 var commands = [
   customerService.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
   customerService.insertCommand({name: "James", age: new Date('2/3/1975'), address: 'aa'}),
@@ -236,9 +230,12 @@ var commands = [
   customerService.insertCommand({name: "James", age: new Date('2/3/1925'), address: 'aaa'})
 ];
 
+ var x = customerService.getNationalSecurityCommand(123);
+ x.getErrors((err, val) => {
+  console.log('VAL', val);
+ });
 
 // LOOP THROUGH EACH COMMAND AND EXECUTE IT
-
 commands.forEach(function(command, index) {
   command.execute((err, result) => {
     console.log('\n---------------');

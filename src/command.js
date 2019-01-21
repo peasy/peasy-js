@@ -7,6 +7,18 @@ var Command = (function() {
 
   "use strict";
 
+  function wrap(fn, args) {
+    return function(context) {
+      return new Promise((resolve, reject) => {
+        var callback = function(err, result) {
+          if (err) return reject(err);
+          resolve(result);
+        }
+        fn.apply(this, args.concat(callback));
+      });
+    }
+  }
+
   var Command = function(callbacks) {
     callbacks = callbacks || {};
     if (this instanceof Command) {
@@ -45,27 +57,21 @@ var Command = (function() {
 
     constructor: Command,
 
-    execute: function(done) {
+    getErrors: function(done, context) {
       var self = this;
-      var context = {};
       var constructorArgs = self.arguments || {};
       var constructorValues = Object.keys(constructorArgs).map(key => constructorArgs[key]);
       var functionArgs = constructorValues.concat([context]);
 
-      var initialization = self._onInitialization.bind(self);
       var rulesFunc = self._getRules.bind(self);
       var validationSuccessFunc = self._onValidationSuccess.bind(self);
       var validateRulesFunc = function(rules) {
         return new RulesValidator(rules).validate();
       }
-      var executionFailureFunc = function(errors) {
-        return Promise.resolve(new ExecutionResult(false, null, errors));
-      };
 
       if (done) {
-        initialization = wrap(initialization);
-        rulesFunc = wrap(rulesFunc);
-        validationSuccessFunc = wrap(validationSuccessFunc);
+        rulesFunc = wrap(rulesFunc, functionArgs);
+        validationSuccessFunc = wrap(validationSuccessFunc, functionArgs);
         validateRulesFunc = function(rules) {
           return new Promise((resolve, reject) => {
             new RulesValidator(rules).validate(function(err) {
@@ -76,11 +82,9 @@ var Command = (function() {
         }
       }
 
-      var promise = performInitialization()
-        .then(getRules)
+      var promise = getRules()
         .then(validateRules)
         .then(parseErrorsFromRules)
-        .then(createExecutionResult)
         .then((result) => {
           if (done) return done(null, result);
           return result;
@@ -91,11 +95,6 @@ var Command = (function() {
         });
 
       if (!done) return promise;
-
-      function performInitialization() {
-        var result = initialization.apply(self, functionArgs);
-        return utility.autoWrapInitializationResult(result);
-      }
 
       function getRules() {
         var result = rulesFunc.apply(self, functionArgs);
@@ -118,6 +117,50 @@ var Command = (function() {
 
         return [].concat.apply([], errors); // flatten array
       }
+    },
+
+    execute: function(done) {
+      var self = this;
+      var context = {};
+      var constructorArgs = self.arguments || {};
+      var constructorValues = Object.keys(constructorArgs).map(key => constructorArgs[key]);
+      var functionArgs = constructorValues.concat([context]);
+
+      var initialization = self._onInitialization.bind(self);
+      var validationSuccessFunc = self._onValidationSuccess.bind(self);
+      var executionFailureFunc = function(errors) {
+        return Promise.resolve(new ExecutionResult(false, null, errors));
+      };
+
+      if (done) {
+        initialization = wrap(initialization, functionArgs);
+        validationSuccessFunc = wrap(validationSuccessFunc, functionArgs);
+      }
+
+      var promise = performInitialization()
+        .then(getErrors)
+        .then(createExecutionResult)
+        .then(returnResult)
+        .catch((e) => {
+          if (done) return done(e);
+          return Promise.reject(e);
+        });
+
+      if (!done) return promise;
+
+      function performInitialization() {
+        var result = initialization.apply(self, functionArgs);
+        return utility.autoWrapInitializationResult(result);
+      }
+
+      function getErrors() {
+        if (done) {
+          return new Promise((resolve, reject) => {
+            self.getErrors((r, v) => resolve(v), context)
+          });
+        }
+        return self.getErrors(null, context);
+      }
 
       function createExecutionResult(errors) {
         if (errors.length > 0) return executionFailureFunc(errors);
@@ -133,23 +176,16 @@ var Command = (function() {
         }
       }
 
+      function returnResult(result) {
+        if (done) return done(null, result);
+        return result;
+      }
+
       function handleError(err) {
         if (err instanceof ServiceException) {
           return Promise.resolve(new ExecutionResult(false, null, err.errors));
         }
         return Promise.reject(err);
-      }
-
-      function wrap(fn) {
-        return function(context) {
-          return new Promise((resolve, reject) => {
-            var callback = function(err, result) {
-              if (err) return reject(err);
-              resolve(result);
-            }
-            fn.apply(self, functionArgs.concat(callback));
-          });
-        }
       }
     }
   };

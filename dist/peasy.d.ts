@@ -364,4 +364,3 @@ declare module Peasy {
 }
 
 export = Peasy;
-
