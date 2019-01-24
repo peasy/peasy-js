@@ -45,19 +45,22 @@ declare module Peasy {
   /** Serves as optional arguments to the constructor of a Command */
   class CommandArgs<T> {
     /** (Optional) Used to perform initialization logic before rules are executed.
-     * @returns An awaitable promise.
-     */
-    _onInitialization?: () => Promise<void>;
+    * @returns An awaitable promise.
+    * @param context An object that can be used as a property bag throughout this command's execution pipeline.
+    */
+    _onInitialization?: (context: any) => Promise<void>;
 
     /** (Optional) Used to return a list of rules whose execution outcome will determine whether or not to invoke _onValidateSuccess.
     * @returns An awaitable array of IRule.
-     */
-    _getRules?: () => Promise<IRule[]>;
+    * @param context An object that can be used as a property bag throughout this command's execution pipeline.
+    */
+    _getRules?: (context: any) => Promise<IRule[]>;
 
     /** Primarily used to interact with data proxies, workflow logic, etc.
     * @returns An awaitable promise.
-     */
-    _onValidationSuccess: () => Promise<T>
+    * @param context An object that can be used as a property bag throughout this command's execution pipeline.
+    */
+    _onValidationSuccess: (context: any) => Promise<T>
   }
 
   class Configuration {
@@ -103,102 +106,102 @@ declare module Peasy {
     * @param context An object that can be used as a property bag throughout the getByIdCommand execution pipeline.
     * @returns An awaitable promise.
     */
-    protected _onGetByIdCommandInitialization(id: TKey, context: object): Promise<void>;
+    protected _onGetByIdCommandInitialization(id: TKey, context: any): Promise<void>;
 
     /** Override this function to perform initialization logic before rule validations for getAllCommand are performed.
     * @param context An object that can be used as a property bag throughout the getAllCommand execution pipeline.
     * @returns An awaitable promise.
     */
-    protected _onGetAllCommandInitialization(context: object): Promise<void>;
+    protected _onGetAllCommandInitialization(context: any): Promise<void>;
 
     /** Override this function to perform initialization logic before rule validations for insertCommand are performed.
     * @param data The data representation of the entity to save (insert).
     * @param context An object that can be used as a property bag throughout the insertCommand execution pipeline.
     * @returns An awaitable promise.
     */
-    protected _onInsertCommandInitialization(data: T, context: object): Promise<void>;
+    protected _onInsertCommandInitialization(data: T, context: any): Promise<void>;
 
     /** Override this function to perform initialization logic before rule validations for updateCommand are performed.
     * @param data The data representation of the entity to save (update).
     * @param context An object that can be used as a property bag throughout the updateCommand execution pipeline.
     * @returns An awaitable promise.
     */
-    protected _onUpdateCommandInitialization(data: T, context: object): Promise<void>;
+    protected _onUpdateCommandInitialization(data: T, context: any): Promise<void>;
 
     /** Override this function to perform initialization logic before rule validations for destroyCommand are performed.
     * @param id The id of the entity to delete.
     * @param context An object that can be used as a property bag throughout the destroyCommand execution pipeline.
     * @returns An awaitable promise.
     */
-    protected _onDestroyCommandInitialization(id: TKey, context: object): Promise<void>;
+    protected _onDestroyCommandInitialization(id: TKey, context: any): Promise<void>;
 
     /** Override this function to supply custom business rules to getByIdCommand.
     * @param id The id of the entity to query by.
     * @param context An object that can be used as a property bag throughout the getByIdCommand execution pipeline.
     * @returns An awaitable array of IRule.
     */
-    protected _getRulesForGetByIdCommand(id: TKey, context: object): Promise<IRule[]>;
+    protected _getRulesForGetByIdCommand(id: TKey, context: any): Promise<IRule[]>;
 
     /** Override this function to supply custom business rules to getAllCommand.
     * @param context An object that can be used as a property bag throughout the getAllCommand execution pipeline.
     * @returns An awaitable array of IRule.
     */
-    protected _getRulesForGetAllCommand(context: object): Promise<IRule[]>;
+    protected _getRulesForGetAllCommand(context: any): Promise<IRule[]>;
 
     /** Override this function to supply custom business rules to insertCommand.
     * @param data The data representation of the entity to save (insert).
     * @param context An object that can be used as a property bag throughout the insertCommand execution pipeline.
     * @returns An awaitable array of IRule.
     */
-    protected _getRulesForInsertCommand(data: T, context: object): Promise<IRule[]>;
+    protected _getRulesForInsertCommand(data: T, context: any): Promise<IRule[]>;
 
     /** Override this function to supply custom business rules to updateCommand.
     * @param data The data representation of the entity to save (update).
     * @param context An object that can be used as a property bag throughout the updateCommand execution pipeline.
     * @returns An awaitable array of IRule.
     */
-    protected _getRulesForUpdateCommand(data: T, context: object): Promise<IRule[]>;
+    protected _getRulesForUpdateCommand(data: T, context: any): Promise<IRule[]>;
 
     /** Override this function to supply custom business rules to destroyCommand.
     * @param id The id of the entity to delete.
     * @param context An object that can be used as a property bag throughout the destroyCommand execution pipeline.
     * @returns An awaitable array of IRule.
     */
-    protected _getRulesForDestroyCommand(id: TKey, context: object): Promise<IRule[]>;
+    protected _getRulesForDestroyCommand(id: TKey, context: any): Promise<IRule[]>;
 
     /** Invoked by the command returned from getByIdCommand() if validation and business rules execute successfully.
     * @param id The id of the entity to query by.
     * @param context An object that has been passed through the getByIdCommand execution pipeline.
     * @returns An awaitable promise.
     */
-    protected _getById(id: TKey, context: object): Promise<T>;
+    protected _getById(id: TKey, context: any): Promise<T>;
 
     /** Invoked by the command returned from getAllCommand() if validation and business rules execute successfully.
     * @param context An object that has been passed through the getAllCommand execution pipeline.
     * @returns An awaitable promise.
     */
-    protected _getAll(context: object): Promise<T[]>;
+    protected _getAll(context: any): Promise<T[]>;
 
     /** Invoked by the command returned from insertCommand() if validation and business rules execute successfully.
     * @param data The data representation of the entity to save (update).
     * @param context An object that has been passed through the insertCommand execution pipeline.
     * @returns An awaitable promise.
     */
-    protected _insert(data: T, context: object): Promise<T>;
+    protected _insert(data: T, context: any): Promise<T>;
 
     /** Invoked by the command returned from updateCommand() if validation and business rules execute successfully.
     * @param data The data representation of the entity to save (update).
     * @param context An object that has been passed through the updateCommand execution pipeline.
     * @returns An awaitable promise.
     */
-    protected _update(data: T, context: object): Promise<T>;
+    protected _update(data: T, context: any): Promise<T>;
 
     /** Invoked by the command returned from destroyCommand() if validation and business rules execute successfully.
     * @param id The id of the entity to delete.
     * @param context An object that has been passed through the deleteCommand execution pipeline.
     * @returns An awaitable promise.
     */
-    protected _destroy(id: TKey, context: object): Promise<void>;
+    protected _destroy(id: TKey, context: any): Promise<void>;
   }
 
   /** Exceptions of this type are explicitly caught and handled by commands during execution.
@@ -257,17 +260,17 @@ declare module Peasy {
     /** Used to perform initialization logic before rules are executed.
     * @returns An awaitable promise.
     */
-    protected _onInitialization(): Promise<void>;
+    protected _onInitialization(context: any): Promise<void>;
 
     /** Used to return a list of rules whose execution outcome will determine whether or not to invoke _onValidateSuccess.
     * @returns An awaitable array of IRule.
     */
-    protected _getRules(): Promise<IRule[]>;
+    protected _getRules(context: any): Promise<IRule[]>;
 
     /** Primarily used to interact with data proxies, workflow logic, etc.
     * @returns An awaitable promise.
     */
-    protected _onValidationSuccess(): Promise<T>;
+    protected _onValidationSuccess(context: any): Promise<T>;
   }
 
   class ifAllValidResult {
