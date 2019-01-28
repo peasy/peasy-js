@@ -73,6 +73,53 @@ describe("Command", function() {
     });
   });
 
+  describe("getErrors", () => {
+    describe("when validation succeeds", () => {
+      it("getErrors() returns an empty array", async () => {
+        var TrueRule = Rule.extend({
+          functions: {
+            _onValidate: function(context) {
+              return Promise.resolve();
+            }
+          }
+        });
+        var command = new Command({
+          _getRules: (context) => {
+            return Promise.resolve(new TrueRule());
+          }
+        });
+
+        var results = await command.getErrors();
+
+        expect(results).toEqual([]);
+      });
+    });
+
+    describe("when validation fails", () => {
+      it("getErrors() returns the expected errors", async () => {
+        var FalseRule = Rule.extend({
+          functions: {
+            _onValidate: function(context) {
+              this._invalidate("NOPE");
+              return Promise.resolve();
+            }
+          }
+        });
+        var command = new Command({
+          _getRules: (context) => {
+            return Promise.resolve([new FalseRule(), new FalseRule()]);
+          }
+        });
+
+        var results = await command.getErrors();
+
+        expect(results.length).toEqual(2);
+        expect(results[0].message).toEqual("NOPE");
+        expect(results[1].message).toEqual("NOPE");
+      });
+    });
+  });
+
   describe("execute", () => {
     it("invokes the pipeline methods in the correct order", async () => {
 
