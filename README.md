@@ -24,6 +24,9 @@ A middle tier framework is code that facilitates creating business logic in a re
 ##### peasy-js offers/addresses the following:
 
 - [Business and validation rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) engine
+- [Asynchronous support]() via promises or callbacks
+- ES5 and later support
+- [ TypeScript ](https://github.com/peasy/peasy-js/wiki/typescript-node.js-sample) support
 - [Multiple client support](https://github.com/peasy/peasy-js/wiki/Multiple-Client-Support)
 - [Multiple deployment scenario support](https://github.com/peasy/peasy-js/wiki/Data-Proxy#multiple-deployment-scenarios)
 - Reusability (decouples business and validation logic from consuming code and frameworks)
@@ -32,9 +35,9 @@ A middle tier framework is code that facilitates creating business logic in a re
 
 # Why peasy-js?
 
-Because the javascript ecosystem changes at a pace much more rapid than your business logic.  UI frameworks change: Backbone one day, Angular the next day, React the following...  Backend frameworks change: Express one day, Koa the next day, Hapi the next... Data frameworks and ORMS change...  
+Because the javascript ecosystem changes at a pace much more rapid than your business logic.  UI frameworks change: Backbone one day, Angular the next day, React the following...  Backend frameworks change: Express one day, Koa the next day, Hapi the next... Data frameworks and ORMS change...
 
-Why couple your code with technologies that are hot today and gone tomorrow?  Why not focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both, and by any UI or backend framework? 
+Why couple your code with technologies that are hot today and gone tomorrow?  Why not focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both, and by any UI or backend framework?
 
 peasy-js makes it trivial to whimsically swap out UI, backend, and data frameworks in your applications by creating your business logic in a composable, reusable, scalable, and testable manner.
 
@@ -67,12 +70,14 @@ You can get started by reviewing the walk throughs below.
 
 - Run it in a [client](https://github.com/peasy/peasy-js/wiki/Browser-sample) (browser)
 - Run it on a [server](https://github.com/peasy/peasy-js/wiki/node.js-sample) (Node.js)
+- Run it with [TypeScript](https://github.com/peasy/peasy-js/wiki/typescript-node.js-sample) (Node.js)
 
-An additional sample can be viewed [here](https://github.com/peasy/peasy-js/blob/master/src/sample.js) that showcases creating a [business service](), custom [command](), [business rules](), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, run: ```node src/sample.js``` from a command line.
+An additional sample can be viewed [here](https://github.com/peasy/peasy-js/blob/master/src/sampleWithPromises.js) (using promises) or [here](https://github.com/peasy/peasy-js/blob/master/src/sampleWithCallbacks.js) (using callbacks) that showcases creating a [business service](https://github.com/peasy/peasy-js/wiki/businessservice), custom [command](https://github.com/peasy/peasy-js/wiki/command), [business rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, run one or both from a command line:
 
-An entire middle-tier implementation using peasy-js can be viewed [here](https://github.com/peasy/peasy-js-samples).  This sample application is a ficticious order entry / inventory management system.
+-  ```node src/sampleWithPromises.js```
+-  ```node src/sampleWithCallbacks.js```
 
-For additional help, be sure to checkout the [wiki](https://github.com/peasy/peasy-js/wiki) as it covers in-depth how-to's, general framework design, and usage scenarios.
+An entire middle-tier implementation using peasy-js can be viewed [here](https://github.com/peasy/peasy-js-samples).  This sample application is a ficticious order entry / inventory management system written with peasy-js, react, angular (with TypeScript), mongoDB, nodejs, and express.
 
 # Contributing
 
