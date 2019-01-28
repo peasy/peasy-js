@@ -30,7 +30,7 @@ A middle tier framework is code that facilitates creating business logic in a re
 - [Business and validation rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) engine
 - [Asynchronous support](https://github.com/peasy/peasy-js/wiki/asynchronous-api) via promises or callbacks
 - ES5 and later support
-- [TypeScript](https://github.com/peasy/peasy-js/wiki/typescript-node.js-sample) support
+- [TypeScript](https://github.com/peasy/peasy-js/wiki/new-in-2.0#typescript-support) support
 - [Multiple client support](https://github.com/peasy/peasy-js/wiki/Multiple-Client-Support)
 - [Multiple deployment scenario support](https://github.com/peasy/peasy-js/wiki/Data-Proxy#multiple-deployment-scenarios)
 - Reusability (decouples business and validation logic from consuming code and frameworks)
