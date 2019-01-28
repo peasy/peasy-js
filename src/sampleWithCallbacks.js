@@ -6,8 +6,7 @@
 
 "use strict";
 
-var peasy = require('./index');
-// var peasy = require('./../dist/peasy');
+var peasy = require('./../dist/peasy');
 var Rule = peasy.Rule;
 var BusinessService = peasy.BusinessService;
 var Command = peasy.Command;
@@ -230,19 +229,14 @@ var commands = [
   customerService.insertCommand({name: "James", age: new Date('2/3/1925'), address: 'aaa'})
 ];
 
- var x = customerService.getNationalSecurityCommand(123);
- x.getErrors((err, val) => {
-  console.log('VAL', val);
- });
-
 // LOOP THROUGH EACH COMMAND AND EXECUTE IT
 commands.forEach(function(command, index) {
   command.execute((err, result) => {
-    console.log('\n---------------');
+    console.log('---------------');
     console.log(result);
 
     if (index === commands.length - 1) {
-      console.log('\n---------------');
+      console.log('---------------');
       customerService.getAllCommand().execute(function(err, result) {
         console.log("End Result", result.value);
       });

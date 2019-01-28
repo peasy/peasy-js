@@ -6,8 +6,7 @@
 
 "use strict";
 
-var peasy = require('./index');
-// var peasy = require('./../dist/peasy');
+var peasy = require('./../dist/peasy');
 var Rule = peasy.Rule;
 var BusinessService = peasy.BusinessService;
 var Command = peasy.Command;
@@ -225,30 +224,24 @@ customerService.getNationalSecurityCommand(customerId).execute().then(result => 
   console.log("getNationalSecurityCommand execution complete!", result)
 });
 
-
- var x = customerService.getNationalSecurityCommand(123);
-//  x.getErrors().then(val => {
-//   console.log('VAL', val);
-//  });
-
 // CREATE AN ARRAY OF INSERT COMMANDS
 var commands = [
-  // customerService.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
-  // customerService.insertCommand({name: "James", age: new Date('2/3/1975'), address: 'aa'}),
-  // customerService.insertCommand({name: "Jimi", age: new Date('2/3/1925'), address: 'aa'}),
-  // customerService.insertCommand({name: "James", age: new Date('2/3/1925')}),
-  // customerService.insertCommand({name: "James", age: new Date('2/3/1925'), address: 'aaa'})
+  customerService.insertCommand({name: "Jimi", age: new Date('2/3/1975')}),
+  customerService.insertCommand({name: "James", age: new Date('2/3/1975'), address: 'aa'}),
+  customerService.insertCommand({name: "Jimi", age: new Date('2/3/1925'), address: 'aa'}),
+  customerService.insertCommand({name: "James", age: new Date('2/3/1925')}),
+  customerService.insertCommand({name: "James", age: new Date('2/3/1925'), address: 'aaa'})
 ];
 
 // LOOP THROUGH EACH COMMAND AND EXECUTE IT
 Promise.all(commands.map(command => {
   return command.execute().then((result) => {
-    console.log('\n---------------');
+    console.log('---------------');
     console.log(result);
   })
 })).then(() => {
   customerService.getAllCommand().execute().then(result => {
-    console.log('\n---------------');
+    console.log('---------------');
     console.log("End Result", result.value);
   });
 });
