@@ -16,6 +16,11 @@ A middle tier micro-framework for javascript
 </a>
 </p>
 
+# What's new in version 2.0?
+
+You can see all changes introduced with peasy-js 2.0 [here](https://github.com/peasy/peasy-js/wiki/2.0-migration).
+
+
 # What's a middle tier framework?
 
 A middle tier framework is code that facilitates creating business logic in a reusable, extensible, maintainable, and testable manner.   It promotes creating business logic that is completely decoupled from its consuming technologies and helps to ensure that separation of concerns ([SoC](https://en.wikipedia.org/wiki/Separation_of_concerns)) are adhered to.
@@ -77,10 +82,6 @@ An additional sample can be viewed [using promises](https://github.com/peasy/pea
 -  ```node src/sampleWithCallbacks.js```
 
 An entire middle-tier implementation using peasy-js can be viewed [here](https://github.com/peasy/peasy-js-samples).  This sample application is a ficticious order entry / inventory management system written with peasy-js, react, angular (with TypeScript), mongoDB, nodejs, and express.
-
-# What's new in version 2.0?
-
-You can see all changes introduced with peasy-js 2.0 [here](https://github.com/peasy/peasy-js/wiki/2.0-migration).
 
 # Contributing
 
