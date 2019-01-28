@@ -4,6 +4,9 @@
   "description": "A middle tier framework for javascript",
   "main": "dist/peasy.js",
   "types": "dist/peasy.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "test": "node ./node_modules/jasmine/bin/jasmine.js"
   },
