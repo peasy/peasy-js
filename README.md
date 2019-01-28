@@ -18,7 +18,7 @@ A middle tier micro-framework for javascript
 
 # What's new in version 2.0?
 
-You can see all changes introduced with peasy-js 2.0 [here](https://github.com/peasy/peasy-js/wiki/2.0-migration).
+You can see all changes introduced with peasy-js 2.0 [here](https://github.com/peasy/peasy-js/wiki/new-in-2.0).
 
 
 # What's a middle tier framework?
