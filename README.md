@@ -18,15 +18,14 @@ A middle tier micro-framework for javascript
 
 # What's a middle tier framework?
 
-
 A middle tier framework is code that facilitates creating business logic in a reusable, extensible, maintainable, and testable manner.   It promotes creating business logic that is completely decoupled from its consuming technologies and helps to ensure that separation of concerns ([SoC](https://en.wikipedia.org/wiki/Separation_of_concerns)) are adhered to.
 
 ##### peasy-js offers/addresses the following:
 
 - [Business and validation rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) engine
-- [Asynchronous support]() via promises or callbacks
+- [Asynchronous support](https://github.com/peasy/peasy-js/wiki/asynchronous-api) via promises or callbacks
 - ES5 and later support
-- [ TypeScript ](https://github.com/peasy/peasy-js/wiki/typescript-node.js-sample) support
+- [TypeScript](https://github.com/peasy/peasy-js/wiki/typescript-node.js-sample) support
 - [Multiple client support](https://github.com/peasy/peasy-js/wiki/Multiple-Client-Support)
 - [Multiple deployment scenario support](https://github.com/peasy/peasy-js/wiki/Data-Proxy#multiple-deployment-scenarios)
 - Reusability (decouples business and validation logic from consuming code and frameworks)
@@ -72,12 +71,16 @@ You can get started by reviewing the walk throughs below.
 - Run it on a [server](https://github.com/peasy/peasy-js/wiki/node.js-sample) (Node.js)
 - Run it with [TypeScript](https://github.com/peasy/peasy-js/wiki/typescript-node.js-sample) (Node.js)
 
-An additional sample can be viewed [here](https://github.com/peasy/peasy-js/blob/master/src/sampleWithPromises.js) (using promises) or [here](https://github.com/peasy/peasy-js/blob/master/src/sampleWithCallbacks.js) (using callbacks) that showcases creating a [business service](https://github.com/peasy/peasy-js/wiki/businessservice), custom [command](https://github.com/peasy/peasy-js/wiki/command), [business rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, run one or both from a command line:
+An additional sample can be viewed [using promises](https://github.com/peasy/peasy-js/blob/master/src/sampleWithPromises.js) or [using callbacks](https://github.com/peasy/peasy-js/blob/master/src/sampleWithCallbacks.js) that showcases creating a [business service](https://github.com/peasy/peasy-js/wiki/businessservice), custom [command](https://github.com/peasy/peasy-js/wiki/command), [business rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, run one or both from a command line:
 
 -  ```node src/sampleWithPromises.js```
 -  ```node src/sampleWithCallbacks.js```
 
 An entire middle-tier implementation using peasy-js can be viewed [here](https://github.com/peasy/peasy-js-samples).  This sample application is a ficticious order entry / inventory management system written with peasy-js, react, angular (with TypeScript), mongoDB, nodejs, and express.
+
+# What's new in version 2.0?
+
+You can see all changes introduced with peasy-js 2.0 [here](https://github.com/peasy/peasy-js/wiki/2.0-migration).
 
 # Contributing
 

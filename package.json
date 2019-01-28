@@ -1,6 +1,6 @@
 {
   "name": "peasy-js",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A middle tier framework for javascript",
   "main": "dist/peasy.js",
   "types": "dist/peasy.d.ts",
@@ -33,7 +33,6 @@
   "bugs": {
     "url": "https://github.com/peasy/peasy-js/issues"
   },
-  "homepage": "https://www.dropbox.com/s/gpdoiby1lo7wlop/peasy-js.html?dl=0&raw=1",
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.5",
