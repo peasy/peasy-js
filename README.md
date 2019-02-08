@@ -81,8 +81,6 @@ An additional sample can be viewed [using promises](https://github.com/peasy/pea
 -  ```node src/sampleWithPromises.js```
 -  ```node src/sampleWithCallbacks.js```
 
-An entire middle-tier implementation using peasy-js can be viewed [here](https://github.com/peasy/peasy-js-samples).  This sample application is a ficticious order entry / inventory management system written with peasy-js, react, angular (with TypeScript), mongoDB, nodejs, and express.
-
 # Contributing
 
 All contributions are welcome, from general framework improvements to sample client consumers, proxy implementations, and documentation updates.  Want to get involved?  Please hit us up with your ideas.  Alternatively, you can make a pull request and we'll get to it ASAP.
