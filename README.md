@@ -87,7 +87,7 @@ The [data proxy](https://github.com/peasy/peasy-js/wiki/Data-Proxy) is responsib
 
 #### peasy-js actors at work
 <p align="center">
-  <img src="https://www.dropbox.com/s/1e56270hp1plhly/peasy-js-uml.png?dl=0&raw=1">
+  <img src="https://www.dropbox.com/s/cqcqawnc6urr4e2/peasy-js-uml%20%281%29.png?dl=0&raw=1">
 </p>
 
 # Contributing
