@@ -73,17 +73,22 @@ An additional sample can be viewed [using promises](https://github.com/peasy/pea
 
 # The main actors
 
-### Data Proxy
-The [data proxy](https://github.com/peasy/peasy-js/wiki/Data-Proxy) is responsible for data storage and retrieval, and serves as an abstraction layer for data stores (database, web services, cache, etc.).
-
-### Rule
-A [rule](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) can be created to represent a business rule (authorization, price validity, etc.) or a validation rule (field length, required, etc.). Rules are consumed by commands and can be chained, configured to execute based on a previous rule’s execution, etc. Rules can also be configured to invoke code based on the result of their execution.
+### Business Service
+A [business service](https://github.com/peasy/peasy-js/wiki/BusinessService) implementation represents an entity (e.g. users, or projects) and is responsible for exposing business functionality via commands. These commands encapsulate CRUD and other business related logic.
 
 ### Command
 The [command](https://github.com/peasy/peasy-js/wiki/Command) is responsible for orchestrating the execution of initialization logic, business and validation rule execution, and other logic (data proxy invocations, workflow logic, etc.), respectively, via the command execution pipeline.
 
-### Business Service
-A [business service](https://github.com/peasy/peasy-js/wiki/BusinessService) implementation represents an entity (e.g. users, or projects) and is responsible for exposing business functionality via commands. These commands encapsulate CRUD and other business related logic.
+### Rule
+A [rule](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) can be created to represent a business rule (authorization, price validity, etc.) or a validation rule (field length, required, etc.). Rules are consumed by commands and can be chained, configured to execute based on a previous rule’s execution, etc. Rules can also be configured to invoke code based on the result of their execution.
+
+### Data Proxy
+The [data proxy](https://github.com/peasy/peasy-js/wiki/Data-Proxy) is responsible for data storage and retrieval, and serves as an abstraction layer for data stores (database, web services, cache, etc.).
+
+#### peasy-js actors at work
+<p align="center">
+  <img src="https://www.dropbox.com/s/1e56270hp1plhly/peasy-js-uml.png?dl=0&raw=1">
+</p>
 
 # Contributing
 
