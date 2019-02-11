@@ -1,7 +1,7 @@
 ![peasy-js](https://www.dropbox.com/s/2yajr2x9yevvzbm/peasy3.png?dl=0&raw=1)
 
 ```javascript
-A middle tier micro-framework for javascript
+A business logic micro-framework for javascript
 ```
 
 <p>
@@ -20,9 +20,9 @@ A middle tier micro-framework for javascript
 
 You can see all changes introduced with peasy-js 2.0 [here](https://github.com/peasy/peasy-js/wiki/new-in-2.0).
 
-# What's a middle tier framework?
+# What's a business logic micro-framework?
 
-A middle tier framework is code that facilitates creating business logic in a reusable, extensible, maintainable, and testable manner.   It promotes creating business logic that is completely decoupled from its consuming technologies and helps to ensure that separation of concerns ([SoC](https://en.wikipedia.org/wiki/Separation_of_concerns)) are adhered to.
+A business logic framework is code that facilitates creating business logic in a consistent, predictable, reusable, extensible, maintainable, scalable, and testable manner.   It promotes creating business logic that is completely decoupled from its consuming technologies and helps to ensure that separation of concerns ([SoC](https://en.wikipedia.org/wiki/Separation_of_concerns)) are adhered to.
 
 <h3 align="center">Write your business logic once and consume from everywhere!</h3>
 <p align="center">
@@ -85,9 +85,9 @@ A [rule](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) c
 ### Data Proxy
 The [data proxy](https://github.com/peasy/peasy-js/wiki/Data-Proxy) is responsible for data storage and retrieval, and serves as an abstraction layer for data stores (database, web services, cache, etc.).
 
-#### peasy-js actors at work
+##### peasy-js actors at work
 <p align="center">
-  <img src="https://www.dropbox.com/s/cqcqawnc6urr4e2/peasy-js-uml%20%281%29.png?dl=0&raw=1">
+  <img src="https://www.dropbox.com/s/1e56270hp1plhly/peasy-js-uml.png?dl=0&raw=1">
 </p>
 
 # Contributing
