@@ -29,6 +29,14 @@ A middle tier framework is code that facilitates creating business logic in a re
   <img src="https://www.dropbox.com/s/o66hcg38hi88jej/Untitled%20Diagram%20%286%29.png?dl=0&raw=1">
 </p>
 
+# Why peasy-js?
+
+Because the javascript ecosystem changes at a pace much more rapid than your business logic.  UI frameworks change: Backbone one day, Angular the next day, React the following...  Backend frameworks change: Express one day, Koa the next day, Hapi the next... Data frameworks and ORMS change...
+
+Why couple your code with technologies that are hot today and gone tomorrow?  Why not focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both, and by any UI or backend framework?
+
+peasy-js makes it trivial to whimsically swap out UI, backend, and data frameworks in your applications by creating your business logic in a composable, reusable, scalable, and testable manner.
+
 #### peasy-js offers/addresses the following:
 
 - [Business and validation rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules) engine
@@ -40,15 +48,6 @@ A middle tier framework is code that facilitates creating business logic in a re
 - Reusability (decouples business and validation logic from consuming code and frameworks)
 - [Scalability](https://github.com/peasy/peasy-js/wiki/Data-Proxy#scalability)
 - [Testability](https://github.com/peasy/peasy-js/wiki/Testing)
-
-# Why peasy-js?
-
-Because the javascript ecosystem changes at a pace much more rapid than your business logic.  UI frameworks change: Backbone one day, Angular the next day, React the following...  Backend frameworks change: Express one day, Koa the next day, Hapi the next... Data frameworks and ORMS change...
-
-Why couple your code with technologies that are hot today and gone tomorrow?  Why not focus on your business logic and abstract out everything else into truly reusable code that can be consumed by javascript in the browser, backend, or both, and by any UI or backend framework?
-
-peasy-js makes it trivial to whimsically swap out UI, backend, and data frameworks in your applications by creating your business logic in a composable, reusable, scalable, and testable manner.
-
 
 # Where can I get it?
 
