@@ -256,7 +256,7 @@ declare module Peasy {
   }
 
   /** Responsible for orchestrating the execution of initialization logic, validation/business rule execution, and command logic */
-  class Command<T> {
+  class Command<T> implements ICommand<T> {
 
     /** Executes an array of commands and returns after all have completed.
     * @param commands An array of commands.
