@@ -492,8 +492,8 @@ describe("Rule", function() {
             rule2.validate()
           ]);
 
-          expect(onComplete1).toHaveBeenCalled();
-          expect(onComplete2).toHaveBeenCalled();
+          expect(onComplete1).toHaveBeenCalledWith(rule1);
+          expect(onComplete2).toHaveBeenCalledWith(rule2);
         });
 
         it("sets the error on the parent when child validation fails", async function() {
@@ -564,8 +564,8 @@ describe("Rule", function() {
             rule2.validate()
           ]);
 
-          expect(onComplete1).toHaveBeenCalled();
-          expect(onComplete2).toHaveBeenCalled();
+          expect(onComplete1).toHaveBeenCalledWith(rule1);
+          expect(onComplete2).toHaveBeenCalledWith(rule2);
         });
 
         it("invokes the 'ifValidThenGetRules' onComplete", async function() {
@@ -724,10 +724,10 @@ describe("Rule", function() {
             parent2.validate()
           ]);
 
-          expect(parentCallback1).toHaveBeenCalled();
-          expect(childCallback1).toHaveBeenCalled();
-          expect(parentCallback2).toHaveBeenCalled();
-          expect(childCallback2).toHaveBeenCalled();
+          expect(parentCallback1).toHaveBeenCalledWith(parent1);
+          expect(childCallback1).toHaveBeenCalledWith(child1);
+          expect(parentCallback2).toHaveBeenCalledWith(parent2);
+          expect(childCallback2).toHaveBeenCalledWith(child2);
         });
 
         it("does not invoke child valid onComplete", async () => {
@@ -772,8 +772,8 @@ describe("Rule", function() {
             parent2.validate()
           ]);
 
-          expect(childCallback1).toHaveBeenCalled();
-          expect(childCallback2).toHaveBeenCalled();
+          expect(childCallback1).toHaveBeenCalledWith(child1);
+          expect(childCallback2).toHaveBeenCalledWith(child2);
         });
 
         it("does not invoke child invalid onComplete", async () => {
@@ -835,12 +835,12 @@ describe("Rule", function() {
             parent2.validate()
           ]);
 
-          expect(parentCallback1).toHaveBeenCalled();
-          expect(childCallback1).toHaveBeenCalled();
-          expect(grandchildCallback1).toHaveBeenCalled();
-          expect(parentCallback2).toHaveBeenCalled();
-          expect(childCallback2).toHaveBeenCalled();
-          expect(grandchildCallback2).toHaveBeenCalled();
+          expect(parentCallback1).toHaveBeenCalledWith(parent1);
+          expect(childCallback1).toHaveBeenCalledWith(child1);
+          expect(grandchildCallback1).toHaveBeenCalledWith(grandchild1);
+          expect(parentCallback2).toHaveBeenCalledWith(parent2);
+          expect(childCallback2).toHaveBeenCalledWith(child2);
+          expect(grandchildCallback2).toHaveBeenCalledWith(grandchild2);
         });
 
         it("does not invoke grandchild valid onComplete", async () => {
@@ -877,10 +877,10 @@ describe("Rule", function() {
             parent2.validate()
           ]);
 
-          expect(parentCallback1).toHaveBeenCalled();
+          expect(parentCallback1).toHaveBeenCalledWith(parent1);
           expect(childCallback1).not.toHaveBeenCalled();
           expect(grandchildCallback1).not.toHaveBeenCalled();
-          expect(parentCallback2).toHaveBeenCalled();
+          expect(parentCallback2).toHaveBeenCalledWith(parent2);
           expect(childCallback2).not.toHaveBeenCalled();
           expect(grandchildCallback2).not.toHaveBeenCalled();
         });
@@ -919,13 +919,13 @@ describe("Rule", function() {
             parent2.validate()
           ]);
 
-          expect(parentCallback1).toHaveBeenCalled();
-          expect(childCallback1).toHaveBeenCalled();
-          expect(grandchildCallback1).toHaveBeenCalled();
+          expect(parentCallback1).toHaveBeenCalledWith(parent1);
+          expect(childCallback1).toHaveBeenCalledWith(child1);
+          expect(grandchildCallback1).toHaveBeenCalledWith(grandchild1);
 
-          expect(parentCallback2).toHaveBeenCalled();
-          expect(childCallback2).toHaveBeenCalled();
-          expect(grandchildCallback2).toHaveBeenCalled();
+          expect(parentCallback2).toHaveBeenCalledWith(parent2);
+          expect(childCallback2).toHaveBeenCalledWith(child2);
+          expect(grandchildCallback2).toHaveBeenCalledWith(grandchild2);
         });
 
         it("does not invoke grandchild invalid onComplete", async () => {
@@ -962,12 +962,12 @@ describe("Rule", function() {
             parent2.validate()
           ]);
 
-          expect(parentCallback1).toHaveBeenCalled();
-          expect(childCallback1).toHaveBeenCalled();
+          expect(parentCallback1).toHaveBeenCalledWith(parent1);
+          expect(childCallback1).toHaveBeenCalledWith(child1);
           expect(grandchildCallback1).not.toHaveBeenCalled();
 
-          expect(parentCallback2).toHaveBeenCalled();
-          expect(childCallback2).toHaveBeenCalled();
+          expect(parentCallback2).toHaveBeenCalledWith(parent2);
+          expect(childCallback2).toHaveBeenCalledWith(child2);
           expect(grandchildCallback2).not.toHaveBeenCalled();
         });
 

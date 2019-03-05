@@ -375,14 +375,14 @@ declare module Peasy {
     ifInvalidThenValidate(rules: Rule[]): Rule;
 
     /** Invokes the supplied function if the validation of this rule is successful.
-    * @param func A function to execute.
+    * @param func A function to execute that receives a reference to the invoking rule
     * @returns A reference to this rule. */
-    ifValidThenExecute(func: () => void): Rule
+    ifValidThenExecute(func: (rule: Rule) => void): Rule
 
     /** Invokes the supplied function if the validation of this rule fails.
-    * @param func A function to execute.
+    * @param func A function to execute that receives a reference to the invoking rule
     * @returns A reference to this rule. */
-    ifInvalidThenExecute(func: () => void): Rule
+    ifInvalidThenExecute(func: (rule: Rule) => void): Rule
 
     /** Invokes the supplied function if the validation of this rule is successful.
     * @param func A function that returns an awaitable array of rules.

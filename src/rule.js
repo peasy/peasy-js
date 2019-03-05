@@ -164,7 +164,7 @@ var Rule = function () {
       function validationComplete(onComplete) {
         if (self.valid) {
           if (self.ifValidThenFn) {
-            self.ifValidThenFn();
+            self.ifValidThenFn(self);
           }
           if (self.validSuccessors.length > 0) {
             return invokeSuccessorsAndNextRules(self, self.validSuccessors, onComplete);
@@ -175,7 +175,7 @@ var Rule = function () {
           }
         } else {
           if (self.ifInvalidThenFn) {
-            self.ifInvalidThenFn();
+            self.ifInvalidThenFn(self);
           }
           if (self.invalidSuccessors.length > 0) {
             return invokeSuccessors(self, self.invalidSuccessors, onComplete);
