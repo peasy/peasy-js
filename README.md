@@ -1,23 +1,23 @@
 ![peasy-js](https://www.dropbox.com/s/2yajr2x9yevvzbm/peasy3.png?dl=0&raw=1)
 
-```javascript
-A business logic micro-framework for javascript
-```
+<div align="center">
+	<h1> A business logic micro-framework for javascript </h1>
+</div>
 
-<p>
-<a href="https://gitter.im/peasy/peasy-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" target="_blank">
-	<img src="https://badges.gitter.im/peasy/peasy-js.svg" alt="Gitter">
-</a>
-<a href="https://www.npmjs.com/package/peasy-js" target="_blank">
-	<img src="https://badge.fury.io/js/peasy-js.svg" alt="npm version">
-</a>
-<a href="https://travis-ci.org/peasy/peasy-js">
-	<img src="https://travis-ci.org/peasy/peasy-js.svg?branch=master" alt="travis">
-</a>
-</p>
+<div align="center">
+  <a href="https://gitter.im/peasy/peasy-js?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" target="_blank">
+    <img src="https://badges.gitter.im/peasy/peasy-js.svg" alt="Gitter">
+  </a>
+  <a href="https://www.npmjs.com/package/peasy-js" target="_blank">
+    <img src="https://badge.fury.io/js/peasy-js.svg" alt="npm version">
+  </a>
+  <a href="https://travis-ci.org/peasy/peasy-js">
+    <img src="https://travis-ci.org/peasy/peasy-js.svg?branch=master" alt="travis">
+  </a>
+</div>
 
 <h3 align="center">Write your business logic once and consume from everywhere!</h3>
-<p align="center">
+<p align="center" style="padding: 20px">
   <img src="peasy-js.svg">
 </p>
 
