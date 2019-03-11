@@ -61,13 +61,11 @@ You can get started by reviewing the walk throughs below.
 - Run it in a [client](https://github.com/peasy/peasy-js/wiki/Browser-sample) (browser)
 - Run it on a [server](https://github.com/peasy/peasy-js/wiki/node.js-sample) (Node.js)
 - Run it with [TypeScript](https://github.com/peasy/peasy-js/wiki/typescript-node.js-sample) (Node.js)
+- [Sample application](https://github.com/peasy/peasy-js-samples): This sample application is an order entry / inventory management system written with peasy-js, react, angular (with TypeScript), mongoDB, nodejs, and express.
+- An additional sample can be viewed [using promises](https://github.com/peasy/peasy-js/blob/master/src/sampleWithPromises.js) or [using callbacks](https://github.com/peasy/peasy-js/blob/master/src/sampleWithCallbacks.js) that showcases creating a [business service](https://github.com/peasy/peasy-js/wiki/businessservice), custom [command](https://github.com/peasy/peasy-js/wiki/command), [business rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, run one or both from a command line:
 
-An entire business logic implementation using peasy-js can be viewed [here](https://github.com/peasy/peasy-js-samples).  This sample application is an order entry / inventory management system written with peasy-js, react, angular (with TypeScript), mongoDB, nodejs, and express.
-
-An additional sample can be viewed [using promises](https://github.com/peasy/peasy-js/blob/master/src/sampleWithPromises.js) or [using callbacks](https://github.com/peasy/peasy-js/blob/master/src/sampleWithCallbacks.js) that showcases creating a [business service](https://github.com/peasy/peasy-js/wiki/businessservice), custom [command](https://github.com/peasy/peasy-js/wiki/command), [business rules](https://github.com/peasy/peasy-js/wiki/Business-and-Validation-Rules), and wiring them up.  The sample also showcases how to consume the service.  To see it in action, run one or both from a command line:
-
--  ```node src/sampleWithPromises.js```
--  ```node src/sampleWithCallbacks.js```
+  -  ```node src/sampleWithPromises.js```
+  -  ```node src/sampleWithCallbacks.js```
 
 # The main actors
 
