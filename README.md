@@ -16,18 +16,14 @@ A business logic micro-framework for javascript
 </a>
 </p>
 
-# What's new in version 2.0?
-
-You can see all changes introduced with peasy-js 2.0 [here](https://github.com/peasy/peasy-js/wiki/new-in-2.0).
-
-# What's a business logic micro-framework?
-
-A business logic framework is code that facilitates creating business logic in a consistent, predictable, reusable, extensible, maintainable, scalable, and testable manner.   It promotes creating business logic that is completely decoupled from its consuming technologies and helps to ensure that separation of concerns ([SoC](https://en.wikipedia.org/wiki/Separation_of_concerns)) are adhered to.
-
 <h3 align="center">Write your business logic once and consume from everywhere!</h3>
 <p align="center">
   <img src="peasy-js.svg">
 </p>
+
+# What's a business logic micro-framework?
+
+A business logic framework is code that facilitates creating business logic in a consistent, predictable, reusable, extensible, maintainable, scalable, and testable manner.   It promotes creating business logic that is completely decoupled from its consuming technologies and helps to ensure that separation of concerns ([SoC](https://en.wikipedia.org/wiki/Separation_of_concerns)) are adhered to.
 
 # Why peasy-js?
 
@@ -91,6 +87,10 @@ The [data proxy](https://github.com/peasy/peasy-js/wiki/Data-Proxy) is responsib
 <p align="center">
   <img src="peasy-js-uml.svg">
 </p>
+
+# What's new in version 2.0?
+
+You can see all changes introduced with peasy-js 2.0 [here](https://github.com/peasy/peasy-js/wiki/new-in-2.0).
 
 # Contributing
 
