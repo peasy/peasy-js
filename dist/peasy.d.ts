@@ -54,7 +54,7 @@ declare module Peasy {
     /** Primarily used to interact with data proxies, workflow logic, etc.
     * @returns An awaitable promise.
     * @param context An object that can be used as a property bag throughout this command's execution pipeline. */
-    _onValidationSuccess?: (context: any) => Promise<T>
+    _onValidationSuccess: (context: any) => Promise<T>
   }
 
   /** Contains peasy-js configuration settings */
