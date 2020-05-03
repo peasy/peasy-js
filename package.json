@@ -1,6 +1,6 @@
 {
   "name": "peasy-js",
-  "version": "2.1.2",
+  "version": "2.2.0",
   "description": "A business logic micro-framework for javascript",
   "main": "dist/peasy.js",
   "types": "dist/peasy.d.ts",
